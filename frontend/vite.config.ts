@@ -11,7 +11,21 @@ export default defineConfig({
       usePolling: true
     }
   },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          utils: ['axios']
+        }
+      }
+    }
+  },
   define: {
     global: 'globalThis',
-  }
+  },
+  envPrefix: 'VITE_'
 })
