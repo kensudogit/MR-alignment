@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { authAPI } from '../services/api';
 import './AuthModal.css';
 
 interface AuthModalProps {
@@ -39,29 +40,44 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
         return;
       }
 
-      // ここで実際のAPI呼び出しを行う
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      // APIサービスを使用して認証処理を行う
+      let response;
+      if (mode === 'login') {
+        response = await authAPI.login({
+          email: formData.email,
+          password: formData.password
+        });
+      } else {
+        response = await authAPI.register({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          organization: formData.organization,
+          role: formData.role
+        });
+      }
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.data) {
+        console.log('Auth response:', response.data);
+        
+        // トークンを保存
+        if (response.data.token) {
+          localStorage.setItem('authToken', response.data.token);
+        }
+        
         setMessage(mode === 'login' ? 'ログインに成功しました！' : '登録に成功しました！');
         setTimeout(() => {
           onClose();
           // ログイン成功後の処理（例：ダッシュボードにリダイレクト）
         }, 2000);
-      } else {
-        const errorData = await response.json();
-        setMessage(errorData.message || 'エラーが発生しました');
       }
-    } catch (error) {
-      setMessage('ネットワークエラーが発生しました');
+    } catch (error: any) {
+      console.error('Auth error:', error);
+      if (error.response?.data?.message) {
+        setMessage(error.response.data.message);
+      } else {
+        setMessage('ネットワークエラーが発生しました');
+      }
     } finally {
       setIsLoading(false);
     }

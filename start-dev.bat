@@ -11,8 +11,7 @@ echo.
 echo アクセス先:
 echo - フロントエンド: http://localhost:3000
 echo - バックエンドAPI: http://localhost:8000
-echo - PostgreSQL: localhost:5432
-echo - pgAdmin: http://localhost:8081
+echo - PostgreSQL: localhost:5432echo - pgAdmin: http://localhost:8081
 echo.
 echo ログを確認するには: docker-compose logs -f
 echo サービスを停止するには: docker-compose down
