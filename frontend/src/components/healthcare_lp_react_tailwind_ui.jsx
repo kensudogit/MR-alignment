@@ -29,6 +29,159 @@ const IconCheck = (props) => (
     <path d="M20 6 9 17l-5-5"/>
   </svg>
 );
+const IconX = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
+    <path d="M18 6L6 18M6 6l12 12"/>
+  </svg>
+);
+
+// --- Feature Data ---
+const featureData = {
+  aiPhone: {
+    title: "AI電話",
+    icon: <IconPhone className="h-8 w-8"/>,
+    shortDesc: "着信の自動振り分け、ボイスボットでの初期対応で業務負荷を軽減。",
+    longDesc: "AI電話システムは、医療機関の受付業務を大幅に効率化します。着信の自動振り分けにより、適切な部署や担当者に迅速に接続。ボイスボットによる初期対応で、一般的な問い合わせは自動処理され、スタッフはより重要な業務に集中できます。",
+    benefits: [
+      "受付時間の短縮",
+      "スタッフの業務負荷軽減",
+      "24時間対応可能",
+      "多言語対応"
+    ],
+    useCases: [
+      "外来予約の問い合わせ",
+      "診療時間の確認",
+      "検査結果の問い合わせ",
+      "緊急時の連絡"
+    ]
+  },
+  workManagement: {
+    title: "勤務管理",
+    icon: <IconClock className="h-8 w-8"/>,
+    shortDesc: "打刻・シフト作成・残業申請までを一元化。36協定もサポート。",
+    longDesc: "医療現場の勤務管理をデジタル化し、効率的な人員配置と労働時間管理を実現します。打刻からシフト作成、残業申請まで一元管理。36協定の遵守も自動でチェックし、医療機関の労働環境改善をサポートします。",
+    benefits: [
+      "勤務時間の正確な把握",
+      "シフト作成の効率化",
+      "36協定の自動チェック",
+      "残業時間の可視化"
+    ],
+    useCases: [
+      "看護師のシフト管理",
+      "医師の当直スケジュール",
+      "事務職員の勤務管理",
+      "残業申請の承認フロー"
+    ]
+  },
+  internalCollaboration: {
+    title: "院内連携",
+    icon: <IconUsers className="h-8 w-8"/>,
+    shortDesc: "掲示板・メッセージ・タスクで医師・看護・事務がスムーズに連携。",
+    longDesc: "院内の情報共有とコミュニケーションを円滑にするプラットフォームです。掲示板、メッセージ、タスク管理機能により、医師・看護師・事務職員がリアルタイムで情報を共有し、患者ケアの質向上に貢献します。",
+    benefits: [
+      "情報共有の迅速化",
+      "部門間の連携強化",
+      "タスクの可視化",
+      "コミュニケーションの向上"
+    ],
+    useCases: [
+      "患者情報の共有",
+      "カンファレンスの議事録",
+      "緊急時の連絡",
+      "プロジェクト管理"
+    ]
+  },
+  security: {
+    title: "セキュリティ",
+    icon: <IconShield className="h-8 w-8"/>,
+    shortDesc: "医療向けのアクセス制御と監査ログ、二要素認証を標準搭載。",
+    longDesc: "医療情報の機密性と完全性を保護するセキュリティ機能を提供します。ロールベースのアクセス制御、詳細な監査ログ、二要素認証により、医療機関のセキュリティ要件を満たします。",
+    benefits: [
+      "医療情報の保護",
+      "アクセス制御の強化",
+      "監査ログの記録",
+      "コンプライアンス対応"
+    ],
+    useCases: [
+      "患者情報へのアクセス制御",
+      "医師・看護師の権限管理",
+      "システム利用の監査",
+      "セキュリティインシデント対応"
+    ]
+  },
+  regionalCollaboration: {
+    title: "地域連携",
+    icon: <IconUsers className="h-8 w-8"/>,
+    shortDesc: "病診連携・多職種連携の情報共有を安全に。",
+    longDesc: "地域の医療機関や介護施設との連携を支援するプラットフォームです。安全な情報共有により、患者の継続的なケアを実現。病診連携や多職種連携の課題を解決し、地域医療の質向上に貢献します。",
+    benefits: [
+      "地域医療の連携強化",
+      "患者ケアの継続性向上",
+      "情報共有の安全性確保",
+      "医療資源の効率化"
+    ],
+    useCases: [
+      "病診連携での患者情報共有",
+      "介護施設との連携",
+      "地域包括ケアの推進",
+      "災害時の医療連携"
+    ]
+  },
+  attendanceManagement: {
+    title: "出席管理",
+    icon: <IconClock className="h-8 w-8"/>,
+    shortDesc: "カンファレンスの出席・議事録・資料配布を一括管理。",
+    longDesc: "医療機関内の会議やカンファレンスの運営を効率化します。出席管理、議事録作成、資料配布を一括で管理。医療スタッフの学習機会を最大化し、医療の質向上をサポートします。",
+    benefits: [
+      "会議運営の効率化",
+      "出席状況の可視化",
+      "議事録の一元管理",
+      "資料配布の自動化"
+    ],
+    useCases: [
+      "症例検討会の運営",
+      "研修会の管理",
+      "委員会の運営",
+      "学会発表の準備"
+    ]
+  },
+  patientSupport: {
+    title: "患者対応",
+    icon: <IconPhone className="h-8 w-8"/>,
+    shortDesc: "折返し予約・SMS通知・問診テンプレで受付の負担を削減。",
+    longDesc: "患者とのコミュニケーションを効率化し、受付業務の負担を軽減します。折返し予約、SMS通知、問診テンプレート機能により、患者の利便性向上と医療機関の業務効率化を両立します。",
+    benefits: [
+      "受付業務の効率化",
+      "患者満足度の向上",
+      "予約の確実性向上",
+      "問診の標準化"
+    ],
+    useCases: [
+      "外来予約の管理",
+      "検査前の注意事項通知",
+      "服薬指導の実施",
+      "フォローアップの予約"
+    ]
+  },
+  auditPermission: {
+    title: "監査・権限",
+    icon: <IconShield className="h-8 w-8"/>,
+    shortDesc: "ロールベースの権限設計と詳細な操作ログで内部統制を強化。",
+    longDesc: "医療機関の内部統制を強化する監査・権限管理システムです。ロールベースの権限設計により適切なアクセス制御を実現し、詳細な操作ログで内部統制の監査をサポートします。",
+    benefits: [
+      "内部統制の強化",
+      "権限管理の効率化",
+      "監査対応の迅速化",
+      "コンプライアンス向上"
+    ],
+    useCases: [
+      "医師の権限管理",
+      "看護師のアクセス制御",
+      "事務職員の権限設定",
+      "システム利用の監査"
+    ]
+  }
+};
 
 // --- Small UI helpers ---
 const Stat = ({ value, label }) => (
@@ -38,17 +191,127 @@ const Stat = ({ value, label }) => (
   </div>
 );
 
-const FeatureCard = ({ icon, title, desc }) => (
-  <div className="card-modern interactive-card group">
+const FeatureCard = ({ icon, title, desc, onClick }) => (
+  <div 
+    className="card-modern interactive-card group cursor-pointer transition-all duration-300 hover:scale-105 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-healthcare-500 focus:ring-offset-2" 
+    onClick={onClick}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onClick();
+      }
+    }}
+    aria-label={`${title}の詳細を見る`}
+  >
     <div className="flex items-center gap-3 mb-4">
-      <div className="p-3 rounded-xl bg-gradient-to-br from-healthcare-100 to-healthcare-200 text-healthcare-600 shadow-inner-healthcare animate-rotate-in">
+      <div className="p-3 rounded-xl bg-gradient-to-br from-healthcare-100 to-healthcare-200 text-healthcare-600 shadow-inner-healthcare animate-rotate-in group-hover:shadow-lg transition-shadow duration-300">
         {icon}
       </div>
-      <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
+      <h3 className="font-semibold text-gray-900 text-lg group-hover:text-healthcare-700 transition-colors duration-200">{title}</h3>
     </div>
     <p className="text-sm leading-6 text-gray-600">{desc}</p>
+    <div className="mt-4 text-healthcare-600 text-sm font-medium opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-all duration-200 flex items-center gap-2">
+      詳細を見る 
+      <span className="transform group-hover:translate-x-1 transition-transform duration-200">→</span>
+    </div>
   </div>
 );
+
+// --- Feature Detail Modal ---
+const FeatureModal = ({ isOpen, onClose, feature }) => {
+  if (!isOpen || !feature) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      
+      {/* Modal */}
+      <div 
+        className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-healthcare-100 to-healthcare-200 text-healthcare-600">
+              {feature.icon}
+            </div>
+            <h2 id="modal-title" className="text-2xl font-bold text-gray-900">{feature.title}</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+            aria-label="閉じる"
+          >
+            <IconX className="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div id="modal-description" className="p-6 space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">機能概要</h3>
+            <p className="text-gray-700 leading-relaxed">{feature.longDesc}</p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">主なメリット</h3>
+            <ul className="space-y-2">
+              {feature.benefits.map((benefit, index) => (
+                <li key={index} className="flex items-center gap-3 text-gray-700">
+                  <IconCheck className="h-5 w-5 text-healthcare-500 flex-shrink-0" />
+                  <span>{benefit}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">活用シーン</h3>
+            <ul className="space-y-2">
+              {feature.useCases.map((useCase, index) => (
+                <li key={index} className="flex items-center gap-3 text-gray-700">
+                  <div className="w-2 h-2 bg-healthcare-400 rounded-full flex-shrink-0" />
+                  <span>{useCase}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="btn-secondary"
+          >
+            閉じる
+          </button>
+          <button
+            onClick={() => {
+              onClose();
+              // ここで問い合わせフォームやデモ申し込みなどの処理を追加
+              alert(`${feature.title}について詳しく知りたい場合は、お問い合わせください。`);
+            }}
+            className="btn-gradient"
+          >
+            詳しく聞く
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Input = ({ label, type = "text", name, placeholder, required = false }) => (
   <div className="form-group">
@@ -102,6 +365,7 @@ export default function HealthcareLP() {
   const [showTop, setShowTop] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [particles, setParticles] = useState([]);
+  const [selectedFeature, setSelectedFeature] = useState(null);
 
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 400);
@@ -122,6 +386,26 @@ export default function HealthcareLP() {
     
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // モーダルが開いているときのESCキー処理
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && selectedFeature) {
+        setSelectedFeature(null);
+      }
+    };
+
+    if (selectedFeature) {
+      document.addEventListener('keydown', handleEscape);
+      // モーダルが開いているときはスクロールを無効化
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedFeature]);
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -173,9 +457,6 @@ export default function HealthcareLP() {
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-4 md:grid-cols-2">
           <div className="animate-fade-in-left">
             <div className="mb-6 flex flex-wrap items-center gap-3">
-              <Badge variant="success">導入実績 3,700+ 施設</Badge>
-              <Badge variant="warning">大学病院シェア 76%</Badge>
-              <Badge variant="info">24時間サポート</Badge>
             </div>
             <h1 className="section-title mobile-title text-4xl md:text-6xl font-extrabold leading-tight">
               医療現場の連携を、<br className="hidden md:block" />
@@ -184,15 +465,6 @@ export default function HealthcareLP() {
             <p className="mobile-text mt-6 text-lg md:text-xl text-gray-700 leading-relaxed max-w-2xl">
               MedConnect は、AI電話・勤務管理・院内/地域連携をワンストップで提供する医療向け業務効率化プラットフォームです。
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <a href="#download" className="btn-gradient text-lg px-8 py-4">資料ダウンロード（無料）</a>
-              <a href="#demo" className="btn-secondary text-lg px-8 py-4">1分でわかる動画</a>
-            </div>
-            <div className="mt-12 grid grid-cols-3 gap-4 max-w-lg">
-              <Stat value="14万人" label="医療従事者が利用"/>
-              <Stat value="98%" label="継続利用率"/>
-              <Stat value="-40%" label="電話対応時間"/>
-            </div>
           </div>
 
           {/* Right: Lead Form */}
@@ -237,14 +509,54 @@ export default function HealthcareLP() {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">医療現場のオペレーションを支える8つの機能を、直感的なUIで。</p>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <FeatureCard icon={<IconPhone className="h-6 w-6"/>} title="AI電話" desc="着信の自動振り分け、ボイスボットでの初期対応で業務負荷を軽減。"/>
-            <FeatureCard icon={<IconClock className="h-6 w-6"/>} title="勤務管理" desc="打刻・シフト作成・残業申請までを一元化。36協定もサポート。"/>
-            <FeatureCard icon={<IconUsers className="h-6 w-6"/>} title="院内連携" desc="掲示板・メッセージ・タスクで医師・看護・事務がスムーズに連携。"/>
-            <FeatureCard icon={<IconShield className="h-6 w-6"/>} title="セキュリティ" desc="医療向けのアクセス制御と監査ログ、二要素認証を標準搭載。"/>
-            <FeatureCard icon={<IconUsers className="h-6 w-6"/>} title="地域連携" desc="病診連携・多職種連携の情報共有を安全に。"/>
-            <FeatureCard icon={<IconClock className="h-6 w-6"/>} title="出席管理" desc="カンファレンスの出席・議事録・資料配布を一括管理。"/>
-            <FeatureCard icon={<IconPhone className="h-6 w-6"/>} title="患者対応" desc="折返し予約・SMS通知・問診テンプレで受付の負担を削減。"/>
-            <FeatureCard icon={<IconShield className="h-6 w-6"/>} title="監査・権限" desc="ロールベースの権限設計と詳細な操作ログで内部統制を強化。"/>
+            <FeatureCard 
+              icon={<IconPhone className="h-6 w-6"/>} 
+              title="AI電話" 
+              desc="着信の自動振り分け、ボイスボットでの初期対応で業務負荷を軽減。" 
+              onClick={() => setSelectedFeature(featureData.aiPhone)}
+            />
+            <FeatureCard 
+              icon={<IconClock className="h-6 w-6"/>} 
+              title="勤務管理" 
+              desc="打刻・シフト作成・残業申請までを一元化。36協定もサポート。" 
+              onClick={() => setSelectedFeature(featureData.workManagement)}
+            />
+            <FeatureCard 
+              icon={<IconUsers className="h-6 w-6"/>} 
+              title="院内連携" 
+              desc="掲示板・メッセージ・タスクで医師・看護・事務がスムーズに連携。" 
+              onClick={() => setSelectedFeature(featureData.internalCollaboration)}
+            />
+            <FeatureCard 
+              icon={<IconShield className="h-6 w-6"/>} 
+              title="セキュリティ" 
+              desc="医療向けのアクセス制御と監査ログ、二要素認証を標準搭載。" 
+              onClick={() => setSelectedFeature(featureData.security)}
+            />
+            <FeatureCard 
+              icon={<IconUsers className="h-6 w-6"/>} 
+              title="地域連携" 
+              desc="病診連携・多職種連携の情報共有を安全に。" 
+              onClick={() => setSelectedFeature(featureData.regionalCollaboration)}
+            />
+            <FeatureCard 
+              icon={<IconClock className="h-6 w-6"/>} 
+              title="出席管理" 
+              desc="カンファレンスの出席・議事録・資料配布を一括管理。" 
+              onClick={() => setSelectedFeature(featureData.attendanceManagement)}
+            />
+            <FeatureCard 
+              icon={<IconPhone className="h-6 w-6"/>} 
+              title="患者対応" 
+              desc="折返し予約・SMS通知・問診テンプレで受付の負担を削減。" 
+              onClick={() => setSelectedFeature(featureData.patientSupport)}
+            />
+            <FeatureCard 
+              icon={<IconShield className="h-6 w-6"/>} 
+              title="監査・権限" 
+              desc="ロールベースの権限設計と詳細な操作ログで内部統制を強化。" 
+              onClick={() => setSelectedFeature(featureData.auditPermission)}
+            />
           </div>
         </div>
       </section>
@@ -343,6 +655,13 @@ export default function HealthcareLP() {
           </div>
         </div>
       </section>
+
+      {/* Feature Detail Modal */}
+      <FeatureModal 
+        isOpen={!!selectedFeature} 
+        onClose={() => setSelectedFeature(null)} 
+        feature={selectedFeature} 
+      />
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
