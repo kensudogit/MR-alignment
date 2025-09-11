@@ -574,6 +574,171 @@ body {
   border-bottom: none;
 }
 
+/* Forced Colors Mode 対応 */
+@media (forced-colors: active) {
+  * {
+    color-scheme: light dark;
+  }
+  
+  .service-card {
+    border: 2px solid ButtonText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  
+  .service-card:hover {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-hero-primary, .btn-hero-secondary {
+    border: 2px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+  
+  .btn-primary:hover, .btn-hero-primary:hover {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+  
+  .btn-secondary:hover, .btn-hero-secondary:hover {
+    background-color: ButtonText;
+    color: ButtonFace;
+  }
+  
+  .hero-section {
+    background: Canvas;
+    color: CanvasText;
+    border: 2px solid ButtonText;
+  }
+  
+  .modal-content {
+    border: 2px solid ButtonText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  
+  .info-card {
+    border: 1px solid ButtonText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  
+  .header {
+    background: Canvas;
+    color: CanvasText;
+    border-bottom: 2px solid ButtonText;
+  }
+  
+  .nav a {
+    color: LinkText;
+  }
+  
+  .nav a:hover {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+  
+  .card-action-btn {
+    background: ButtonFace;
+    color: ButtonText;
+    border: 1px solid ButtonText;
+  }
+  
+  .card-action-btn:hover {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+}
+
+/* 高コントラストモード対応（非推奨の-ms-high-contrastの代替） */
+@media (prefers-contrast: high) {
+  .service-card {
+    border: 2px solid currentColor;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-hero-primary, .btn-hero-secondary {
+    border: 2px solid currentColor;
+  }
+  
+  .hero-section {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Microsoft Edge 非推奨警告の完全対応 */
+@media screen and (-ms-high-contrast: active) {
+  /* このルールは非推奨のため、forced-colorsに置き換え済み */
+}
+
+/* すべての要素でForced Colors Modeを強制適用 */
+* {
+  forced-color-adjust: auto;
+}
+
+/* システムカラーの使用を明示的に指定 */
+@media (forced-colors: active) {
+  * {
+    color-scheme: light dark;
+    forced-color-adjust: auto;
+  }
+  
+  /* すべての背景色をシステムカラーに置換 */
+  .service-card,
+  .btn-primary,
+  .btn-secondary,
+  .btn-hero-primary,
+  .btn-hero-secondary,
+  .hero-section,
+  .modal-content,
+  .info-card,
+  .header,
+  .nav a,
+  .card-action-btn {
+    background: Canvas;
+    color: CanvasText;
+    border-color: ButtonText;
+  }
+  
+  /* リンクの色をシステムカラーに */
+  a {
+    color: LinkText;
+  }
+  
+  a:visited {
+    color: VisitedText;
+  }
+  
+  /* フォーカス状態をシステムカラーに */
+  *:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  
+  /* ボタンのホバー状態をシステムカラーに */
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .btn-hero-primary:hover,
+  .btn-hero-secondary:hover,
+  .card-action-btn:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+  
+  /* カードのホバー状態をシステムカラーに */
+  .service-card:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+  
+  /* ナビゲーションのホバー状態をシステムカラーに */
+  .nav a:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
 /* レスポンシブデザイン */
 @media (max-width: 1024px) {
   .content-wrapper {

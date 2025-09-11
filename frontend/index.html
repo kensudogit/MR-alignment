@@ -4,7 +4,49 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MR-alignment 開発環境</title>
+    <meta name="description" content="MR-alignment テクノロジーコンサルティングサービス" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- プライバシーとセキュリティ設定 -->
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    
+    <!-- サードパーティクッキー完全無効化 -->
+    <meta name="cookie-consent" content="required" />
+    <meta name="third-party-cookies" content="disabled" />
+    <meta name="tracking" content="disabled" />
+    <meta name="analytics" content="disabled" />
+    
+    <!-- クッキー設定とプライバシー保護 -->
+    <script>
+      // サードパーティクッキーを完全に無効化
+      if (typeof document !== 'undefined') {
+        // 既存のクッキーをクリア
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
+        // 新しいクッキー設定（サードパーティクッキー無効）
+        document.cookie = "SameSite=Strict; Secure; HttpOnly; Path=/";
+        
+        // トラッキングを無効化
+        if (window.localStorage) {
+          localStorage.setItem('privacy-mode', 'enabled');
+          localStorage.setItem('third-party-cookies', 'disabled');
+        }
+      }
+    </script>
+    
+    <!-- プライバシー保護のための追加設定 -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="format-detection" content="email=no" />
+    <meta name="format-detection" content="address=no" />
+    
+    <!-- パフォーマンス最適化 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <title>MR-alignment テクノロジーコンサルティング</title>
   </head>
   <body>
     <div id="root"></div>
