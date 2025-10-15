@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 環境変数からベースURLを取得
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // axiosインスタンスの作成
 const api = axios.create({

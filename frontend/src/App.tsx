@@ -1,5 +1,6 @@
 import HealthcareLP from './components/healthcare_lp_react_tailwind_ui.jsx'
 import CookieConsent from './components/CookieConsent'
+import { AuthProvider } from './contexts/AuthContext'
 import './App.css'
 import './healthcare-lp.css'
 
@@ -15,13 +16,16 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <HealthcareLP />
-      <CookieConsent 
-        onAccept={handleCookieAccept}
-        onDecline={handleCookieDecline}
-      />
-    </div>
+    <AuthProvider>
+      <div className="App">
+        {/* 認証されていないユーザーでもサイトにアクセス可能 */}
+        <HealthcareLP />
+        <CookieConsent 
+          onAccept={handleCookieAccept}
+          onDecline={handleCookieDecline}
+        />
+      </div>
+    </AuthProvider>
   )
 }
 

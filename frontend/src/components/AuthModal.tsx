@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { authAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import './AuthModal.css';
 
 interface AuthModalProps {
@@ -9,6 +9,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
+  const auth = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,7 +19,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
     role: ''
   });
 
-  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -31,7 +31,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setMessage('');
 
     try {
@@ -40,46 +39,39 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
         return;
       }
 
-      // APIサービスを使用して認証処理を行う
-      let response;
+      let result;
       if (mode === 'login') {
-        response = await authAPI.login({
-          email: formData.email,
-          password: formData.password
-        });
+        result = await auth.login(formData.email, formData.password);
       } else {
-        response = await authAPI.register({
+        result = await auth.register({
+          name: formData.name,
           email: formData.email,
           password: formData.password,
-          name: formData.name,
-          organization: formData.organization,
-          role: formData.role
+          company: formData.organization,
+          phone: ''
         });
       }
 
-      if (response.data) {
-        console.log('Auth response:', response.data);
-        
-        // トークンを保存
-        if (response.data.token) {
-          localStorage.setItem('authToken', response.data.token);
-        }
-        
+      if (result.success) {
         setMessage(mode === 'login' ? 'ログインに成功しました！' : '登録に成功しました！');
         setTimeout(() => {
           onClose();
-          // ログイン成功後の処理（例：ダッシュボードにリダイレクト）
+          // フォームをリセット
+          setFormData({
+            email: '',
+            password: '',
+            confirmPassword: '',
+            name: '',
+            organization: '',
+            role: ''
+          });
         }, 2000);
+      } else {
+        setMessage(result.error || 'エラーが発生しました');
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      if (error.response?.data?.message) {
-        setMessage(error.response.data.message);
-      } else {
-        setMessage('ネットワークエラーが発生しました');
-      }
-    } finally {
-      setIsLoading(false);
+      setMessage('ネットワークエラーが発生しました');
     }
   };
 
@@ -195,8 +187,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
             </div>
           )}
 
-          <button type="submit" className="btn-submit" disabled={isLoading}>
-            {isLoading ? '処理中...' : (mode === 'login' ? 'ログイン' : '登録')}
+          <button type="submit" className="btn-submit" disabled={auth.isLoading}>
+            {auth.isLoading ? '処理中...' : (mode === 'login' ? 'ログイン' : '登録')}
           </button>
         </form>
 

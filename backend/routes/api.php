@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiTestController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\OpenAIController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,3 +31,6 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 
 // お問い合わせAPIエンドポイント
 Route::post('/contact', [ContactController::class, 'store']);
+
+// OpenAI APIエンドポイント
+Route::post('/openai/generate', [OpenAIController::class, 'generate']);

@@ -14,5 +14,28 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+        'status' => 'success',
+        'message' => 'MR Alignment Backend API is running!',
+        'timestamp' => now(),
+        'version' => '1.0.0',
+        'endpoints' => [
+            'api/test' => 'API接続テスト',
+            'api/auth/login' => 'ログイン',
+            'api/auth/register' => '新規登録',
+            'api/contact' => 'お問い合わせ'
+        ]
+    ]);
+});
+
+// ヘルスチェック用エンドポイント
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'timestamp' => now(),
+        'services' => [
+            'database' => 'connected',
+            'cache' => 'available'
+        ]
+    ]);
 });

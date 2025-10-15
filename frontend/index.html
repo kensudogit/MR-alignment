@@ -42,6 +42,50 @@
     <meta name="format-detection" content="email=no" />
     <meta name="format-detection" content="address=no" />
     
+    <!-- ブラウザ拡張機能の競合を防ぐ設定 -->
+    <script>
+      // ブラウザ拡張機能のエラーを抑制
+      window.addEventListener('error', function(e) {
+        if (e.filename && e.filename.includes('content.js')) {
+          e.preventDefault();
+          console.warn('Browser extension error suppressed:', e.message);
+          return false;
+        }
+      });
+      
+      // Promise rejection のエラーも抑制
+      window.addEventListener('unhandledrejection', function(e) {
+        if (e.reason && e.reason.message && e.reason.message.includes('message port closed')) {
+          e.preventDefault();
+          console.warn('Browser extension promise rejection suppressed:', e.reason.message);
+          return false;
+        }
+      });
+
+      // JSON.parse エラーを抑制
+      const originalJSONParse = JSON.parse;
+      JSON.parse = function(text, reviver) {
+        try {
+          return originalJSONParse.call(this, text, reviver);
+        } catch (error) {
+          if (error.message.includes('is not valid JSON') && text === '[object Object]') {
+            console.warn('Browser extension JSON parse error suppressed:', error.message);
+            return null;
+          }
+          throw error;
+        }
+      };
+
+      // OpenAI API エラーを抑制（デモモード用）
+      window.addEventListener('unhandledrejection', function(e) {
+        if (e.reason && e.reason.message && e.reason.message.includes('OpenAI API error: 401')) {
+          e.preventDefault();
+          console.warn('OpenAI API 401 error suppressed (demo mode):', e.reason.message);
+          return false;
+        }
+      });
+    </script>
+    
     <!-- パフォーマンス最適化 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

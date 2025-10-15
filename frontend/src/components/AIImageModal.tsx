@@ -42,7 +42,8 @@ const AIImageModal: React.FC<AIImageModalProps> = ({ isOpen, onClose }) => {
       formData.append('image', selectedFile);
       formData.append('analysis_type', analysisType);
 
-      const response = await fetch('http://localhost:8000/api/ai-analysis', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${API_BASE_URL}/api/ai-analysis`, {
         method: 'POST',
         body: formData,
       });
@@ -51,7 +52,8 @@ const AIImageModal: React.FC<AIImageModalProps> = ({ isOpen, onClose }) => {
         const result = await response.json();
         setAnalysisResult(result);
       } else {
-        // デモ用の模擬結果
+        // デモ用の模擬結果（APIが利用できない場合）
+        console.log('API not available, showing demo results');
         setTimeout(() => {
           setAnalysisResult({
             status: 'success',
@@ -59,22 +61,39 @@ const AIImageModal: React.FC<AIImageModalProps> = ({ isOpen, onClose }) => {
             findings: [
               '異常所見は検出されませんでした',
               '画像品質: 良好',
-              '解析信頼度: 95%'
+              '解析信頼度: 95%',
+              'デモモード: 実際の解析結果ではありません'
             ],
             recommendations: [
               '定期的なフォローアップを推奨',
-              '6ヶ月後の再検査を検討'
+              '6ヶ月後の再検査を検討',
+              '本格運用時は実際のAI解析を実行します'
             ],
-            processing_time: '2.3秒'
+            processing_time: '2.3秒',
+            demo_mode: true
           });
         }, 3000);
       }
     } catch (error) {
       // エラー時のデモ用結果
+      console.log('API error, showing demo results:', error);
       setTimeout(() => {
         setAnalysisResult({
-          status: 'error',
-          message: '解析中にエラーが発生しました'
+          status: 'success',
+          analysis_type: analysisType,
+          findings: [
+            'ネットワークエラーのためデモ結果を表示',
+            '画像品質: 良好',
+            '解析信頼度: 95%',
+            'デモモード: 実際の解析結果ではありません'
+          ],
+          recommendations: [
+            '定期的なフォローアップを推奨',
+            '6ヶ月後の再検査を検討',
+            '本格運用時は実際のAI解析を実行します'
+          ],
+          processing_time: '2.3秒',
+          demo_mode: true
         });
       }, 2000);
     } finally {
@@ -181,6 +200,12 @@ const AIImageModal: React.FC<AIImageModalProps> = ({ isOpen, onClose }) => {
               
               {analysisResult.status === 'success' ? (
                 <div className="results-content">
+                  {analysisResult.demo_mode && (
+                    <div className="demo-notice">
+                      <span className="demo-icon">⚠️</span>
+                      <span className="demo-text">デモモード: 実際のAI解析結果ではありません</span>
+                    </div>
+                  )}
                   <div className="result-summary">
                     <div className="summary-item">
                       <span className="label">解析タイプ:</span>

@@ -1,0 +1,68 @@
+# ブロックチェーン技術用依存関係
+
+# 暗号化
+cryptography==41.0.7
+pycryptodome==3.19.0
+
+# ハッシュ関数
+hashlib2==1.3.1
+
+# ネットワーク通信
+requests==2.31.0
+urllib3==2.1.0
+
+# データ処理
+pandas==2.1.3
+numpy==1.24.3
+
+# 非同期処理
+asyncio==3.4.3
+aiohttp==3.9.1
+
+# データベース
+sqlite3==2.6.0
+sqlalchemy==2.0.23
+
+# 設定管理
+pyyaml==6.0.1
+python-dotenv==1.0.0
+
+# ログ
+logging==0.4.9.6
+
+# テスト
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Web3関連（Ethereum）
+web3==6.11.4
+eth-account==0.9.0
+eth-utils==2.3.0
+
+# スマートコントラクト開発
+brownie==1.20.2
+vyper==0.3.10
+
+# ブロックチェーン分析
+blockchain==1.4.4
+bitcoin==1.1.42
+
+# 暗号通貨API
+ccxt==4.1.77
+coinbase==2.1.0
+
+# 分散システム
+p2pnetwork==1.0.0
+zeromq==0.0.0
+
+# データ可視化
+matplotlib==3.8.2
+plotly==5.17.0
+
+# 機械学習（価格予測など）
+scikit-learn==1.3.2
+tensorflow==2.15.0
+
+# セキュリティ
+secure-smtplib==0.1.1
+secure-cookie==0.1.0
