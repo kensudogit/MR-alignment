@@ -15,10 +15,10 @@ railway service
 
 ### ステップ2: APIキーを環境変数として設定
 
-サービス選択後、以下のコマンドを実行:
+サービス選択後、以下のコマンドを実行（`your-openai-api-key-here`を実際のAPIキーに置き換えてください）:
 
 ```bash
-railway variables set VITE_OPENAI_API_KEY=***REMOVED***
+railway variables set VITE_OPENAI_API_KEY=your-openai-api-key-here
 ```
 
 ### ステップ3: 設定を確認
@@ -42,7 +42,7 @@ railway up
 5. "New Variable" をクリック
 6. 以下を入力:
    - **Name**: `VITE_OPENAI_API_KEY`
-   - **Value**: `***REMOVED***`
+   - **Value**: `your-openai-api-key-here` (実際のAPIキーを入力)
 7. "Add" をクリック
 
 ## ✅ 完了確認

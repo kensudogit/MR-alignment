@@ -4,8 +4,9 @@ echo Railway APIキー設定スクリプト
 echo ========================================
 echo.
 
-REM APIキーを設定
-set API_KEY=***REMOVED***
+REM APIキーを設定（実際のAPIキーに置き換えてください）
+echo 実際のOpenAI APIキーを入力してください:
+set /p API_KEY="API Key: "
 
 echo [1/2] Railwayサービスを選択してください...
 railway service
