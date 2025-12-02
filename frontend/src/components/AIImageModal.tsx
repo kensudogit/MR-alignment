@@ -46,6 +46,8 @@ const AIImageModal: React.FC<AIImageModalProps> = ({ isOpen, onClose }) => {
       const response = await fetch(`${API_BASE_URL}/api/ai-analysis`, {
         method: 'POST',
         body: formData,
+        // Microsoft Edgeのサードパーティクッキー無効化に対応
+        credentials: 'same-origin',
       });
 
       if (response.ok) {

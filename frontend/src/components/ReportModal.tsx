@@ -54,6 +54,8 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose }) => {
           report_type: reportType,
           patient_info: patientInfo
         }),
+        // Microsoft Edgeのサードパーティクッキー無効化に対応
+        credentials: 'same-origin',
       });
 
       if (response.ok) {

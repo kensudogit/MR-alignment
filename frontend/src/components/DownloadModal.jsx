@@ -54,11 +54,11 @@ const DownloadModal = ({ isOpen, onClose }) => {
       setIsGeneratingAI(true);
       setError('');
 
-      // OpenAI APIキーを設定
-      const apiKey = '***REMOVED***';
+      // OpenAI APIキーを環境変数から取得
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
       
-      if (!apiKey) {
-        throw new Error('OpenAI APIキーが必要です');
+      if (!apiKey || apiKey === 'your-openai-api-key-here' || apiKey === 'demo-mode') {
+        throw new Error('OpenAI APIキーが設定されていません');
       }
 
       const openaiClient = new OpenAIClient(apiKey);

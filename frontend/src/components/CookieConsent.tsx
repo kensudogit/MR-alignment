@@ -37,9 +37,21 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ onAccept, onDecline }) =>
           <h3 className="font-semibold text-gray-900 mb-2">
             クッキーとプライバシー設定
           </h3>
-          <p className="text-sm text-gray-600">
-            当サイトでは、ユーザーエクスペリエンスを向上させるためにクッキーを使用しています。
-            サードパーティクッキーは使用せず、必要な機能のみに限定しています。
+          <p className="text-sm text-gray-600 mb-2">
+            当サイトは、Microsoft Edgeの新しいプライバシー体験（サードパーティクッキーなしでのブラウジング）に完全対応しています。
+            サードパーティクッキーは一切使用せず、ファーストパーティのlocalStorageのみを使用しています。
+          </p>
+          <p className="text-xs text-gray-500 mb-2">
+            <strong>Microsoft Edge対応：</strong><br />
+            ✓ サードパーティクッキー：完全無効化<br />
+            ✓ クロスサイトクッキー：無効化<br />
+            ✓ トラッキング：無効化<br />
+            ✓ データ保存：localStorage（同一オリジンのみ）<br />
+            ✓ SameSite=Strict：すべてのクッキーに適用<br />
+            ✓ Microsoft Edge互換：完全対応
+          </p>
+          <p className="text-xs text-gray-400">
+            このサイトは、Microsoft Edgeの「サードパーティクッキーなしでブラウジング」オプションが有効でも正常に動作します。
             <a href="/privacy" className="text-blue-600 hover:underline ml-1">
               プライバシーポリシー
             </a>

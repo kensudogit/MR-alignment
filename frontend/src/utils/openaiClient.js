@@ -79,7 +79,9 @@ class OpenAIClient {
               'Content-Type': 'application/json'
             },
             body: requestBody
-          })
+          }),
+          // Microsoft Edgeのサードパーティクッキー無効化に対応
+          credentials: 'omit' // クッキーを送信しない
         });
       } catch (error) {
         throw new Error('allorigins service error');
@@ -92,7 +94,9 @@ class OpenAIClient {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.apiKey}`,
         },
-        body: requestBody
+        body: requestBody,
+        // Microsoft Edgeのサードパーティクッキー無効化に対応
+        credentials: 'omit' // クッキーを送信しない
       });
     }
 

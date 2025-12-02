@@ -5,7 +5,7 @@
 新しいOpenAI APIキーが正常に設定され、Vercelにデプロイされました！
 
 ### 🔑 新しいAPIキー情報
-- **APIキー**: `***REMOVED***7Z2lbqaaEKIPtcETaocnEET3BlbkFJcdkUms8hpqJUcnbsMPQGTg11gy9vmvavd6BfW_8P0NjKVRbLl4rXqmASa_YyBFLKKiQQRUurIA`
+- **APIキー**: `[REMOVED - Set via environment variables]`
 - **形式**: `sk-proj-`で始まる有効な形式
 - **ステータス**: 設定完了
 
@@ -16,7 +16,7 @@
 
 #### 1. **ローカル環境** (`.env`)
 ```bash
-VITE_OPENAI_API_KEY=***REMOVED***7Z2lbqaaEKIPtcETaocnEET3BlbkFJcdkUms8hpqJUcnbsMPQGTg11gy9vmvavd6BfW_8P0NjKVRbLl4rXqmASa_YyBFLKKiQQRUurIA
+VITE_OPENAI_API_KEY=your-openai-api-key-here
 ```
 
 #### 2. **本番環境** (`env.production`)
@@ -24,7 +24,7 @@ VITE_OPENAI_API_KEY=***REMOVED***7Z2lbqaaEKIPtcETaocnEET3BlbkFJcdkUms8hpqJUcnbsM
 VITE_API_URL=https://mr-alignment-backend.vercel.app
 VITE_APP_ENV=production
 VITE_APP_NAME=MR Alignment
-VITE_OPENAI_API_KEY=***REMOVED***7Z2lbqaaEKIPtcETaocnEET3BlbkFJcdkUms8hpqJUcnbsMPQGTg11gy9vmvavd6BfW_8P0NjKVRbLl4rXqmASa_YyBFLKKiQQRUurIA
+VITE_OPENAI_API_KEY=your-openai-api-key-here
 ```
 
 #### 3. **Vercel設定** (`vercel.json`)
@@ -34,7 +34,7 @@ VITE_OPENAI_API_KEY=***REMOVED***7Z2lbqaaEKIPtcETaocnEET3BlbkFJcdkUms8hpqJUcnbsM
     "VITE_API_URL": "https://mr-alignment-backend.vercel.app",
     "VITE_APP_ENV": "production",
     "VITE_APP_NAME": "MR Alignment",
-    "VITE_OPENAI_API_KEY": "***REMOVED***7Z2lbqaaEKIPtcETaocnEET3BlbkFJcdkUms8hpqJUcnbsMPQGTg11gy9vmvavd6BfW_8P0NjKVRbLl4rXqmASa_YyBFLKKiQQRUurIA"
+    "VITE_OPENAI_API_KEY": "your-openai-api-key-here"
   }
 }
 ```

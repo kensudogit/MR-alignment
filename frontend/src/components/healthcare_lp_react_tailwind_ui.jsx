@@ -1736,7 +1736,7 @@ export default function HealthcareLP() {
                 title: "ITアカデミーシステム",
                 description: "学習進捗、コミュニティ、技術ブログ、チェットサポート、AIチェットボット",
                 detailedDescription: "プログラミング・Web開発・データサイエンス・AI・クラウド技術を学べる総合IT教育機関。",
-                url: "https://frontend-35i3t0y64-kensudogits-projects.vercel.app",
+                url: "https://frontend-6vlo6gfv8-kensudogits-projects.vercel.app/",
                 image: "bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500",
                 imageUrl: "/learning.png",
                 icon: "🏥",

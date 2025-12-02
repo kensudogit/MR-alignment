@@ -4,12 +4,15 @@ import axios from 'axios';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // axiosインスタンスの作成
+// Microsoft Edgeのサードパーティクッキー無効化に対応
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
+  // サードパーティクッキーを使用しない
+  withCredentials: false,
 });
 
 // リクエストインターセプター

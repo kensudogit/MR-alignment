@@ -17,6 +17,8 @@ const createRequest = async (url, options = {}) => {
   const response = await fetch(`${API_BASE_URL}${url}`, {
     ...defaultOptions,
     ...options,
+    // Microsoft Edgeのサードパーティクッキー無効化に対応
+    credentials: 'same-origin', // サードパーティクッキーを使用しない
   });
 
   if (!response.ok) {

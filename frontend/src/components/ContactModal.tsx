@@ -43,6 +43,8 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+        // Microsoft Edgeのサードパーティクッキー無効化に対応
+        credentials: 'same-origin',
       });
 
       if (response.ok) {
