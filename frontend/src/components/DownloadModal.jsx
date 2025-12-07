@@ -101,7 +101,7 @@ const DownloadModal = ({ isOpen, onClose }) => {
       serviceOverview: "須藤技術士事務所では、システム開発・クラウド移行・データ分析・セキュリティ・DX推進・ITコンサルティングを提供しています。",
       recommendedServices: "• システム開発：Webアプリケーション、モバイルアプリ、API開発\n• クラウド移行：AWS、Azure、GCPへの移行支援\n• データ分析：BI、機械学習、AI活用\n• セキュリティ：セキュリティ診断、対策支援\n• DX推進：デジタル変革の戦略立案・実行支援\n• ITコンサルティング：技術戦略、アーキテクチャ設計",
       expectedEffects: "• 製造業向け統合システム構築（年間売上100億円規模）\n• 金融機関向けリスク管理システム開発\n• スタートアップ企業への技術指導\n• 複数のプロジェクトで生産性向上30%、コスト削減20%を実現",
-      implementationSteps: "• フロントエンド：React、Vue.js、TypeScript\n• バックエンド：Node.js、Python、Java、Spring Boot\n• データベース：PostgreSQL、MySQL、MongoDB\n• クラウド：AWS、Azure、GCP\n• インフラ：Docker、Kubernetes、Terraform",
+      implementationSteps: "• フロントエンド：React、Vue.js、TypeScript\n• バックエンド：Node.js、Python、JavaSE-21 LTS、Spring Boot\n• データベース：PostgreSQL、MySQL、MongoDB\n• クラウド：AWS、Azure、GCP\n• インフラ：Docker、Kubernetes、Terraform",
       supportSystem: "ご質問やご相談がございましたら、お気軽にお問い合わせください。\n\n須藤技術士事務所\nEmail: info@kensudo.jp\nPhone: 03-1234-5678",
       riskManagement: "• セキュリティ診断と脆弱性対策\n• データ暗号化とアクセス制御\n• 災害復旧計画とバックアップ体制\n• コンプライアンス対応と監査支援",
       investmentReturn: "• 初期投資：500万円〜2,000万円\n• 3年間ROI：150%〜300%\n• 運用コスト削減：年間20%〜40%\n• 競合優位性の獲得と市場シェア拡大"

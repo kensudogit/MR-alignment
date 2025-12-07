@@ -39,8 +39,12 @@ git filter-repo --path frontend/env.production --path NEW_API_KEY_SETUP_COMPLETE
 #### ステップ3: ファイルの内容からAPIキーを削除
 
 ```bash
-git filter-repo --replace-text <(echo "***REMOVED***==>REMOVED_API_KEY") --force
+# 実際のAPIキーをREMOVED_API_KEYに置き換える
+# 形式: 実際のAPIキー==>REMOVED_API_KEY
+git filter-repo --replace-text <(echo "sk-proj-...==>REMOVED_API_KEY") --force
 ```
+
+> **注意**: `sk-proj-...` の部分を実際のAPIキーに置き換えてください。
 
 #### ステップ4: 強制プッシュ
 

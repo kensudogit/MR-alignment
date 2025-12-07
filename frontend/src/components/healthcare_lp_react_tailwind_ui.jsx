@@ -1852,7 +1852,7 @@ export default function HealthcareLP() {
                 image: "bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500",
                 imageUrl: "/internet_banking_image.png",
                 icon: "🏦",
-                tech: ["React", "Java", "Oracle", "Spring Security", "暗号化"],
+                tech: ["React", "JavaSE-21 LTS", "Oracle", "Spring Security", "暗号化"],
                 features: ["口座管理", "振込機能", "投資管理", "セキュリティ"],
                 industry: "金融",
                 duration: "10ヶ月",

@@ -76,3 +76,12 @@ jspm_packages/
 # dotenv environment variables file
 .env
 .vercel
+
+# API Keys and Secrets (追加の保護)
+**/env.production
+**/.env.new
+**/*.env.new
+**/NEW_API_KEY_SETUP_COMPLETE.md
+**/DEPLOY_NOW.md
+**/RAILWAY_API_KEY_SETUP.md
+**/set-railway-api-key.bat

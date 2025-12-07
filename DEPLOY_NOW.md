@@ -55,8 +55,10 @@ railway domain
 ## 🔑 環境変数の設定（必要に応じて）
 
 ```bash
-railway variables set VITE_OPENAI_API_KEY=***REMOVED***
+railway variables set VITE_OPENAI_API_KEY=your-openai-api-key-here
 ```
+
+> **重要**: 実際のAPIキーは環境変数として設定してください。コードやドキュメントに直接記述しないでください。
 
 ## 🎯 クイックデプロイスクリプト
 
