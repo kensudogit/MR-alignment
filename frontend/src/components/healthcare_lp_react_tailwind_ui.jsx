@@ -294,7 +294,7 @@ const featureData = {
     title: "システム開発",
     icon: <IconPhone className="h-8 w-8"/>,
     shortDesc: "Webアプリケーション、モバイルアプリ、API開発まで幅広く対応。",
-    longDesc: "最新の技術スタックを使用したシステム開発サービスです。React、Vue.js、Node.js、Python、Java等の技術を活用し、スケーラブルで保守性の高いシステムを構築します。要件定義から設計、開発、テスト、運用まで一貫してサポートします。",
+    longDesc: "最新の技術スタックを使用したシステム開発サービスです。React、Vue.js、Node.js、Python、JavaSE-21 LTS等の技術を活用し、スケーラブルで保守性の高いシステムを構築します。要件定義から設計、開発、テスト、運用まで一貫してサポートします。",
     benefits: [
       "最新技術の活用",
       "スケーラブルな設計",
