@@ -6,14 +6,11 @@ WORKDIR /app
 # パッケージファイルをコピー
 COPY package*.json ./
 
-# 依存関係をインストール
-RUN npm ci --only=production
+# すべての依存関係をインストール（開発用も含む）
+RUN npm ci
 
 # ソースコードをコピー
 COPY . .
-
-# 開発用依存関係もインストール
-RUN npm install
 
 # ポート3000を公開
 EXPOSE 3000

@@ -16,6 +16,11 @@ services:
       - ./database/init:/docker-entrypoint-initdb.d
     networks:
       - mr_alignment_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # PHP + Laravel バックエンド
   backend:
@@ -35,10 +40,17 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: password
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - mr_alignment_network
     command: ["/usr/local/bin/docker-entrypoint.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep 'php artisan serve' | grep -v grep || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # React + Vite フロントエンド
   frontend:
@@ -50,10 +62,13 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     environment:
       - VITE_API_URL=http://localhost:8000
+      - NODE_ENV=development
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - mr_alignment_network
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3000"
