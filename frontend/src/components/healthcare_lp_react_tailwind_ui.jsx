@@ -265,7 +265,7 @@ const blogData = {
     articles: [
       {
         title: "マイクロカーネル型倉庫管理システムの実装",
-        content: "COOOLa Microは、マイクロカーネルアーキテクチャを採用したクラウドベースの倉庫管理システムです。この記事では、実際のプロジェクトを教材として、マイクロサービスアーキテクチャの設計と実装方法を詳しく解説します。\n\n【アーキテクチャの特徴】\n• マイクロカーネル設計：コアシステムがプラグインインターフェースを提供\n• プラグインシステム：動的ロード可能な機能モジュール\n• マイクロサービス：独立してデプロイ・スケール可能なサービス\n• サービス間通信：REST API、RabbitMQ、gRPCを活用\n\n【主要コンポーネント】\n• コアシステム：プラグイン管理、認証、設定管理、イベントバス\n• プラグイン：商品管理、在庫管理、入出庫、レポート、バーコード\n• マイクロサービス：商品、在庫、入出庫、レポート、通知サービス\n\n【技術スタック】\n• Spring Boot 3.x + Java 17\n• Spring Cloud（Eureka、Gateway、Config）\n• OSGi（プラグイン管理）\n• MySQL 8.0 + Redis + RabbitMQ\n• Angular 17 + TypeScript\n• Docker + Kubernetes + Helm\n\n【学習ポイント】\n• マイクロカーネルアーキテクチャの理解\n• プラグインシステムの設計と実装\n• サービス間通信パターンの実践\n• 分散システムの監視とログ管理\n• コンテナ化とオーケストレーション\n\n【GitHubリポジトリ】\n詳細な実装例とドキュメントは以下のリポジトリで確認できます：\nhttps://github.com/kensudogit/cooola-micro",
+        content: "COOOLa Microは、マイクロカーネルアーキテクチャを採用したクラウドベースの倉庫管理システムです。この記事では、実際のプロジェクトを教材として、マイクロサービスアーキテクチャの設計と実装方法を詳しく解説します。\n\n【アーキテクチャの特徴】\n• マイクロカーネル設計：コアシステムがプラグインインターフェースを提供\n• プラグインシステム：動的ロード可能な機能モジュール\n• マイクロサービス：独立してデプロイ・スケール可能なサービス\n• サービス間通信：REST API、RabbitMQ、gRPCを活用\n\n【主要コンポーネント】\n• コアシステム：プラグイン管理、認証、設定管理、イベントバス\n• プラグイン：商品管理、在庫管理、入出庫、レポート、バーコード\n• マイクロサービス：商品、在庫、入出庫、レポート、通知サービス\n\n【技術スタック】\n• Spring Boot 3.x + JavaSE-21 LTS\n• Spring Cloud（Eureka、Gateway、Config）\n• OSGi（プラグイン管理）\n• MySQL 8.0 + Redis + RabbitMQ\n• Angular 17 + TypeScript\n• Docker + Kubernetes + Helm\n\n【学習ポイント】\n• マイクロカーネルアーキテクチャの理解\n• プラグインシステムの設計と実装\n• サービス間通信パターンの実践\n• 分散システムの監視とログ管理\n• コンテナ化とオーケストレーション\n\n【GitHubリポジトリ】\n詳細な実装例とドキュメントは以下のリポジトリで確認できます：\nhttps://github.com/kensudogit/cooola-micro",
         imageUrl: "/microservice.png"
       },
       {
@@ -1048,7 +1048,7 @@ export default function HealthcareLP() {
         "分散システムの監視とログ管理：Prometheus、Grafana、Jaegerの活用",
         "コンテナ化とオーケストレーション：Docker、Kubernetes、Helmの実践",
         "ドメイン駆動設計（DDD）の適用：マイクロサービス境界の設計指針",
-        "実践的なマイクロサービス開発：Spring Boot 3.x + Java 17の最新技術スタック"
+        "実践的なマイクロサービス開発：Spring Boot 3.x + JavaSE-21 LTSの最新技術スタック"
       ]
     },
     {
