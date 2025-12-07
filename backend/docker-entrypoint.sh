@@ -28,4 +28,6 @@ php artisan migrate --force --no-interaction
 
 # 開発サーバーを起動
 echo "Starting Laravel development server..."
-exec php artisan serve --host=0.0.0.0 --port=8000
+# RailwayのPORT環境変数に対応（デフォルトは8000）
+PORT=${PORT:-8000}
+exec php artisan serve --host=0.0.0.0 --port=$PORT
