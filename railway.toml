@@ -9,5 +9,5 @@ restartPolicyMaxRetries = 10
 
 [network]
 public = true
-port = 80
+port = 8000
 
