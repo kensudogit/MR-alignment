@@ -58,3 +58,4 @@ railway up --detach
 - ✅ railway.toml: startCommandを空に設定
 - ✅ nginx.conf: 正しく設定済み
 
+

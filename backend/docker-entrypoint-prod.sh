@@ -54,3 +54,4 @@ php artisan migrate --force --no-interaction
 echo "Starting Laravel production server..."
 exec php artisan serve --host=0.0.0.0 --port=8000
 
+

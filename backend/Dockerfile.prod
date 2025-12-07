@@ -48,3 +48,4 @@ RUN chmod +x /usr/local/bin/docker-entrypoint-prod.sh
 # デフォルトコマンド
 ENTRYPOINT ["docker-entrypoint-prod.sh"]
 
+

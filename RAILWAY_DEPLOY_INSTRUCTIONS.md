@@ -92,3 +92,4 @@ railway variables
 - ✅ Railwayプロジェクト作成済み
 - ⏳ サービスリンクとデプロイが必要
 
+
