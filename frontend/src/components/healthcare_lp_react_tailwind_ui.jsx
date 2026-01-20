@@ -348,7 +348,7 @@ const featureData = {
     title: "セキュリティ",
     icon: <IconShield className="h-8 w-8"/>,
     shortDesc: "包括的なセキュリティ対策でシステムとデータを保護。",
-    longDesc: "サイバーセキュリティの専門知識を活かし、包括的なセキュリティ対策を提供します。脆弱性診断、セキュリティ設計、インシデント対応、コンプライアンス対応まで一貫してサポートします。",
+    longDesc: "サイバーセキュリティの専門知識を活かし、包括的なセキュリティ対策を提供します。JavaSE-21 LTS、Spring Security等の最新技術を活用したセキュリティ設計、脆弱性診断、インシデント対応、コンプライアンス対応まで一貫してサポートします。",
     benefits: [
       "脆弱性の早期発見",
       "セキュリティ設計の最適化",
@@ -366,7 +366,7 @@ const featureData = {
     title: "DX推進",
     icon: <IconUsers className="h-8 w-8"/>,
     shortDesc: "デジタル変革を戦略的に推進し、ビジネス価値を最大化。",
-    longDesc: "デジタル変革（DX）の戦略策定から実行まで一貫してサポートします。現状分析、DXロードマップの策定、組織変革、技術導入まで包括的に支援し、持続可能なデジタル変革を実現します。",
+    longDesc: "デジタル変革（DX）の戦略策定から実行まで一貫してサポートします。JavaSE-21 LTS、Spring Boot 3.x等の最新技術を活用した現状分析、DXロードマップの策定、組織変革、技術導入まで包括的に支援し、持続可能なデジタル変革を実現します。",
     benefits: [
       "戦略的なDX推進",
       "組織変革の支援",
@@ -384,7 +384,7 @@ const featureData = {
     title: "ITコンサルティング",
     icon: <IconClock className="h-8 w-8"/>,
     shortDesc: "IT戦略の策定から技術選定まで、総合的なITコンサルティングを提供。",
-    longDesc: "技術士の専門知識を活かし、IT戦略の策定から技術選定、プロジェクト管理まで包括的なコンサルティングを提供します。お客様のビジネス目標に最適なITソリューションを提案し、成功に導きます。",
+    longDesc: "技術士の専門知識を活かし、IT戦略の策定から技術選定、プロジェクト管理まで包括的なコンサルティングを提供します。JavaSE-21 LTS、Spring Boot 3.x等の最新技術を活用し、お客様のビジネス目標に最適なITソリューションを提案し、成功に導きます。",
     benefits: [
       "戦略的なIT計画",
       "技術選定の最適化",
@@ -1722,7 +1722,7 @@ export default function HealthcareLP() {
                 title: "医療管理システム",
                 description: "オンライン診療・電子カルテ・予約管理の統合システム",
                 detailedDescription: "クリニック向けの包括的な医療管理システム。オンライン診療、電子カルテ、Web予約、問診票、経営分析、AIページ作成機能を統合。ビデオ診療でのサンプル動画作成・出力機能も実装。",
-                url: "https://frontend-599xip6ty-kensudogits-projects.vercel.app/",
+                url: "https://clinics-production-83e0.up.railway.app/",
                 image: "bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500",
                 imageUrl: "/clinics.png",
                 icon: "🏥",
@@ -2087,7 +2087,7 @@ export default function HealthcareLP() {
               { q: "プロジェクトの期間はどれくらい？", a: "小規模プロジェクトは1-3ヶ月、中規模は3-6ヶ月、大規模は6ヶ月以上となります。要件により異なります。" },
               { q: "セキュリティ対策は？", a: "暗号化通信、アクセス制御、脆弱性診断、セキュリティ監査など、業界標準のセキュリティ対策を実装します。" },
               { q: "サポート体制は？", a: "平日9-18時のメール/電話サポート、緊急時は24時間対応。専任コンサルタントによる継続サポートも可能です。" },
-              { q: "技術スタックの選定は？", a: "プロジェクト要件、スケーラビリティ、保守性を考慮し、最適な技術スタックを提案します。" },
+              { q: "技術スタックの選定は？", a: "プロジェクト要件、スケーラビリティ、保守性を考慮し、JavaSE-21 LTS、Spring Boot 3.x等の最新技術を含む最適な技術スタックを提案します。" },
               { q: "クラウド移行のリスクは？", a: "段階的な移行計画、データバックアップ、ロールバック手順を事前に策定し、リスクを最小化します。" },
             ].map((item, i) => (
               <details key={`faq-${item.q}-${i}`} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl border border-gray-100 hover:border-blue-200 transition-all duration-300 overflow-hidden">

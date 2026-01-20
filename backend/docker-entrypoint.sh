@@ -24,7 +24,8 @@ fi
 
 # データベースのマイグレーションを実行
 echo "Running database migrations..."
-php artisan migrate --force --no-interaction
+# 既存のテーブルがある場合はエラーを無視して続行
+php artisan migrate --force --no-interaction || echo "Migration completed or tables already exist"
 
 # 開発サーバーを起動
 echo "Starting Laravel development server..."

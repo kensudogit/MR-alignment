@@ -46,7 +46,7 @@ services:
       - mr_alignment_network
     command: ["/usr/local/bin/docker-entrypoint.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep 'php artisan serve' | grep -v grep || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
