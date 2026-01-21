@@ -1788,34 +1788,8 @@ export default function HealthcareLP() {
                 duration: "5ヶ月",
                 team: "5名"
               },
-              {
-                title: "消防司令システム",
-                description: "緊急通報受付・出動指示・状況管理システム",
-                detailedDescription: "消防本部向けの緊急対応システム。119番通報の受付、出動車両の管理、現場状況のリアルタイム更新、災害情報の共有機能を実装。",
-                url: "https://frontend-pscisypg0-kensudogits-projects.vercel.app",
-                image: "bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500",
-                imageUrl: "/fire_command_system_image.png",
-                icon: "🚨",
-                tech: ["React", "Express.js", "MongoDB", "WebSocket", "地図API"],
-                features: ["緊急通報受付", "出動管理", "状況管理", "地図表示"],
-                industry: "公共・防災",
-                duration: "6ヶ月",
-                team: "6名"
-              },
-              {
-                title: "ノーコード開発基盤",
-                description: "ドラッグ&ドロップでアプリケーションを構築できるプラットフォーム",
-                detailedDescription: "非エンジニアでもアプリケーションを構築できるノーコードプラットフォーム。ドラッグ&ドロップUI、データベース設計、API自動生成、デプロイ機能を提供。",
-                url: "https://frontend-next-8uf7sa9zc-kensudogits-projects.vercel.app",
-                image: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
-                imageUrl: "/no_code_platform_image.png",
-                icon: "🧩",
-                tech: ["Next.js", "TypeScript", "Prisma", "Docker", "Vercel"],
-                features: ["ドラッグ&ドロップ", "データベース設計", "API自動生成", "ワンクリックデプロイ"],
-                industry: "SaaS",
-                duration: "8ヶ月",
-                team: "7名"
-              },
+
+
               {
                 title: "RAGシステム",
                 description: "大規模言語モデルを活用した質問応答システム",
@@ -1830,20 +1804,7 @@ export default function HealthcareLP() {
                 duration: "4ヶ月",
                 team: "3名"
               },
-              {
-                title: "スレッド投稿管理",
-                description: "コミュニティ型の投稿・コメント管理システム",
-                detailedDescription: "SNS風のコミュニティプラットフォーム。スレッド作成、コメント機能、いいね・シェア、ユーザー管理、モデレーション機能を実装。",
-                url: "https://thread-manage-2iqf7gflt-kensudogits-projects.vercel.app/",
-                image: "bg-gradient-to-br from-pink-500 via-rose-500 to-red-500",
-                imageUrl: "/thread_post_management_image.png",
-                icon: "💬",
-                tech: ["React", "Node.js", "Redis", "Socket.io", "JWT"],
-                features: ["スレッド管理", "コメント機能", "リアルタイム更新", "ユーザー管理"],
-                industry: "SNS・コミュニティ",
-                duration: "3ヶ月",
-                team: "4名"
-              },
+              
               {
                 title: "インターネット・バンキング",
                 description: "オンラインバンキングサービスのWebアプリケーション",
