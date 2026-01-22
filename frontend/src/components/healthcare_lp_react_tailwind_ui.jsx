@@ -1804,7 +1804,7 @@ export default function HealthcareLP() {
                 duration: "4ヶ月",
                 team: "3名"
               },
-              
+
               {
                 title: "インターネット・バンキング",
                 description: "オンラインバンキングサービスのWebアプリケーション",
