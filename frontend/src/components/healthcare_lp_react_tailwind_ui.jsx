@@ -968,7 +968,7 @@ export default function HealthcareLP() {
       title: "トレンド",
       description: "最新のITトレンドと市場動向を分析",
       image: "bg-gradient-to-br from-blue-400 to-indigo-500",
-                imageUrl: "/system_development_image.png",
+      imageUrl: "/blog/trend.png",
       articles: [
         "【2024年最新】生成AIが変えるビジネスモデル：ChatGPT以降の企業変革事例",
         "メタバースからWeb3へ：次世代インターネットの実用化が始まった",
@@ -981,7 +981,7 @@ export default function HealthcareLP() {
       title: "AI/ML",
       description: "人工知能と機械学習の技術解説",
       image: "bg-gradient-to-br from-purple-400 to-pink-500",
-      imageUrl: "/rag_system_image.png",
+      imageUrl: "/blog/aiml.png",
       articles: [
         "【実装ガイド】RAGシステム構築の完全マニュアル：企業文書を活用したAI回答システム",
         "大規模言語モデル（LLM）の選び方：GPT-4、Claude、Gemini徹底比較",
@@ -995,7 +995,7 @@ export default function HealthcareLP() {
       title: "DX推進",
       description: "デジタル変革の戦略と実践",
       image: "bg-gradient-to-br from-green-400 to-teal-500",
-                imageUrl: "/dx_promotion_image.png",
+      imageUrl: "/blog/dx.png",
       articles: [
         "【成功事例】中小企業のDX推進：3ヶ月で業務効率30%向上を実現した方法",
         "デジタル人材の確保と育成：ITスキル不足を解決する実践的アプローチ",
@@ -1008,7 +1008,7 @@ export default function HealthcareLP() {
       title: "セキュリティ",
       description: "サイバーセキュリティの最新動向",
       image: "bg-gradient-to-br from-red-400 to-orange-500",
-                imageUrl: "/security_image.png",
+      imageUrl: "/blog/security.png",
       articles: [
         "【緊急対応】ランサムウェア攻撃の対策と復旧：被害を最小限に抑える方法",
         "ゼロトラストセキュリティの実装：従来の境界防御からID中心の防御へ",
@@ -1021,7 +1021,7 @@ export default function HealthcareLP() {
       title: "クラウド",
       description: "クラウド技術とベストプラクティス",
       image: "bg-gradient-to-br from-cyan-400 to-blue-500",
-                imageUrl: "/cloud_migration_image.png",
+      imageUrl: "/blog/cloud.png",
       articles: [
         "【移行ガイド】オンプレミスからクラウドへ：段階的移行で失敗しない方法",
         "マルチクラウド戦略の設計：AWS・Azure・GCPを組み合わせた最適構成",
@@ -1034,7 +1034,7 @@ export default function HealthcareLP() {
       title: "ブロックチェーン",
       description: "分散型技術とその応用",
       image: "bg-gradient-to-br from-indigo-400 to-purple-500",
-                imageUrl: "/it_consulting_image.png",
+      imageUrl: "/blog/blockchain.png",
       articles: [
         "【実用化事例】企業ブロックチェーンの導入：サプライチェーン管理の革新",
         "DeFiプロトコルの技術解説：Uniswap・Compound・Aaveの仕組みとリスク",
@@ -1047,7 +1047,7 @@ export default function HealthcareLP() {
       title: "IOT",
       description: "モノのインターネットとスマートシティ",
       image: "bg-gradient-to-br from-yellow-400 to-orange-500",
-                imageUrl: "/data_analysis_image.png",
+      imageUrl: "/blog/iot.png",
       articles: [
         "【導入事例】製造業IoTの成功パターン：センサーデータで品質管理を革新",
         "スマートシティの実現：交通・エネルギー・防災を統合した都市OS",
@@ -1060,7 +1060,7 @@ export default function HealthcareLP() {
       title: "Python学習",
       description: "Pythonプログラミングの実践的学習教材",
       image: "bg-gradient-to-br from-orange-400 to-red-500",
-                imageUrl: "/system_development_image.png",
+      imageUrl: "/blog/python.png",
       articles: [
         "【実践教材】Pythonスクレイピング技術を通した学習アプローチ：AWS Lambdaと組み合わせた実践的な教材",
         "AWS Lambda関数の実装とベストプラクティス：サーバーレス開発の基礎から応用まで",
@@ -1078,7 +1078,7 @@ export default function HealthcareLP() {
       title: "マイクロサービス",
       description: "マイクロサービスアーキテクチャの実践的学習教材",
       image: "bg-gradient-to-br from-indigo-400 to-purple-500",
-                imageUrl: "/system_development_image.png",
+      imageUrl: "/blog/microservice.png",
       articles: [
         "【実装事例】マイクロカーネル型倉庫管理システム：COOOLa Microプロジェクトの詳細解説",
         "Spring Cloudを使ったマイクロサービス開発：サービスディスカバリとAPIゲートウェイの実装",
@@ -1097,7 +1097,7 @@ export default function HealthcareLP() {
       title: "ノーコード開発",
       description: "ノーコード・ローコードプラットフォームの技術解説",
       image: "bg-gradient-to-br from-orange-400 to-red-500",
-                imageUrl: "/system_development_image.png",
+      imageUrl: "/blog/nocode.png",
       articles: [
         "【実装ガイド】ノーコード開発プラットフォーム構築：Web・モバイル・メタバース・VR/AR対応",
         "【実装ガイド】AIオーケストレーションエンジン：自己進化・自己複製システムの構築",
@@ -2044,7 +2044,9 @@ export default function HealthcareLP() {
                       <img 
                         src={category.imageUrl} 
                         alt={category.title} 
-                        className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        loading="lazy"
+                        decoding="async"
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
