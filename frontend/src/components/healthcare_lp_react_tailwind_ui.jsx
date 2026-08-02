@@ -430,51 +430,24 @@ Stat.propTypes = {
  *
  * Unsplash のライセンス: https://unsplash.com/license
  */
+// 各サービス専用に用意した画像を同一オリジンから配信する。
+// 以前は外部（Unsplash）を優先していたが、読み込み失敗時に
+// 中身が重複したローカル画像へ退避してしまい別サービスの絵が出ていた。
 const FEATURE_PHOTOS = {
-  systemDevelopment: {
-    photo: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=70',
-    fallback: '/system_development_image.png',
-  },
-  cloudMigration: {
-    photo: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=70',
-    // /cloud_migration_image.png は system_development_image.png と中身が同一（MD5一致）で、
-    // 「システム開発」の絵が出てしまうため退避先には使わない。
-    // 正しい画像を用意したら差し替えること。
-    fallback: undefined,
-  },
-  dataAnalysis: {
-    photo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=70',
-    // 同上（/data_analysis_image.png も中身が「システム開発」の絵）
-    fallback: undefined,
-  },
-  security: {
-    photo: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=70',
-    fallback: '/security_image.png',
-  },
-  dxPromotion: {
-    photo: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=70',
-    fallback: '/dx_promotion_image.png',
-  },
-  itConsulting: {
-    photo: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=70',
-    fallback: '/it_consulting_image.png',
-  },
+  systemDevelopment: { photo: '/features/feature-system-development.png' },
+  cloudMigration: { photo: '/features/feature-cloud-migration.png' },
+  dataAnalysis: { photo: '/features/feature-data-analysis.png' },
+  security: { photo: '/features/feature-security.png' },
+  dxPromotion: { photo: '/features/feature-dx-promotion.png' },
+  itConsulting: { photo: '/features/feature-it-consulting.png' },
 };
 
-const FeatureCard = ({ icon, title, desc, onClick, imageUrl, fallbackImageUrl, imageBg }) => {
-  // 外部（Unsplash）の写真を優先し、読み込めなければローカル画像、
-  // それも失敗したらグラデーション背景だけを表示する。
-  // 外部URLはいつ切れるか分からないため、必ず退避先を用意しておく。
-  const [src, setSrc] = useState(imageUrl || fallbackImageUrl);
+const FeatureCard = ({ icon, title, desc, onClick, imageUrl, imageBg }) => {
+  // 画像が読み込めなかった場合はグラデーション背景だけを表示する。
   const [failed, setFailed] = useState(false);
+  const src = imageUrl;
 
-  const handleError = () => {
-    if (src !== fallbackImageUrl && fallbackImageUrl) {
-      setSrc(fallbackImageUrl);
-      return;
-    }
-    setFailed(true);
-  };
+  const handleError = () => setFailed(true);
 
   return (
   <button
@@ -534,7 +507,6 @@ FeatureCard.propTypes = {
   desc: PropTypes.string.isRequired,
   onClick: PropTypes.func.isRequired,
   imageUrl: PropTypes.string,
-  fallbackImageUrl: PropTypes.string,
   imageBg: PropTypes.string
 };
 
@@ -1478,7 +1450,6 @@ export default function HealthcareLP() {
               desc="最新技術を駆使した高品質なシステム開発で、お客様のビジネス課題を解決。" 
               onClick={() => setSelectedFeature(featureData.systemDevelopment)}
               imageUrl={FEATURE_PHOTOS.systemDevelopment.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.systemDevelopment.fallback}
               imageBg="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700"
             />
             <FeatureCard 
@@ -1487,7 +1458,6 @@ export default function HealthcareLP() {
               desc="安全で効率的なクラウド移行で、ITコスト削減と業務効率化を実現。" 
               onClick={() => setSelectedFeature(featureData.cloudMigration)}
               imageUrl={FEATURE_PHOTOS.cloudMigration.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.cloudMigration.fallback}
               imageBg="bg-gradient-to-br from-cyan-400 via-cyan-500 to-blue-600"
             />
             <FeatureCard 
@@ -1496,7 +1466,6 @@ export default function HealthcareLP() {
               desc="ビッグデータ活用とAI技術で、データドリブンな意思決定をサポート。" 
               onClick={() => setSelectedFeature(featureData.dataAnalysis)}
               imageUrl={FEATURE_PHOTOS.dataAnalysis.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.dataAnalysis.fallback}
               imageBg="bg-gradient-to-br from-green-400 via-green-500 to-emerald-600"
             />
             <FeatureCard 
@@ -1505,7 +1474,6 @@ export default function HealthcareLP() {
               desc="企業の重要情報を保護する包括的なセキュリティソリューションを提供。" 
               onClick={() => setSelectedFeature(featureData.security)}
               imageUrl={FEATURE_PHOTOS.security.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.security.fallback}
               imageBg="bg-gradient-to-br from-red-400 via-red-500 to-pink-600"
             />
             <FeatureCard 
@@ -1514,7 +1482,6 @@ export default function HealthcareLP() {
               desc="デジタル技術を活用した業務改革で、競争力向上と成長を実現。" 
               onClick={() => setSelectedFeature(featureData.dxPromotion)}
               imageUrl={FEATURE_PHOTOS.dxPromotion.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.dxPromotion.fallback}
               imageBg="bg-gradient-to-br from-purple-400 via-purple-500 to-violet-600"
             />
             <FeatureCard 
@@ -1523,7 +1490,6 @@ export default function HealthcareLP() {
               desc="技術的視点からビジネス課題を分析し、最適なソリューションを提案。" 
               onClick={() => setSelectedFeature(featureData.itConsulting)}
               imageUrl={FEATURE_PHOTOS.itConsulting.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.itConsulting.fallback}
               imageBg="bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600"
             />
           </div>
