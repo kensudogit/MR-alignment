@@ -1821,7 +1821,6 @@ export default function HealthcareLP() {
                       <img 
                         src={project.imageUrl} 
                         alt={project.title} 
-                        /* 実績画像はカード幅いっぱいに敷く（SVG側が背景まで含めて描かれているため） */
                         className={`absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${showImage ? 'block' : 'hidden'}`}
                         loading="lazy"
                         decoding="async"
