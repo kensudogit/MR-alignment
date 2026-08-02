@@ -1,5 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { buildChatPrompt, generateText } from '../services/aiContent';
 import './ChatModal.css';
+
+/** バックエンドに接続できないときの定型応答 */
+const FALLBACK_RESPONSES = [
+  'ご質問ありがとうございます。詳細なご相談内容をお聞かせいただけますでしょうか？',
+  '承知いたしました。お客様のご要望に応じて、最適なソリューションをご提案いたします。',
+  'ITサービスに関するご質問ですね。どのような分野についてお聞きになりたいでしょうか？',
+  'システム導入についてのご相談ですね。まずは現状の課題をお教えください。',
+  'ありがとうございます。お客様のご要望を整理して、具体的な提案をさせていただきます。',
+];
 
 interface ChatMessage {
   id: string;
@@ -49,72 +59,27 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
     setIsLoading(true);
 
     try {
-      // OpenAI APIを使用してレスポンスを生成
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      
-      if (!apiKey || apiKey === 'demo-mode') {
-        // デモモードの応答
-        const demoResponses = [
-          'ご質問ありがとうございます。詳細なご相談内容をお聞かせいただけますでしょうか？',
-          '承知いたしました。お客様のご要望に応じて、最適なソリューションをご提案いたします。',
-          'ITサービスに関するご質問ですね。どのような分野についてお聞きになりたいでしょうか？',
-          'システム導入についてのご相談ですね。まずは現状の課題をお教えください。',
-          'ありがとうございます。お客様のご要望を整理して、具体的な提案をさせていただきます。'
-        ];
-        
-        const randomResponse = demoResponses[Math.floor(Math.random() * demoResponses.length)];
-        
-        setTimeout(() => {
-          const botMessage: ChatMessage = {
-            id: (Date.now() + 1).toString(),
-            text: randomResponse,
-            isUser: false,
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, botMessage]);
-          setIsLoading(false);
-        }, 1500);
-        
-        return;
-      }
+      // 応答生成はバックエンド経由。フロントエンドは API キーを保持しない。
+      const result = await generateText(buildChatPrompt(userMessage.text));
 
-      // 実際のOpenAI API呼び出し
-      const OpenAIClient = (await import('../utils/openaiClient.js')).default;
-      const client = new OpenAIClient(apiKey);
-      
-      const chatPrompt = `あなたは須藤技術士事務所のITコンサルタントです。以下のユーザーの質問に親切で専門的な回答をしてください。
+      const text = result.success && result.content
+        ? result.content
+        : FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];
 
-ユーザーの質問: ${inputText}
-
-回答のガイドライン:
-- 親切で丁寧な対応
-- IT技術に関する専門知識を活用
-- 具体的で実用的なアドバイス
-- 必要に応じて追加の質問を提案
-- 日本語で回答
-
-回答:`;
-
-      const response = await client.generateContent(chatPrompt, {});
-      
-      const botMessage: ChatMessage = {
+      setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
-        text: response,
+        text,
         isUser: false,
         timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
-      
+      }]);
     } catch (error) {
       console.error('チャットエラー:', error);
-      const errorMessage: ChatMessage = {
+      setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         text: '申し訳ございません。現在システムに問題が発生しております。しばらく時間をおいてから再度お試しください。',
         isUser: false,
         timestamp: new Date()
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      }]);
     } finally {
       setIsLoading(false);
     }

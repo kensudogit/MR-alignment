@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="AI × WordPress 自動化">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4338ca"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.06"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <rect width="640" height="360" fill="url(#bg)"/>
+  <circle cx="70" cy="60" r="110" fill="#ffffff" opacity="0.10" filter="url(#soft)"/>
+  <circle cx="600" cy="320" r="130" fill="#000000" opacity="0.10" filter="url(#soft)"/>
+
+
+  <rect x="40" y="46" width="560" height="196" rx="16" fill="url(#glass)"/>
+  <g font-family="'Segoe UI',sans-serif" text-anchor="middle">
+    <g transform="translate(126,144)">
+      <rect x="-58" y="-46" width="116" height="92" rx="14" fill="#ffffff" opacity="0.95"/>
+      <text y="-8" font-size="30" font-weight="700" fill="#4338ca">&lt;/&gt;</text>
+      <text y="22" font-size="16" font-weight="600" fill="#475569">Codex</text>
+    </g>
+    <g transform="translate(320,144)">
+      <rect x="-58" y="-46" width="116" height="92" rx="14" fill="#fbbf24"/>
+      <text y="-6" font-size="26" font-weight="700" fill="#78350f">AI</text>
+      <text y="22" font-size="14" font-weight="600" fill="#78350f">Claude Code</text>
+    </g>
+    <g transform="translate(514,144)">
+      <rect x="-58" y="-46" width="116" height="92" rx="14" fill="#ffffff" opacity="0.95"/>
+      <circle cy="-10" r="22" fill="none" stroke="#21759b" stroke-width="4"/>
+      <text y="-3" font-size="18" font-weight="700" fill="#21759b">W</text>
+      <text y="26" font-size="15" font-weight="600" fill="#475569">WordPress</text>
+    </g>
+  </g>
+  <g stroke="#a5b4fc" stroke-width="5" fill="none" stroke-linecap="round">
+    <path d="M192 144 h56"/><path d="M234 130 l16 14 -16 14"/>
+    <path d="M386 144 h56"/><path d="M428 130 l16 14 -16 14"/>
+  </g>
+
+
+  <text x="40" y="300" font-family="'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif"
+        font-size="30" font-weight="700" fill="#ffffff">AI × WordPress 自動化</text>
+  <text x="40" y="330" font-family="'Segoe UI','Hiragino Sans','Noto Sans JP',sans-serif"
+        font-size="17" fill="#ffffff" opacity="0.85">Codex → Claude Code → WP</text>
+</svg>

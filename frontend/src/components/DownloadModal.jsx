@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PropTypes from 'prop-types';
-import OpenAIClient from '../utils/openaiClient';
+import { generateProposal } from '../services/aiContent';
 
 const DownloadModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -54,36 +54,15 @@ const DownloadModal = ({ isOpen, onClose }) => {
       setIsGeneratingAI(true);
       setError('');
 
-      // OpenAI APIキーを環境変数から取得
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      
-      if (!apiKey || apiKey === 'your-openai-api-key-here' || apiKey === 'demo-mode') {
-        throw new Error('OpenAI APIキーが設定されていません');
+      // 生成はバックエンド経由。フロントエンドは API キーを保持しない。
+      // JSON でない応答も aiContent.parseProposal 側で吸収される。
+      const result = await generateProposal(userInfo);
+
+      if (!result.success || !result.content) {
+        throw new Error(result.error || 'AI資料の生成に失敗しました');
       }
 
-      const openaiClient = new OpenAIClient(apiKey);
-      const prompt = openaiClient.generatePrompt(userInfo);
-      const aiResponse = await openaiClient.generateContent(prompt, userInfo);
-
-      // JSONレスポンスをパース
-      let parsedContent;
-      try {
-        parsedContent = JSON.parse(aiResponse);
-      } catch (parseError) {
-        console.warn('Failed to parse AI response as JSON:', parseError);
-        // JSONパースに失敗した場合は、テキストをそのまま使用
-        parsedContent = {
-          serviceOverview: aiResponse,
-          recommendedServices: 'AI生成された推奨サービス情報',
-          expectedEffects: 'AI生成された期待効果情報',
-          implementationSteps: 'AI生成された導入ステップ情報',
-          supportSystem: 'AI生成されたサポート体制情報',
-          riskManagement: 'AI生成されたリスク管理情報',
-          investmentReturn: 'AI生成された投資対効果情報'
-        };
-      }
-
-      return parsedContent;
+      return result.content;
     } catch (err) {
       console.error('AI generation error:', err);
       setError(`AI生成エラー: ${err.message}`);

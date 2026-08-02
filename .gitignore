@@ -85,3 +85,19 @@ jspm_packages/
 **/DEPLOY_NOW.md
 **/RAILWAY_API_KEY_SETUP.md
 **/set-railway-api-key.bat
+
+# --- シークレット混入防止（強化） ---------------------------------------
+# .env は原則すべて無視し、テンプレート（*.example）のみ追跡する
+**/.env
+**/.env.*
+!**/.env.example
+!**/env.example
+
+# ビルド成果物（過去にAPIキーが埋め込まれた実績あり）
+frontend/dist/
+frontend/temp-deploy/
+backend/public/build/
+
+# 一時的なLaravel雛形
+temp-laravel/
+backend/temp-laravel/

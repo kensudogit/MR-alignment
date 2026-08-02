@@ -47,8 +47,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          company: formData.organization,
-          phone: ''
+          passwordConfirmation: formData.confirmPassword,
+          organization: formData.organization,
+          role: formData.role
         });
       }
 
@@ -67,7 +68,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
           });
         }, 2000);
       } else {
-        setMessage(result.error || 'エラーが発生しました');
+        // バリデーションエラーはフィールドごとのメッセージを優先して表示する
+        const fieldMessage = result.errors
+          ? Object.values(result.errors).flat()[0]
+          : undefined;
+        setMessage(fieldMessage || result.error || 'エラーが発生しました');
       }
     } catch (error: any) {
       console.error('Auth error:', error);

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { contactAPI, toApiResult, type ContactPayload } from '../services/api';
 import './ContactModal.css';
 
 interface ContactModalProps {
@@ -35,40 +36,31 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
     setMessage('');
 
     try {
-      // ここで実際のAPI呼び出しを行う
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${API_BASE_URL}/api/contact`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-        // Microsoft Edgeのサードパーティクッキー無効化に対応
-        credentials: 'same-origin',
-      });
+      // 共通APIクライアント経由で送信する（URLの組み立てはapi.tsに集約）
+      const { data } = await contactAPI.send(formData as ContactPayload);
 
-      if (response.ok) {
-        setMessage('お問い合わせを送信しました。担当者よりご連絡いたします。');
-        setTimeout(() => {
-          onClose();
-          // フォームをリセット
-          setFormData({
-            name: '',
-            email: '',
-            organization: '',
-            role: '',
-            subject: '',
-            message: '',
-            contactMethod: 'email',
-            urgency: 'normal'
-          });
-        }, 3000);
-      } else {
-        const errorData = await response.json();
-        setMessage(errorData.message || 'エラーが発生しました。再度お試しください。');
-      }
+      setMessage(`${data.message}（受付番号: ${data.contact_id}）`);
+      setTimeout(() => {
+        onClose();
+        // フォームをリセット
+        setFormData({
+          name: '',
+          email: '',
+          organization: '',
+          role: '',
+          subject: '',
+          message: '',
+          contactMethod: 'email',
+          urgency: 'normal'
+        });
+        setMessage('');
+      }, 3000);
     } catch (error) {
-      setMessage('ネットワークエラーが発生しました。再度お試しください。');
+      const result = toApiResult(error);
+      const fieldMessage = result.errors
+        ? Object.values(result.errors).flat()[0]
+        : undefined;
+      setMessage(fieldMessage || result.error || 'エラーが発生しました。再度お試しください。');
     } finally {
       setIsLoading(false);
     }

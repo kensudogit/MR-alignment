@@ -1,39 +1,25 @@
 -- MR-alignment データベース初期化スクリプト
+--
+-- 【重要】ここでアプリケーションのテーブルを作成してはならない。
+--
+-- 旧版はここで users テーブルを id UUID で作成していたが、
+-- Laravel のマイグレーションは id を bigint(auto increment) で定義しており、
+-- 両者が競合していた。docker-entrypoint.sh がマイグレーション失敗を
+-- 握り潰していたため、init.sql が作った UUID 版テーブルが残り続け、
+-- User::create() が期待するスキーマと食い違う状態になっていた。
+--
+-- テーブル定義はすべて Laravel のマイグレーションに一本化する。
+--   backend/database/migrations/
+--
+-- また、旧版はサンプルユーザーを固定パスワードのハッシュ付きで INSERT していた。
+-- 本番環境で同じスクリプトが流れると既知パスワードのアカウントができるため、
+-- 開発用データは Laravel のシーダー（database/seeders）で管理する。
+--
+-- このファイルは PostgreSQL の拡張機能の有効化など、
+-- マイグレーションでは行えない初期化のみに使用する。
 
--- データベースが存在しない場合は作成
--- CREATE DATABASE mr_alignment;
-
--- 拡張機能の有効化
+-- UUID 生成関数（将来 UUID を使う場合に備えて有効化しておく）
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 基本的なテーブル構造（例）
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    email_verified_at TIMESTAMP NULL,
-    password VARCHAR(255) NOT NULL,
-    remember_token VARCHAR(100) NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- インデックスの作成
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
-
--- サンプルデータの挿入（開発環境用）
-INSERT INTO users (name, email, password) VALUES 
-    ('開発者1', 'dev1@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'), -- password
-    ('開発者2', 'dev2@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi')  -- password
-ON CONFLICT (email) DO NOTHING;
-
--- テーブル情報の表示
-SELECT 
-    table_name,
-    column_name,
-    data_type,
-    is_nullable
-FROM information_schema.columns 
-WHERE table_name = 'users' 
-ORDER BY ordinal_position;
+-- 曖昧検索・全文検索を使う場合に備えて
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";

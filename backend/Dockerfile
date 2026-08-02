@@ -1,43 +1,60 @@
-FROM php:8.2-fpm
+# syntax=docker/dockerfile:1
+#
+# MR-alignment バックエンド（FastAPI + PostgreSQL）
+# マルチステージビルドで、実行イメージにビルドツールを残さない。
 
-# 必要なパッケージをインストール
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd zip
+# --------------------------------------------------------------- ビルド
+FROM python:3.11-slim AS builder
 
-# Composerをインストール
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# 作業ディレクトリを設定
-WORKDIR /var/www/html
+# asyncpg / bcrypt のビルドに必要
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# ユーザーを作成
-RUN useradd -G www-data,root -u 1000 -d /home/dev dev
-RUN mkdir -p /home/dev/.composer && \
-    chown -R dev:dev /home/dev
+WORKDIR /build
 
-# 権限を設定
-RUN chown -R dev:dev /var/www/html
+# 依存だけ先に入れてレイヤキャッシュを効かせる
+COPY pyproject.toml ./
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --upgrade pip && pip install .
 
-# 開発用の設定
-RUN echo "memory_limit = 512M" > /usr/local/etc/php/conf.d/memory-limit.ini
-RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/upload-max-filesize.ini
-RUN echo "post_max_size = 100M" >> /usr/local/etc/php/conf.d/upload-max-filesize.ini
+# --------------------------------------------------------------- 実行
+FROM python:3.11-slim AS runtime
 
-# ポート8000を公開
-EXPOSE 8000
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/venv/bin:$PATH"
 
-# 起動スクリプトを作成
-COPY docker-entrypoint.sh /usr/local/bin/
+# libpq のランタイムのみ（開発ヘッダは含めない）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpq5 \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# root で動かさない
+RUN useradd --create-home --uid 1000 appuser
+
+COPY --from=builder /opt/venv /opt/venv
+
+WORKDIR /app
+COPY --chown=appuser:appuser app ./app
+COPY --chown=appuser:appuser migrations ./migrations
+COPY --chown=appuser:appuser alembic.ini pyproject.toml ./
+COPY --chown=appuser:appuser docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# デフォルトコマンド
-ENTRYPOINT ["docker-entrypoint.sh"]
+USER appuser
+
+# Railway は PORT を注入する
+ENV PORT=8000
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -fsS "http://localhost:${PORT}/health" || exit 1
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

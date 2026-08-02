@@ -1,43 +1,72 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import {
-  getStorageItem,
-  setStorageItem,
-  removeStorageItem,
-  getRegisteredUsers,
-  setRegisteredUsers,
-  findUserByEmail,
-  addLoginHistory,
-  addLogoutHistory,
-  addRegistrationHistory,
-  addProfileUpdateHistory,
-  STORAGE_KEYS
-} from '../utils/localStorage';
+  ApiUser,
+  authAPI,
+  clearToken,
+  getToken,
+  setToken,
+  setUnauthorizedHandler,
+  toApiResult,
+} from '../services/api';
 
-// 型定義
-interface User {
-  id: string;
+/**
+ * 認証コンテキスト。
+ *
+ * 旧実装は localStorage 上で認証を完結させており、
+ *   - 登録ユーザーのパスワードを平文で localStorage に保存
+ *   - ログイン時に平文比較（foundUser.password !== password）
+ *   - トークンが 'jwt-token-' + Date.now() の擬似文字列で検証不能
+ *   - 開発者ツールで isAuthenticated を書き換えるだけで認証を突破できる
+ * という状態だった。
+ *
+ * ここではバックエンド（Laravel Sanctum）による認証へ全面的に移行し、
+ * ブラウザに保持するのはサーバーが発行したトークンのみとする。
+ * パスワードは一切保存しない。
+ */
+
+export interface User {
+  id: number;
   name: string;
   email: string;
-  company: string;
-  phone: string;
-  role: string;
-  createdAt: string;
-  lastLoginAt?: string;
+  organization: string | null;
+  role: string | null;
+}
+
+export interface AuthResult {
+  success: boolean;
+  user?: User;
+  error?: string;
+  /** バリデーションエラーのフィールド別メッセージ */
+  errors?: Record<string, string[]>;
+}
+
+export interface RegisterInput {
+  name: string;
+  email: string;
+  password: string;
+  passwordConfirmation: string;
+  organization?: string;
+  role?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; user?: User; error?: string }>;
-  register: (userData: { name: string; email: string; password: string; company: string; phone: string }) => Promise<{ success: boolean; user?: User; error?: string }>;
-  logout: () => void;
-  updateProfile: (updatedData: Partial<User>) => Promise<{ success: boolean; user?: User; error?: string }>;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (input: RegisterInput) => Promise<AuthResult>;
+  logout: () => Promise<void>;
+  updateProfile: (data: Partial<Pick<User, 'name' | 'organization' | 'role'>>) => Promise<AuthResult>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+    newPasswordConfirmation: string,
+  ) => Promise<{ success: boolean; error?: string; errors?: Record<string, string[]> }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
@@ -45,195 +74,165 @@ export const useAuth = () => {
   return context;
 };
 
+const toUser = (apiUser: ApiUser): User => ({
+  id: apiUser.id,
+  name: apiUser.name,
+  email: apiUser.email,
+  organization: apiUser.organization,
+  role: apiUser.role,
+});
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // 初期化時にローカルストレージからユーザー情報を読み込み
-  // 認証されていないユーザーでもサイトにアクセス可能
-  useEffect(() => {
-    try {
-      const savedUser = getStorageItem(STORAGE_KEYS.USER);
-      const savedToken = getStorageItem(STORAGE_KEYS.TOKEN);
-      const isAuthenticated = getStorageItem(STORAGE_KEYS.IS_AUTHENTICATED);
-      
-      if (savedUser && savedToken && isAuthenticated) {
-        setUser(savedUser);
-        setIsAuthenticated(true);
-      }
-      // 認証されていない場合は何もしない（サイトは表示される）
-    } catch (error) {
-      console.error('Auth initialization error:', error);
-      // エラーが発生してもサイトは表示される
-    }
-    
-    // ローディング状態は即座にfalseにする（認証不要でサイトアクセス可能）
-    setIsLoading(false);
+  const clearSession = useCallback(() => {
+    clearToken();
+    setUser(null);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  // トークン失効（401）を検知したらセッションを破棄する
+  useEffect(() => {
+    setUnauthorizedHandler(clearSession);
+    return () => setUnauthorizedHandler(null);
+  }, [clearSession]);
+
+  // 起動時にトークンがあれば本人確認する。
+  // 認証されていなくてもサイトは閲覧できるため、失敗しても画面は表示する。
+  useEffect(() => {
+    if (!getToken()) {
+      return;
+    }
+
+    let cancelled = false;
     setIsLoading(true);
-    
+
+    authAPI
+      .me()
+      .then(({ data }) => {
+        if (!cancelled) {
+          setUser(toUser(data.user));
+        }
+      })
+      .catch(() => {
+        // 401 はインターセプターが処理する。それ以外もセッションを破棄して続行。
+        if (!cancelled) {
+          clearSession();
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [clearSession]);
+
+  const login = useCallback(async (email: string, password: string): Promise<AuthResult> => {
+    setIsLoading(true);
     try {
-      // ローカルストレージから登録済みユーザーを検索
-      const foundUser = findUserByEmail(email);
-      
-      if (!foundUser) {
-        throw new Error('このメールアドレスは登録されていません。');
-      }
-      
-      // パスワードの簡易チェック（実際のアプリではハッシュ化されたパスワードと比較）
-      if (foundUser.password !== password) {
-        throw new Error('パスワードが正しくありません。');
-      }
-      
-      // ログイン成功時のユーザーデータ
-      const userData = {
-        id: foundUser.id,
-        name: foundUser.name,
-        email: foundUser.email,
-        company: foundUser.company || '',
-        phone: foundUser.phone || '',
-        role: 'user',
-        createdAt: foundUser.createdAt,
-        lastLoginAt: new Date().toISOString()
-      };
-      
-      const token = 'jwt-token-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-      
-      // ローカルストレージに保存
-      setStorageItem(STORAGE_KEYS.USER, userData);
-      setStorageItem(STORAGE_KEYS.TOKEN, token);
-      setStorageItem(STORAGE_KEYS.IS_AUTHENTICATED, true);
-      
-      // ログイン履歴を保存
-      addLoginHistory(userData.id, userData.email);
-      
-      setUser(userData);
-      setIsAuthenticated(true);
-      
-      return { success: true, user: userData };
+      const { data } = await authAPI.login({ email, password });
+      setToken(data.token);
+      const loggedIn = toUser(data.user);
+      setUser(loggedIn);
+      return { success: true, user: loggedIn };
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: (error as Error).message };
+      const result = toApiResult(error);
+      return { success: false, error: result.error, errors: result.errors };
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const register = async (userData: { name: string; email: string; password: string; company: string; phone: string }) => {
+  const register = useCallback(async (input: RegisterInput): Promise<AuthResult> => {
     setIsLoading(true);
-    
     try {
-      // 登録済みユーザーを取得
-      const registeredUsers = getRegisteredUsers();
-      
-      // メールアドレスの重複チェック
-      const existingUser = findUserByEmail(userData.email);
-      if (existingUser) {
-        throw new Error('このメールアドレスは既に登録されています。');
-      }
-      
-      // 新しいユーザーIDを生成
-      const newUserId = Date.now() + Math.random().toString(36).substr(2, 9);
-      
-      // 新規ユーザーデータを作成
-      const newUser = {
-        id: newUserId,
-        name: userData.name,
-        email: userData.email,
-        password: userData.password, // 実際のアプリではハッシュ化
-        company: userData.company || '',
-        phone: userData.phone || '',
-        role: 'user',
-        createdAt: new Date().toISOString(),
-        isActive: true,
-        emailVerified: false
-      };
-      
-      // 登録済みユーザーリストに追加
-      registeredUsers.push(newUser);
-      setRegisteredUsers(registeredUsers);
-      
-      // 登録履歴を保存
-      addRegistrationHistory(newUserId, userData.email, userData.name, userData.company || '');
-      
-      // 登録完了メッセージ
-      console.log('新規登録完了:', newUser);
-      
-      return { success: true, user: newUser };
+      const { data } = await authAPI.register({
+        name: input.name,
+        email: input.email,
+        password: input.password,
+        password_confirmation: input.passwordConfirmation,
+        organization: input.organization,
+        role: input.role,
+      });
+      setToken(data.token);
+      const registered = toUser(data.user);
+      setUser(registered);
+      return { success: true, user: registered };
     } catch (error) {
-      console.error('Register error:', error);
-      return { success: false, error: (error as Error).message };
+      const result = toApiResult(error);
+      return { success: false, error: result.error, errors: result.errors };
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const logout = () => {
-    // ログアウト履歴を保存
-    if (user) {
-      addLogoutHistory(user.id, user.email);
-    }
-    
-    // 認証情報を削除
-    removeStorageItem(STORAGE_KEYS.USER);
-    removeStorageItem(STORAGE_KEYS.TOKEN);
-    removeStorageItem(STORAGE_KEYS.IS_AUTHENTICATED);
-    
-    setUser(null);
-    setIsAuthenticated(false);
-  };
-
-  const updateProfile = async (updatedData: Partial<User>) => {
-    if (!user) return { success: false, error: 'User not authenticated' };
-    
-    setIsLoading(true);
-    
+  const logout = useCallback(async (): Promise<void> => {
     try {
-      // 登録済みユーザーリストを更新
-      const registeredUsers = getRegisteredUsers();
-      const userIndex = registeredUsers.findIndex((u: any) => u.id === user.id);
-      
-      if (userIndex !== -1) {
-        // 登録済みユーザーリストを更新
-        registeredUsers[userIndex] = { ...registeredUsers[userIndex], ...updatedData };
-        setRegisteredUsers(registeredUsers);
-      }
-      
-      // 現在のユーザー情報を更新
-      const updatedUser = { ...user, ...updatedData };
-      
-      // ローカルストレージを更新
-      setStorageItem(STORAGE_KEYS.USER, updatedUser);
-      setUser(updatedUser);
-      
-      // プロフィール更新履歴を保存
-      addProfileUpdateHistory(user.id, user.email, Object.keys(updatedData));
-      
-      return { success: true, user: updatedUser };
-    } catch (error) {
-      console.error('Update profile error:', error);
-      return { success: false, error: (error as Error).message };
+      await authAPI.logout();
+    } catch {
+      // サーバー側の失効に失敗しても、手元のトークンは必ず破棄する
     } finally {
-      setIsLoading(false);
+      clearSession();
     }
-  };
+  }, [clearSession]);
 
-  const value = {
-    user,
-    isAuthenticated,
-    isLoading,
-    login,
-    register,
-    logout,
-    updateProfile
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+  const updateProfile = useCallback(
+    async (data: Partial<Pick<User, 'name' | 'organization' | 'role'>>): Promise<AuthResult> => {
+      setIsLoading(true);
+      try {
+        const response = await authAPI.updateProfile(data);
+        const updated = toUser(response.data.user);
+        setUser(updated);
+        return { success: true, user: updated };
+      } catch (error) {
+        const result = toApiResult(error);
+        return { success: false, error: result.error, errors: result.errors };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
   );
+
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string, newPasswordConfirmation: string) => {
+      setIsLoading(true);
+      try {
+        await authAPI.changePassword({
+          current_password: currentPassword,
+          password: newPassword,
+          password_confirmation: newPasswordConfirmation,
+        });
+        // サーバー側で全トークンが失効するため、ローカルもログアウト状態にする
+        clearSession();
+        return { success: true };
+      } catch (error) {
+        const result = toApiResult(error);
+        return { success: false, error: result.error, errors: result.errors };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [clearSession],
+  );
+
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated: user !== null,
+      isLoading,
+      login,
+      register,
+      logout,
+      updateProfile,
+      changePassword,
+    }),
+    [user, isLoading, login, register, logout, updateProfile, changePassword],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

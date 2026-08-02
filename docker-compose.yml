@@ -1,58 +1,67 @@
-version: '3.8'
-
 services:
-  # PostgreSQL データベース
+  # ------------------------------------------------------------ PostgreSQL
   postgres:
     image: postgres:15
     container_name: mr_alignment_postgres
     environment:
-      POSTGRES_DB: mr_alignment
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB:-mr_alignment}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      # ローカル既定値。本番では必ず環境変数で上書きすること
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # 拡張機能の有効化のみ。テーブル定義は Alembic に一本化している
       - ./database/init:/docker-entrypoint-initdb.d
     networks:
       - mr_alignment_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-mr_alignment}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # PHP + Laravel バックエンド
+  # ------------------------------------------------------------ バックエンド
   backend:
     build:
-      context: ./backend
+      context: ./backend-python
       dockerfile: Dockerfile
     container_name: mr_alignment_backend
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/var/www/html
+      # 開発時のホットリロード用
+      - ./backend-python/app:/app/app
+      - ./backend-python/migrations:/app/migrations
     environment:
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: mr_alignment
-      DB_USERNAME: postgres
-      DB_PASSWORD: password
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: INFO
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-mr_alignment}
+      # CORS の許可オリジン（'*' は使わない）
+      FRONTEND_URL: http://localhost:3000
+      # ローカル開発用の固定鍵。本番では必ず別の値を環境変数で与えること
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-development-only-do-not-use-in-production}
+      # OpenAI APIキーはホストの .env か環境変数から渡す。
+      # このファイルに直接書かないこと。
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      CONTACT_MAIL_TO: ${CONTACT_MAIL_TO:-ops@example.com}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - mr_alignment_network
-    command: ["/usr/local/bin/docker-entrypoint.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000 || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 30s
 
-  # React + Vite フロントエンド
+  # ------------------------------------------------------------ フロントエンド
   frontend:
     build:
       context: ./frontend
@@ -71,18 +80,30 @@ services:
         condition: service_healthy
     networks:
       - mr_alignment_network
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3000"
+    # Dockerfile で npm ci 済みのため、ここでの npm install は不要
+    command: npm run dev -- --host 0.0.0.0 --port 3000
 
-  # pgAdmin（PostgreSQL管理ツール）
+  # ------------------------------------------------------------ メール確認
+  # 開発中に送信されたメールをブラウザで確認できる（外部へは送信されない）
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mr_alignment_mailpit
+    ports:
+      - "8025:8025"   # Web UI
+      - "1025:1025"   # SMTP
+    networks:
+      - mr_alignment_network
+
+  # ------------------------------------------------------------ DB 管理
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: mr_alignment_pgadmin
     ports:
       - "8081:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
