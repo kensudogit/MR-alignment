@@ -5,7 +5,6 @@ import ChatModal from './ChatModal';
 import AppointmentModal from './AppointmentModal';
 import PhoneCallModal from './PhoneCallModal';
 import { useAuth } from '../contexts/AuthContext';
-import { generateProposal } from '../services/aiContent';
 
 // --- Inline Icon Components (no external deps) ---
 const IconPhone = (props) => (
@@ -266,7 +265,7 @@ const blogData = {
     articles: [
       {
         title: "マイクロカーネル型倉庫管理システムの実装",
-        content: "COOOLa Microは、マイクロカーネルアーキテクチャを採用したクラウドベースの倉庫管理システムです。この記事では、実際のプロジェクトを教材として、マイクロサービスアーキテクチャの設計と実装方法を詳しく解説します。\n\n【アーキテクチャの特徴】\n• マイクロカーネル設計：コアシステムがプラグインインターフェースを提供\n• プラグインシステム：動的ロード可能な機能モジュール\n• マイクロサービス：独立してデプロイ・スケール可能なサービス\n• サービス間通信：REST API、RabbitMQ、gRPCを活用\n\n【主要コンポーネント】\n• コアシステム：プラグイン管理、認証、設定管理、イベントバス\n• プラグイン：商品管理、在庫管理、入出庫、レポート、バーコード\n• マイクロサービス：商品、在庫、入出庫、レポート、通知サービス\n\n【技術スタック】\n• Spring Boot 3.x + JavaSE-21 LTS\n• Spring Cloud（Eureka、Gateway、Config）\n• OSGi（プラグイン管理）\n• MySQL 8.0 + Redis + RabbitMQ\n• Angular 17 + TypeScript\n• Docker + Kubernetes + Helm\n\n【学習ポイント】\n• マイクロカーネルアーキテクチャの理解\n• プラグインシステムの設計と実装\n• サービス間通信パターンの実践\n• 分散システムの監視とログ管理\n• コンテナ化とオーケストレーション\n\n【GitHubリポジトリ】\n詳細な実装例とドキュメントは以下のリポジトリで確認できます：\nhttps://github.com/kensudogit/cooola-micro",
+        content: "COOOLa Microは、マイクロカーネルアーキテクチャを採用したクラウドベースの倉庫管理システムです。この記事では、実際のプロジェクトを教材として、マイクロサービスアーキテクチャの設計と実装方法を詳しく解説します。\n\n【アーキテクチャの特徴】\n• マイクロカーネル設計：コアシステムがプラグインインターフェースを提供\n• プラグインシステム：動的ロード可能な機能モジュール\n• マイクロサービス：独立してデプロイ・スケール可能なサービス\n• サービス間通信：REST API、RabbitMQ、gRPCを活用\n\n【主要コンポーネント】\n• コアシステム：プラグイン管理、認証、設定管理、イベントバス\n• プラグイン：商品管理、在庫管理、入出庫、レポート、バーコード\n• マイクロサービス：商品、在庫、入出庫、レポート、通知サービス\n\n【技術スタック】\n• Spring Boot 3.x + Java 17\n• Spring Cloud（Eureka、Gateway、Config）\n• OSGi（プラグイン管理）\n• MySQL 8.0 + Redis + RabbitMQ\n• Angular 17 + TypeScript\n• Docker + Kubernetes + Helm\n\n【学習ポイント】\n• マイクロカーネルアーキテクチャの理解\n• プラグインシステムの設計と実装\n• サービス間通信パターンの実践\n• 分散システムの監視とログ管理\n• コンテナ化とオーケストレーション\n\n【GitHubリポジトリ】\n詳細な実装例とドキュメントは以下のリポジトリで確認できます：\nhttps://github.com/kensudogit/cooola-micro",
         imageUrl: "/microservice.png"
       },
       {
@@ -295,7 +294,7 @@ const featureData = {
     title: "システム開発",
     icon: <IconPhone className="h-8 w-8"/>,
     shortDesc: "Webアプリケーション、モバイルアプリ、API開発まで幅広く対応。",
-    longDesc: "最新の技術スタックを使用したシステム開発サービスです。React、Vue.js、Node.js、Python、JavaSE-21 LTS等の技術を活用し、スケーラブルで保守性の高いシステムを構築します。要件定義から設計、開発、テスト、運用まで一貫してサポートします。",
+    longDesc: "最新の技術スタックを使用したシステム開発サービスです。React、Vue.js、Node.js、Python、Java等の技術を活用し、スケーラブルで保守性の高いシステムを構築します。要件定義から設計、開発、テスト、運用まで一貫してサポートします。",
     benefits: [
       "最新技術の活用",
       "スケーラブルな設計",
@@ -349,7 +348,7 @@ const featureData = {
     title: "セキュリティ",
     icon: <IconShield className="h-8 w-8"/>,
     shortDesc: "包括的なセキュリティ対策でシステムとデータを保護。",
-    longDesc: "サイバーセキュリティの専門知識を活かし、包括的なセキュリティ対策を提供します。JavaSE-21 LTS、Spring Security等の最新技術を活用したセキュリティ設計、脆弱性診断、インシデント対応、コンプライアンス対応まで一貫してサポートします。",
+    longDesc: "サイバーセキュリティの専門知識を活かし、包括的なセキュリティ対策を提供します。脆弱性診断、セキュリティ設計、インシデント対応、コンプライアンス対応まで一貫してサポートします。",
     benefits: [
       "脆弱性の早期発見",
       "セキュリティ設計の最適化",
@@ -367,7 +366,7 @@ const featureData = {
     title: "DX推進",
     icon: <IconUsers className="h-8 w-8"/>,
     shortDesc: "デジタル変革を戦略的に推進し、ビジネス価値を最大化。",
-    longDesc: "デジタル変革（DX）の戦略策定から実行まで一貫してサポートします。JavaSE-21 LTS、Spring Boot 3.x等の最新技術を活用した現状分析、DXロードマップの策定、組織変革、技術導入まで包括的に支援し、持続可能なデジタル変革を実現します。",
+    longDesc: "デジタル変革（DX）の戦略策定から実行まで一貫してサポートします。現状分析、DXロードマップの策定、組織変革、技術導入まで包括的に支援し、持続可能なデジタル変革を実現します。",
     benefits: [
       "戦略的なDX推進",
       "組織変革の支援",
@@ -385,7 +384,7 @@ const featureData = {
     title: "ITコンサルティング",
     icon: <IconClock className="h-8 w-8"/>,
     shortDesc: "IT戦略の策定から技術選定まで、総合的なITコンサルティングを提供。",
-    longDesc: "技術士の専門知識を活かし、IT戦略の策定から技術選定、プロジェクト管理まで包括的なコンサルティングを提供します。JavaSE-21 LTS、Spring Boot 3.x等の最新技術を活用し、お客様のビジネス目標に最適なITソリューションを提案し、成功に導きます。",
+    longDesc: "技術士の専門知識を活かし、IT戦略の策定から技術選定、プロジェクト管理まで包括的なコンサルティングを提供します。お客様のビジネス目標に最適なITソリューションを提案し、成功に導きます。",
     benefits: [
       "戦略的なIT計画",
       "技術選定の最適化",
@@ -414,71 +413,9 @@ Stat.propTypes = {
   label: PropTypes.string.isRequired
 };
 
-/**
- * 主要機能カードの写真。
- *
- * 【差し替え方法】
- *   photo の URL を入れ替えるだけで反映されます。
- *   読み込めなかった場合は fallback（ローカル画像）→ グラデーション背景の順に退避するため、
- *   URL が切れてもカードが崩れることはありません。
- *
- * 【注意】
- *   Unsplash の画像を直接参照しています。外部サービスのため、
- *   表示速度・可用性はその時々のネットワーク状況に依存します。
- *   恒久運用するなら、画像をダウンロードして public/features/ に置き、
- *   photo を '/features/xxx.jpg' のようなローカルパスへ変更してください。
- *
- * Unsplash のライセンス: https://unsplash.com/license
- */
-const FEATURE_PHOTOS = {
-  systemDevelopment: {
-    photo: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=70',
-    fallback: '/system_development_image.png',
-  },
-  cloudMigration: {
-    photo: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=70',
-    // /cloud_migration_image.png は system_development_image.png と中身が同一（MD5一致）で、
-    // 「システム開発」の絵が出てしまうため退避先には使わない。
-    // 正しい画像を用意したら差し替えること。
-    fallback: undefined,
-  },
-  dataAnalysis: {
-    photo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=70',
-    // 同上（/data_analysis_image.png も中身が「システム開発」の絵）
-    fallback: undefined,
-  },
-  security: {
-    photo: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=70',
-    fallback: '/security_image.png',
-  },
-  dxPromotion: {
-    photo: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=70',
-    fallback: '/dx_promotion_image.png',
-  },
-  itConsulting: {
-    photo: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=70',
-    fallback: '/it_consulting_image.png',
-  },
-};
-
-const FeatureCard = ({ icon, title, desc, onClick, imageUrl, fallbackImageUrl, imageBg }) => {
-  // 外部（Unsplash）の写真を優先し、読み込めなければローカル画像、
-  // それも失敗したらグラデーション背景だけを表示する。
-  // 外部URLはいつ切れるか分からないため、必ず退避先を用意しておく。
-  const [src, setSrc] = useState(imageUrl || fallbackImageUrl);
-  const [failed, setFailed] = useState(false);
-
-  const handleError = () => {
-    if (src !== fallbackImageUrl && fallbackImageUrl) {
-      setSrc(fallbackImageUrl);
-      return;
-    }
-    setFailed(true);
-  };
-
-  return (
-  <button
-    className="group cursor-pointer transition-all duration-500 hover:scale-105 focus:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-offset-2 w-full text-left overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 hover:border-blue-200"
+const FeatureCard = ({ icon, title, desc, onClick, imageUrl, imageBg }) => (
+  <button 
+    className="group cursor-pointer transition-all duration-500 hover:scale-105 focus:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-offset-2 w-full text-left overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 hover:border-blue-200" 
     onClick={onClick}
     onKeyDown={(e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -489,25 +426,20 @@ const FeatureCard = ({ icon, title, desc, onClick, imageUrl, fallbackImageUrl, i
     aria-label={`${title}の詳細を見る`}
   >
     {/* Image Section */}
-    <div className={`h-40 rounded-t-2xl ${imageBg || 'bg-gradient-to-br from-blue-100 to-blue-200'} flex items-center justify-center relative overflow-hidden`}>
-      {src && !failed && (
-        <img
-          src={src}
-          alt={title}
-          /* 写真はカード全体を埋める。object-contain だと余白が出て写真らしく見えない */
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          loading="lazy"
-          decoding="async"
-          onError={handleError}
+    <div className={`h-40 rounded-t-2xl ${imageBg || 'bg-gradient-to-br from-blue-100 to-blue-200'} flex items-center justify-center relative overflow-hidden group-hover:scale-110 transition-transform duration-500`}>
+      {imageUrl && (
+        <img 
+          src={imageUrl} 
+          alt={title} 
+          className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500"
         />
       )}
-      {/* 写真の上に載る文字を読みやすくする控えめなオーバーレイ */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
         <span className="text-gray-700 text-sm font-medium">詳細</span>
       </div>
     </div>
-
+    
     {/* Content Section */}
     <div className="p-6">
       <div className="flex items-center gap-4 mb-4">
@@ -525,8 +457,7 @@ const FeatureCard = ({ icon, title, desc, onClick, imageUrl, fallbackImageUrl, i
       </div>
     </div>
   </button>
-  );
-};
+);
 
 FeatureCard.propTypes = {
   icon: PropTypes.element.isRequired,
@@ -534,7 +465,6 @@ FeatureCard.propTypes = {
   desc: PropTypes.string.isRequired,
   onClick: PropTypes.func.isRequired,
   imageUrl: PropTypes.string,
-  fallbackImageUrl: PropTypes.string,
   imageBg: PropTypes.string
 };
 
@@ -1118,7 +1048,7 @@ export default function HealthcareLP() {
         "分散システムの監視とログ管理：Prometheus、Grafana、Jaegerの活用",
         "コンテナ化とオーケストレーション：Docker、Kubernetes、Helmの実践",
         "ドメイン駆動設計（DDD）の適用：マイクロサービス境界の設計指針",
-        "実践的なマイクロサービス開発：Spring Boot 3.x + JavaSE-21 LTSの最新技術スタック"
+        "実践的なマイクロサービス開発：Spring Boot 3.x + Java 17の最新技術スタック"
       ]
     },
     {
@@ -1170,29 +1100,51 @@ export default function HealthcareLP() {
     };
 
     try {
-      // AI資料生成はバックエンド経由で行う。
-      // フロントエンドはAPIキーを一切保持しない（保持するとビルド成果物から読み取れてしまう）。
-      showLoadingModal();
-
-      const result = await generateProposal({
-        name: userInfo.name,
-        organization: userInfo.company,
-        industry: userInfo.industry,
-        role: userInfo.position,
-        email: userInfo.email,
-        interest: userInfo.additionalRequirements,
-      });
-
-      if (result.success && result.content) {
-        showGeneratedContent(result.content, userInfo);
+      // OpenAI APIキーを取得（環境変数から）
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      
+      // APIキーの詳細確認
+      console.log('=== APIキー設定確認 ===');
+      console.log('APIキー:', apiKey ? '設定済み' : '未設定');
+      console.log('APIキーの長さ:', apiKey ? apiKey.length : 0);
+      console.log('APIキーの先頭:', apiKey ? apiKey.substring(0, 10) + '...' : 'なし');
+      
+      if (!apiKey || apiKey === 'your-openai-api-key-here' || apiKey === 'demo-mode') {
+        // デモモードで実行
+        console.log('OpenAI APIキーが設定されていません。デモモードで実行します。');
+        
+        // デモ用の模擬結果を表示
+        const demoContent = generateDemoContent(userInfo);
+        showGeneratedContent(demoContent, userInfo);
         return;
       }
 
-      // 生成に失敗した場合はデモ内容にフォールバックし、その旨を明示する
-      showGeneratedContent(generateDemoContent(userInfo), userInfo, true);
+      // OpenAI クライアントを使用してAI資料を生成
+      const OpenAIClient = (await import('../utils/openaiClient.js')).default;
+      const client = new OpenAIClient(apiKey);
+      
+      // ローディング表示
+      showLoadingModal();
+      
+      console.log('OpenAI APIを呼び出し中...');
+      
+      const generatedContent = await client.generateContent(
+        client.generatePrompt(userInfo),
+        userInfo
+      );
+      
+      console.log('OpenAI API呼び出し成功！');
+      console.log('生成されたコンテンツ:', generatedContent);
+      
+      // 生成された内容を表示
+      showGeneratedContent(generatedContent, userInfo);
+      
     } catch (error) {
       console.error('AI資料生成エラー:', error);
-      showGeneratedContent(generateDemoContent(userInfo), userInfo, true);
+      
+      // エラー時のデモ用結果
+      const demoContent = generateDemoContent(userInfo);
+      showGeneratedContent(demoContent, userInfo, true);
     }
   };
 
@@ -1294,6 +1246,51 @@ export default function HealthcareLP() {
       additionalRequirementsResponse: 'ご要望への対応'
     };
     return titles[key] || key;
+  };
+
+  // APIキーテスト関数
+  const testApiKey = async () => {
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    
+    console.log('=== APIキー設定確認 ===');
+    console.log('APIキー:', apiKey ? '設定済み' : '未設定');
+    console.log('APIキーの長さ:', apiKey ? apiKey.length : 0);
+    console.log('APIキーの先頭:', apiKey ? apiKey.substring(0, 10) + '...' : 'なし');
+    
+    if (!apiKey || apiKey === 'your-openai-api-key-here' || apiKey === 'demo-mode') {
+      console.log('❌ OpenAI APIキーが設定されていません');
+      console.log('💡 .envファイルにVITE_OPENAI_API_KEYを設定してください');
+      return;
+    }
+    
+    // APIキーの形式チェック
+    const isValidFormat = apiKey.startsWith('sk-') || apiKey.startsWith('ysk-');
+    if (!isValidFormat) {
+      console.log('⚠️ APIキーの形式が正しくない可能性があります');
+      console.log('💡 正しい形式: sk-... または ysk-...');
+      return;
+    }
+    
+    try {
+      // 簡単なAPIテスト
+      const OpenAIClient = (await import('../utils/openaiClient.js')).default;
+      const client = new OpenAIClient(apiKey);
+      
+      console.log('🔄 OpenAI APIをテスト中...');
+      console.log('⏳ しばらくお待ちください');
+      
+      const testPrompt = 'こんにちは。これはAPIテストです。';
+      const response = await client.generateContent(testPrompt, {});
+      
+      console.log('✅ OpenAI APIキーが正常に動作しています！');
+      console.log('📝 テスト結果:', response.substring(0, 100) + '...');
+      console.log('🎉 APIキー設定確認完了');
+      
+    } catch (error) {
+      console.error('❌ OpenAI APIテストに失敗しました');
+      console.error('🔍 エラー詳細:', error.message);
+      console.log('💡 APIキーが正しいか確認してください');
+    }
   };
 
   // チャットモーダルを開く関数
@@ -1454,6 +1451,13 @@ export default function HealthcareLP() {
                 >
                   AI資料を生成（無料）
                 </button>
+                <button 
+                  type="button"
+                  onClick={() => testApiKey()}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-2 px-6 rounded-xl text-sm transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl mt-2"
+                >
+                  APIキー設定確認
+                </button>
                 <p className="text-sm text-gray-500 text-center">送信により、プライバシーポリシーに同意したものとみなされます。</p>
               </form>
             </div>
@@ -1477,8 +1481,7 @@ export default function HealthcareLP() {
               title="システム開発" 
               desc="最新技術を駆使した高品質なシステム開発で、お客様のビジネス課題を解決。" 
               onClick={() => setSelectedFeature(featureData.systemDevelopment)}
-              imageUrl={FEATURE_PHOTOS.systemDevelopment.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.systemDevelopment.fallback}
+              imageUrl="/system_development_image.png"
               imageBg="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700"
             />
             <FeatureCard 
@@ -1486,8 +1489,7 @@ export default function HealthcareLP() {
               title="クラウド移行" 
               desc="安全で効率的なクラウド移行で、ITコスト削減と業務効率化を実現。" 
               onClick={() => setSelectedFeature(featureData.cloudMigration)}
-              imageUrl={FEATURE_PHOTOS.cloudMigration.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.cloudMigration.fallback}
+              imageUrl="/cloud_migration_image.png"
               imageBg="bg-gradient-to-br from-cyan-400 via-cyan-500 to-blue-600"
             />
             <FeatureCard 
@@ -1495,8 +1497,7 @@ export default function HealthcareLP() {
               title="データ分析" 
               desc="ビッグデータ活用とAI技術で、データドリブンな意思決定をサポート。" 
               onClick={() => setSelectedFeature(featureData.dataAnalysis)}
-              imageUrl={FEATURE_PHOTOS.dataAnalysis.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.dataAnalysis.fallback}
+              imageUrl="/data_analysis_image.png"
               imageBg="bg-gradient-to-br from-green-400 via-green-500 to-emerald-600"
             />
             <FeatureCard 
@@ -1504,8 +1505,7 @@ export default function HealthcareLP() {
               title="セキュリティ" 
               desc="企業の重要情報を保護する包括的なセキュリティソリューションを提供。" 
               onClick={() => setSelectedFeature(featureData.security)}
-              imageUrl={FEATURE_PHOTOS.security.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.security.fallback}
+              imageUrl="/security_image.png"
               imageBg="bg-gradient-to-br from-red-400 via-red-500 to-pink-600"
             />
             <FeatureCard 
@@ -1513,8 +1513,7 @@ export default function HealthcareLP() {
               title="DX推進" 
               desc="デジタル技術を活用した業務改革で、競争力向上と成長を実現。" 
               onClick={() => setSelectedFeature(featureData.dxPromotion)}
-              imageUrl={FEATURE_PHOTOS.dxPromotion.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.dxPromotion.fallback}
+              imageUrl="/dx_promotion_image.png"
               imageBg="bg-gradient-to-br from-purple-400 via-purple-500 to-violet-600"
             />
             <FeatureCard 
@@ -1522,8 +1521,7 @@ export default function HealthcareLP() {
               title="ITコンサルティング" 
               desc="技術的視点からビジネス課題を分析し、最適なソリューションを提案。" 
               onClick={() => setSelectedFeature(featureData.itConsulting)}
-              imageUrl={FEATURE_PHOTOS.itConsulting.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.itConsulting.fallback}
+              imageUrl="/it_consulting_image.png"
               imageBg="bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600"
             />
           </div>
@@ -1721,116 +1719,214 @@ export default function HealthcareLP() {
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                title: "SaaS対応FXツール",
-                description: "マルチテナント対応の為替分析・自動売買支援プラットフォーム",
-                detailedDescription: "SaaS 形式で提供する FX 分析ツール。リアルタイムレート配信、チャート分析、シグナル通知、テナントごとの権限管理を実装。",
-                url: "https://fx-production-f5d5.up.railway.app/",
-                image: "bg-gradient-to-br from-teal-600 via-emerald-600 to-green-700",
-                imageUrl: "/portfolio/fx-saas.png",
-                icon: "\u{1F4C8}",
-                tech: ["Python", "FastAPI", "PostgreSQL", "WebSocket", "Railway"],
-                features: ["リアルタイムレート", "チャート分析", "シグナル通知", "マルチテナント"],
-                industry: "金融・FinTech",
-                duration: "3ヶ月",
-                team: "1名"
-              },
-              {
-                title: "エネルギーリソースアグリゲーション",
-                description: "分散型電源を束ねて需給調整を行うVPPプラットフォーム",
-                detailedDescription: "太陽光・蓄電池などの分散型エネルギーリソースを統合制御するアグリゲーションシステム。発電予測、需給バランス最適化、実績レポートを実装。",
-                url: "https://renewableenergy-production-8368.up.railway.app/",
-                image: "bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700",
-                imageUrl: "/portfolio/energy-aggregation.png",
-                icon: "\u26A1",
-                tech: ["Python", "時系列解析", "PostgreSQL", "REST API", "Railway"],
-                features: ["発電予測", "需給最適化", "遠隔制御", "実績レポート"],
-                industry: "エネルギー",
-                duration: "4ヶ月",
-                team: "1名"
-              },
-              {
-                title: "領収書 自動データ化システム",
-                description: "OCRで領収書を読み取り、会計ソフトへ自動連携",
-                detailedDescription: "紙・PDFの領収書をOCRで構造化データに変換し、勘定科目を自動推定して会計ソフトへ連携。手入力を大幅に削減する経理向けシステム。",
-                url: "https://ocr-production-0e14.up.railway.app/",
-                image: "bg-gradient-to-br from-blue-600 via-sky-600 to-cyan-700",
-                imageUrl: "/portfolio/receipt-ocr.png",
-                icon: "\u{1F9FE}",
-                tech: ["Python", "OCR", "生成AI", "会計API連携", "PostgreSQL"],
-                features: ["OCR読み取り", "勘定科目の自動推定", "会計ソフト連携", "仕訳出力"],
-                industry: "会計・バックオフィス",
-                duration: "3ヶ月",
-                team: "1名"
-              },
-              {
-                title: "AI × WordPress 自動化ワークフロー",
-                description: "Codexが生成したHTMLをClaude Code経由でWordPressへ自動実装",
-                detailedDescription: "Codex(AI)によるHTML生成から、Claude Code を介した WordPress への実装・公開までを自動化するワークフロー。記事作成から公開までの工数を削減。",
-                url: "https://wpaipublisher-production.up.railway.app/guide",
-                image: "bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700",
-                imageUrl: "/portfolio/wp-ai-publisher.png",
-                icon: "\u{1F916}",
-                tech: ["Codex", "Claude Code", "WordPress REST API", "Python", "自動化"],
-                features: ["HTML自動生成", "AIによる実装", "WordPress自動投稿", "公開フロー自動化"],
-                industry: "メディア・DX",
+                title: "医療管理システム",
+                description: "オンライン診療・電子カルテ・予約管理の統合システム",
+                detailedDescription: "クリニック向けの包括的な医療管理システム。オンライン診療、電子カルテ、Web予約、問診票、経営分析、AIページ作成機能を統合。ビデオ診療でのサンプル動画作成・出力機能も実装。",
+                url: "https://frontend-599xip6ty-kensudogits-projects.vercel.app/",
+                image: "bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500",
+                imageUrl: "/clinics.png",
+                icon: "🏥",
+                tech: ["React", "TypeScript", "TanStack Query", "Vercel", "Mock API"],
+                features: ["オンライン診療", "電子カルテ", "Web予約", "AIページ作成", "動画録画"],
+                industry: "医療",
                 duration: "2ヶ月",
                 team: "1名"
               },
               {
-                title: "株価予測・SNS運用AIエージェント",
-                description: "株価予測とSNS投稿を自律実行するAIエージェント",
-                detailedDescription: "市場データから株価を予測し、分析結果をもとにSNS投稿までを自律的に実行するAIエージェント。情報収集・分析・発信のサイクルを自動化。",
-                url: "https://stockpriceppredictiontool-production.up.railway.app/",
-                image: "bg-gradient-to-br from-amber-600 via-rose-600 to-pink-700",
-                imageUrl: "/portfolio/ai-agent-stock.png",
-                icon: "\u{1F9E0}",
-                tech: ["Python", "機械学習", "LLM", "SNS API", "スケジューラ"],
-                features: ["株価予測", "自動投稿", "エージェント制御", "実績可視化"],
-                industry: "金融・マーケティング",
-                duration: "3ヶ月",
-                team: "1名"
-              },
-              {
-                title: "生成AIサービスのクラウド基盤",
-                description: "GCP/AWS上での生成AIサービス基盤の設計・構築",
-                detailedDescription: "Amazon Bedrock のナレッジベースを中核とした生成AIサービスのクラウド基盤。RAG構成、権限設計、監視・コスト最適化までを含む基盤構築。",
-                url: "https://bedrockknowledgebase-production.up.railway.app",
-                image: "bg-gradient-to-br from-cyan-700 via-blue-700 to-indigo-800",
-                imageUrl: "/portfolio/cloud-infra.png",
-                icon: "\u2601\uFE0F",
-                tech: ["AWS Bedrock", "GCP", "IaC", "RAG", "監視・コスト最適化"],
-                features: ["クラウド基盤設計", "RAG構成", "権限設計", "監視/コスト最適化"],
-                industry: "クラウド・生成AI",
-                duration: "4ヶ月",
-                team: "1名"
-              },
-              {
-                title: "ChatGPT Skillsカタログアプリ",
-                description: "業務で使えるSkillsを一覧・検索できるパイロット版アプリ",
-                detailedDescription: "ChatGPT の Skills を業務単位でカタログ化し、検索・比較・導入判断ができるアプリケーション（パイロット）。社内での活用促進を目的とする。",
-                url: "https://chatgptskillscatalog-production.up.railway.app/",
-                image: "bg-gradient-to-br from-emerald-600 via-teal-600 to-green-700",
-                imageUrl: "/portfolio/skills-catalog.png",
-                icon: "\u{1F4DA}",
-                tech: ["Python", "FastAPI", "PostgreSQL", "全文検索", "Railway"],
-                features: ["Skills一覧", "検索・絞り込み", "詳細比較", "導入ガイド"],
-                industry: "社内DX・生成AI",
+                title: "ITアカデミーシステム",
+                description: "学習進捗、コミュニティ、技術ブログ、チェットサポート、AIチェットボット",
+                detailedDescription: "プログラミング・Web開発・データサイエンス・AI・クラウド技術を学べる総合IT教育機関。",
+                url: "https://frontend-35i3t0y64-kensudogits-projects.vercel.app",
+                image: "bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500",
+                imageUrl: "/learning.png",
+                icon: "🏥",
+                tech: ["React", "TypeScript", "TanStack Query", "Vercel", "Mock API"],
+                features: ["プログラミングコース", "学習進捗","コミュニティ","技術ブログ","AIチャトボット"],
+                industry: "IT教育",
                 duration: "1ヶ月",
                 team: "1名"
               },
               {
-                title: "D2C Marketing Automation",
-                description: "D2C事業者向けの顧客獲得・育成を自動化する基盤",
-                detailedDescription: "D2C事業者向けのマーケティングオートメーション。顧客セグメント作成、シナリオ配信、効果測定までを一気通貫で実行できる基盤。",
-                url: "https://d2c-marketing-automation-production.up.railway.app/",
-                image: "bg-gradient-to-br from-pink-600 via-fuchsia-600 to-violet-700",
-                imageUrl: "/portfolio/d2c-marketing.png",
-                icon: "\u{1F4E3}",
-                tech: ["Python", "FastAPI", "PostgreSQL", "メール配信", "分析基盤"],
-                features: ["顧客セグメント", "シナリオ配信", "効果測定", "ダッシュボード"],
-                industry: "D2C・マーケティング",
+                title: "オークションシステム",
+                description: "リアルタイム入札機能付きのWebアプリケーション",
+                detailedDescription: "リアルタイム入札機能を備えたオンラインオークションシステム。WebSocketを使用した即座の価格更新、自動入札機能、セキュアな決済システムを実装。",
+                url: "https://auction-react-7g6nqex2a-kensudogits-projects.vercel.app/",
+                image: "bg-gradient-to-br from-purple-500 via-pink-500 to-red-500",
+                imageUrl: "/auction_system_image.png",
+                icon: "🔨",
+                tech: ["React", "Node.js", "WebSocket", "Stripe", "MongoDB"],
+                features: ["リアルタイム入札", "自動入札", "セキュア決済", "通知システム"],
+                industry: "Eコマース",
                 duration: "3ヶ月",
-                team: "1名"
+                team: "3名"
+              },
+              {
+                title: "不動産管理システム",
+                description: "物件管理・入居者管理・収支管理を統合したシステム",
+                detailedDescription: "不動産管理会社向けの包括的な管理システム。物件情報、入居者管理、家賃収支、メンテナンス記録を一元管理。レポート機能とダッシュボードで経営状況を可視化。",
+                url: "https://realestate-flame-three.vercel.app/",
+                image: "bg-gradient-to-br from-green-500 via-teal-500 to-blue-500",
+                imageUrl: "/real_estate_management_system_image.png",
+                icon: "🏢",
+                tech: ["Vue.js", "Laravel", "MySQL", "Chart.js", "PDF生成"],
+                features: ["物件管理", "入居者管理", "収支管理", "レポート機能"],
+                industry: "不動産",
+                duration: "4ヶ月",
+                team: "4名"
+              },
+              {
+                title: "倉庫管理システム",
+                description: "在庫管理・入出庫管理・発注管理の統合システム",
+                detailedDescription: "製造業向けの倉庫管理システム。バーコード・QRコードによる在庫管理、入出庫の自動記録、発注点管理、在庫レポート機能を実装。",
+                url: "https://cooola-micro-782k78u49-kensudogits-projects.vercel.app/dashboard",
+                image: "bg-gradient-to-br from-orange-500 via-red-500 to-pink-500",
+                imageUrl: "/warehouse_management_system_image.png",
+                icon: "📦",
+                tech: ["React", "Spring Boot", "PostgreSQL", "バーコードAPI", "REST API"],
+                features: ["在庫管理", "入出庫管理", "発注管理", "バーコード対応"],
+                industry: "製造業",
+                duration: "5ヶ月",
+                team: "5名"
+              },
+              {
+                title: "消防司令システム",
+                description: "緊急通報受付・出動指示・状況管理システム",
+                detailedDescription: "消防本部向けの緊急対応システム。119番通報の受付、出動車両の管理、現場状況のリアルタイム更新、災害情報の共有機能を実装。",
+                url: "https://frontend-pscisypg0-kensudogits-projects.vercel.app",
+                image: "bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500",
+                imageUrl: "/fire_command_system_image.png",
+                icon: "🚨",
+                tech: ["React", "Express.js", "MongoDB", "WebSocket", "地図API"],
+                features: ["緊急通報受付", "出動管理", "状況管理", "地図表示"],
+                industry: "公共・防災",
+                duration: "6ヶ月",
+                team: "6名"
+              },
+              {
+                title: "ノーコード開発基盤",
+                description: "ドラッグ&ドロップでアプリケーションを構築できるプラットフォーム",
+                detailedDescription: "非エンジニアでもアプリケーションを構築できるノーコードプラットフォーム。ドラッグ&ドロップUI、データベース設計、API自動生成、デプロイ機能を提供。",
+                url: "https://frontend-next-8uf7sa9zc-kensudogits-projects.vercel.app",
+                image: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
+                imageUrl: "/no_code_platform_image.png",
+                icon: "🧩",
+                tech: ["Next.js", "TypeScript", "Prisma", "Docker", "Vercel"],
+                features: ["ドラッグ&ドロップ", "データベース設計", "API自動生成", "ワンクリックデプロイ"],
+                industry: "SaaS",
+                duration: "8ヶ月",
+                team: "7名"
+              },
+              {
+                title: "RAGシステム",
+                description: "大規模言語モデルを活用した質問応答システム",
+                detailedDescription: "企業の内部文書を活用したRAG（Retrieval-Augmented Generation）システム。文書のベクトル化、類似検索、LLMによる回答生成を実装。",
+                url: "https://rag-azure-nine.vercel.app/",
+                image: "bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500",
+                imageUrl: "/rag_system_image.png",
+                icon: "🤖",
+                tech: ["Python", "FastAPI", "Azure OpenAI", "Pinecone", "LangChain"],
+                features: ["文書検索", "AI回答生成", "ベクトル検索", "API連携"],
+                industry: "AI・機械学習",
+                duration: "4ヶ月",
+                team: "3名"
+              },
+              {
+                title: "スレッド投稿管理",
+                description: "コミュニティ型の投稿・コメント管理システム",
+                detailedDescription: "SNS風のコミュニティプラットフォーム。スレッド作成、コメント機能、いいね・シェア、ユーザー管理、モデレーション機能を実装。",
+                url: "https://thread-manage-2iqf7gflt-kensudogits-projects.vercel.app/",
+                image: "bg-gradient-to-br from-pink-500 via-rose-500 to-red-500",
+                imageUrl: "/thread_post_management_image.png",
+                icon: "💬",
+                tech: ["React", "Node.js", "Redis", "Socket.io", "JWT"],
+                features: ["スレッド管理", "コメント機能", "リアルタイム更新", "ユーザー管理"],
+                industry: "SNS・コミュニティ",
+                duration: "3ヶ月",
+                team: "4名"
+              },
+              {
+                title: "インターネット・バンキング",
+                description: "オンラインバンキングサービスのWebアプリケーション",
+                detailedDescription: "金融機関向けのオンラインバンキングシステム。口座照会、振込機能、投資商品管理、セキュリティ機能（二要素認証、暗号化）を実装。",
+                url: "https://frontend-8gjll2d67-kensudogits-projects.vercel.app/",
+                image: "bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500",
+                imageUrl: "/internet_banking_image.png",
+                icon: "🏦",
+                tech: ["React", "Java", "Oracle", "Spring Security", "暗号化"],
+                features: ["口座管理", "振込機能", "投資管理", "セキュリティ"],
+                industry: "金融",
+                duration: "10ヶ月",
+                team: "8名"
+              },
+              {
+                title: "カラオケシステム",
+                description: "楽曲検索・予約・決済機能付きカラオケ管理システム",
+                detailedDescription: "カラオケ店向けの管理システム。楽曲データベース、予約管理、料金計算、決済連携、利用統計レポート機能を実装。",
+                url: "https://karaoke-pro-system.vercel.app/",
+                image: "bg-gradient-to-br from-yellow-500 via-orange-500 to-red-500",
+                imageUrl: "/karaoke_system_image.png",
+                icon: "🎤",
+                tech: ["Vue.js", "Laravel", "Stripe API", "MySQL", "音声API"],
+                features: ["楽曲管理", "予約システム", "決済機能", "統計レポート"],
+                industry: "エンターテイメント",
+                duration: "4ヶ月",
+                team: "4名"
+              },
+              {
+                title: "POS・レジシステム",
+                description: "店舗向け売上管理・在庫管理・顧客管理システム",
+                detailedDescription: "小売店向けのPOSシステム。商品管理、売上管理、在庫管理、顧客管理、レシート印刷、売上レポート機能を実装。",
+                url: "https://frontend-dnnq6vti0-kensudogits-projects.vercel.app/",
+                image: "bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500",
+                imageUrl: "/pos_register_system_image.png",
+                icon: "🛒",
+                tech: ["React", "Express.js", "SQLite", "プリンターAPI", "バーコード"],
+                features: ["商品管理", "売上管理", "在庫管理", "レシート印刷"],
+                industry: "小売",
+                duration: "3ヶ月",
+                team: "3名"
+              },
+              {
+                title: "駐車場管理システム",
+                description: "駐車場の空き状況管理・料金計算・決済システム",
+                detailedDescription: "駐車場運営会社向けの管理システム。空き状況のリアルタイム表示、料金計算、決済処理、利用統計、予約機能を実装。",
+                url: "https://frontend-kzkn15k97-kensudogits-projects.vercel.app",
+                image: "bg-gradient-to-br from-slate-500 via-gray-500 to-zinc-500",
+                imageUrl: "/parking_management_system_image.png",
+                icon: "🅿️",
+                tech: ["React", "Node.js", "PostgreSQL", "決済API", "センサー連携"],
+                features: ["空き状況管理", "料金計算", "決済処理", "予約機能"],
+                industry: "交通・インフラ",
+                duration: "4ヶ月",
+                team: "4名"
+              },
+              {
+                title: "駐車場管理システム(管理者)",
+                description: "駐車場の空き状況管理・料金計算・決済システム",
+                detailedDescription: "駐車場運営会社向けの管理システム。空き状況のリアルタイム表示、料金計算、決済処理、利用統計、予約機能を実装。",
+                url: "https://admin-frontend-9ytrvei1e-kensudogits-projects.vercel.app",
+                image: "bg-gradient-to-br from-slate-500 via-gray-500 to-zinc-500",
+                imageUrl: "/parking_management_system_image.png",
+                icon: "🅿️",
+                tech: ["React", "Node.js", "PostgreSQL", "決済API", "センサー連携"],
+                features: ["空き状況管理", "料金計算", "決済処理", "予約機能"],
+                industry: "交通・インフラ",
+                duration: "4ヶ月",
+                team: "4名"
+              },
+              {
+                title: "YouTube急上昇動画抽出システム",
+                description: "YouTubeで閲覧数が急上昇している動画を自動抽出・分析するシステム",
+                detailedDescription: "YouTube APIを活用した動画分析システム。急上昇動画の自動検出、トレンド分析、キーワード抽出、視聴者エンゲージメント分析機能を実装。",
+                url: "https://express-p6yebqya7-kensudogits-projects.vercel.app/",
+                image: "bg-gradient-to-br from-red-500 via-red-600 to-red-700",
+                imageUrl: "/youtube.png",
+                icon: "📈",
+                tech: ["Express.js", "React", "YouTube API", "Python", "データ分析"],
+                features: ["急上昇動画検出", "トレンド分析", "キーワード抽出", "エンゲージメント分析"],
+                industry: "データ分析・マーケティング",
+                duration: "2ヶ月",
+                team: "2名"
               }
             ].map((project, index) => {
               const imageState = imageLoadStates[index] || { loaded: false, error: false };
@@ -1855,10 +1951,7 @@ export default function HealthcareLP() {
                       <img 
                         src={project.imageUrl} 
                         alt={project.title} 
-                        /* 実績画像はカード幅いっぱいに敷く（SVG側が背景まで含めて描かれているため） */
-                        className={`absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${showImage ? 'block' : 'hidden'}`}
-                        loading="lazy"
-                        decoding="async"
+                        className={`max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500 ${showImage ? 'block' : 'hidden'}`}
                         onLoad={() => handleImageLoad(index)}
                         onError={() => handleImageError(index)}
                       />
@@ -1994,7 +2087,7 @@ export default function HealthcareLP() {
               { q: "プロジェクトの期間はどれくらい？", a: "小規模プロジェクトは1-3ヶ月、中規模は3-6ヶ月、大規模は6ヶ月以上となります。要件により異なります。" },
               { q: "セキュリティ対策は？", a: "暗号化通信、アクセス制御、脆弱性診断、セキュリティ監査など、業界標準のセキュリティ対策を実装します。" },
               { q: "サポート体制は？", a: "平日9-18時のメール/電話サポート、緊急時は24時間対応。専任コンサルタントによる継続サポートも可能です。" },
-              { q: "技術スタックの選定は？", a: "プロジェクト要件、スケーラビリティ、保守性を考慮し、JavaSE-21 LTS、Spring Boot 3.x等の最新技術を含む最適な技術スタックを提案します。" },
+              { q: "技術スタックの選定は？", a: "プロジェクト要件、スケーラビリティ、保守性を考慮し、最適な技術スタックを提案します。" },
               { q: "クラウド移行のリスクは？", a: "段階的な移行計画、データバックアップ、ロールバック手順を事前に策定し、リスクを最小化します。" },
             ].map((item, i) => (
               <details key={`faq-${item.q}-${i}`} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl border border-gray-100 hover:border-blue-200 transition-all duration-300 overflow-hidden">

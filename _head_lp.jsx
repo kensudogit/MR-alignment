@@ -5,7 +5,7 @@ import ChatModal from './ChatModal';
 import AppointmentModal from './AppointmentModal';
 import PhoneCallModal from './PhoneCallModal';
 import { useAuth } from '../contexts/AuthContext';
-import { generateProposal } from '../services/aiContent';
+import { generateProposal, generateText } from '../services/aiContent';
 
 // --- Inline Icon Components (no external deps) ---
 const IconPhone = (props) => (
@@ -414,71 +414,9 @@ Stat.propTypes = {
   label: PropTypes.string.isRequired
 };
 
-/**
- * 主要機能カードの写真。
- *
- * 【差し替え方法】
- *   photo の URL を入れ替えるだけで反映されます。
- *   読み込めなかった場合は fallback（ローカル画像）→ グラデーション背景の順に退避するため、
- *   URL が切れてもカードが崩れることはありません。
- *
- * 【注意】
- *   Unsplash の画像を直接参照しています。外部サービスのため、
- *   表示速度・可用性はその時々のネットワーク状況に依存します。
- *   恒久運用するなら、画像をダウンロードして public/features/ に置き、
- *   photo を '/features/xxx.jpg' のようなローカルパスへ変更してください。
- *
- * Unsplash のライセンス: https://unsplash.com/license
- */
-const FEATURE_PHOTOS = {
-  systemDevelopment: {
-    photo: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=70',
-    fallback: '/system_development_image.png',
-  },
-  cloudMigration: {
-    photo: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=70',
-    // /cloud_migration_image.png は system_development_image.png と中身が同一（MD5一致）で、
-    // 「システム開発」の絵が出てしまうため退避先には使わない。
-    // 正しい画像を用意したら差し替えること。
-    fallback: undefined,
-  },
-  dataAnalysis: {
-    photo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=70',
-    // 同上（/data_analysis_image.png も中身が「システム開発」の絵）
-    fallback: undefined,
-  },
-  security: {
-    photo: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=70',
-    fallback: '/security_image.png',
-  },
-  dxPromotion: {
-    photo: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=70',
-    fallback: '/dx_promotion_image.png',
-  },
-  itConsulting: {
-    photo: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=70',
-    fallback: '/it_consulting_image.png',
-  },
-};
-
-const FeatureCard = ({ icon, title, desc, onClick, imageUrl, fallbackImageUrl, imageBg }) => {
-  // 外部（Unsplash）の写真を優先し、読み込めなければローカル画像、
-  // それも失敗したらグラデーション背景だけを表示する。
-  // 外部URLはいつ切れるか分からないため、必ず退避先を用意しておく。
-  const [src, setSrc] = useState(imageUrl || fallbackImageUrl);
-  const [failed, setFailed] = useState(false);
-
-  const handleError = () => {
-    if (src !== fallbackImageUrl && fallbackImageUrl) {
-      setSrc(fallbackImageUrl);
-      return;
-    }
-    setFailed(true);
-  };
-
-  return (
-  <button
-    className="group cursor-pointer transition-all duration-500 hover:scale-105 focus:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-offset-2 w-full text-left overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 hover:border-blue-200"
+const FeatureCard = ({ icon, title, desc, onClick, imageUrl, imageBg }) => (
+  <button 
+    className="group cursor-pointer transition-all duration-500 hover:scale-105 focus:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-offset-2 w-full text-left overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 hover:border-blue-200" 
     onClick={onClick}
     onKeyDown={(e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -489,25 +427,20 @@ const FeatureCard = ({ icon, title, desc, onClick, imageUrl, fallbackImageUrl, i
     aria-label={`${title}の詳細を見る`}
   >
     {/* Image Section */}
-    <div className={`h-40 rounded-t-2xl ${imageBg || 'bg-gradient-to-br from-blue-100 to-blue-200'} flex items-center justify-center relative overflow-hidden`}>
-      {src && !failed && (
-        <img
-          src={src}
-          alt={title}
-          /* 写真はカード全体を埋める。object-contain だと余白が出て写真らしく見えない */
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          loading="lazy"
-          decoding="async"
-          onError={handleError}
+    <div className={`h-40 rounded-t-2xl ${imageBg || 'bg-gradient-to-br from-blue-100 to-blue-200'} flex items-center justify-center relative overflow-hidden group-hover:scale-110 transition-transform duration-500`}>
+      {imageUrl && (
+        <img 
+          src={imageUrl} 
+          alt={title} 
+          className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500"
         />
       )}
-      {/* 写真の上に載る文字を読みやすくする控えめなオーバーレイ */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
         <span className="text-gray-700 text-sm font-medium">詳細</span>
       </div>
     </div>
-
+    
     {/* Content Section */}
     <div className="p-6">
       <div className="flex items-center gap-4 mb-4">
@@ -525,8 +458,7 @@ const FeatureCard = ({ icon, title, desc, onClick, imageUrl, fallbackImageUrl, i
       </div>
     </div>
   </button>
-  );
-};
+);
 
 FeatureCard.propTypes = {
   icon: PropTypes.element.isRequired,
@@ -534,7 +466,6 @@ FeatureCard.propTypes = {
   desc: PropTypes.string.isRequired,
   onClick: PropTypes.func.isRequired,
   imageUrl: PropTypes.string,
-  fallbackImageUrl: PropTypes.string,
   imageBg: PropTypes.string
 };
 
@@ -1296,6 +1227,21 @@ export default function HealthcareLP() {
     return titles[key] || key;
   };
 
+  /**
+   * AI資料生成の疎通確認。
+   * APIキーはサーバー側にのみ存在するため、ここでは鍵の有無や形式は検査しない。
+   * バックエンドが 503 を返した場合は OPENAI_API_KEY 未設定を意味する。
+   */
+  const testAiConnection = async () => {
+    const result = await generateText('こんにちは。これは接続テストです。');
+
+    if (result.success) {
+      window.alert('AI資料生成の接続確認に成功しました。');
+      return;
+    }
+    window.alert(`AI資料生成に接続できませんでした: ${result.error ?? '不明なエラー'}`);
+  };
+
   // チャットモーダルを開く関数
   const openChatModal = () => {
     setChatModalOpen(true);
@@ -1454,6 +1400,13 @@ export default function HealthcareLP() {
                 >
                   AI資料を生成（無料）
                 </button>
+                <button 
+                  type="button"
+                  onClick={() => testAiConnection()}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-2 px-6 rounded-xl text-sm transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl mt-2"
+                >
+                  APIキー設定確認
+                </button>
                 <p className="text-sm text-gray-500 text-center">送信により、プライバシーポリシーに同意したものとみなされます。</p>
               </form>
             </div>
@@ -1477,8 +1430,7 @@ export default function HealthcareLP() {
               title="システム開発" 
               desc="最新技術を駆使した高品質なシステム開発で、お客様のビジネス課題を解決。" 
               onClick={() => setSelectedFeature(featureData.systemDevelopment)}
-              imageUrl={FEATURE_PHOTOS.systemDevelopment.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.systemDevelopment.fallback}
+              imageUrl="/system_development_image.png"
               imageBg="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700"
             />
             <FeatureCard 
@@ -1486,8 +1438,7 @@ export default function HealthcareLP() {
               title="クラウド移行" 
               desc="安全で効率的なクラウド移行で、ITコスト削減と業務効率化を実現。" 
               onClick={() => setSelectedFeature(featureData.cloudMigration)}
-              imageUrl={FEATURE_PHOTOS.cloudMigration.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.cloudMigration.fallback}
+              imageUrl="/cloud_migration_image.png"
               imageBg="bg-gradient-to-br from-cyan-400 via-cyan-500 to-blue-600"
             />
             <FeatureCard 
@@ -1495,8 +1446,7 @@ export default function HealthcareLP() {
               title="データ分析" 
               desc="ビッグデータ活用とAI技術で、データドリブンな意思決定をサポート。" 
               onClick={() => setSelectedFeature(featureData.dataAnalysis)}
-              imageUrl={FEATURE_PHOTOS.dataAnalysis.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.dataAnalysis.fallback}
+              imageUrl="/data_analysis_image.png"
               imageBg="bg-gradient-to-br from-green-400 via-green-500 to-emerald-600"
             />
             <FeatureCard 
@@ -1504,8 +1454,7 @@ export default function HealthcareLP() {
               title="セキュリティ" 
               desc="企業の重要情報を保護する包括的なセキュリティソリューションを提供。" 
               onClick={() => setSelectedFeature(featureData.security)}
-              imageUrl={FEATURE_PHOTOS.security.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.security.fallback}
+              imageUrl="/security_image.png"
               imageBg="bg-gradient-to-br from-red-400 via-red-500 to-pink-600"
             />
             <FeatureCard 
@@ -1513,8 +1462,7 @@ export default function HealthcareLP() {
               title="DX推進" 
               desc="デジタル技術を活用した業務改革で、競争力向上と成長を実現。" 
               onClick={() => setSelectedFeature(featureData.dxPromotion)}
-              imageUrl={FEATURE_PHOTOS.dxPromotion.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.dxPromotion.fallback}
+              imageUrl="/dx_promotion_image.png"
               imageBg="bg-gradient-to-br from-purple-400 via-purple-500 to-violet-600"
             />
             <FeatureCard 
@@ -1522,8 +1470,7 @@ export default function HealthcareLP() {
               title="ITコンサルティング" 
               desc="技術的視点からビジネス課題を分析し、最適なソリューションを提案。" 
               onClick={() => setSelectedFeature(featureData.itConsulting)}
-              imageUrl={FEATURE_PHOTOS.itConsulting.photo}
-              fallbackImageUrl={FEATURE_PHOTOS.itConsulting.fallback}
+              imageUrl="/it_consulting_image.png"
               imageBg="bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600"
             />
           </div>
@@ -1726,7 +1673,7 @@ export default function HealthcareLP() {
                 detailedDescription: "SaaS 形式で提供する FX 分析ツール。リアルタイムレート配信、チャート分析、シグナル通知、テナントごとの権限管理を実装。",
                 url: "https://fx-production-f5d5.up.railway.app/",
                 image: "bg-gradient-to-br from-teal-600 via-emerald-600 to-green-700",
-                imageUrl: "/portfolio/fx-saas.png",
+                imageUrl: "/portfolio/fx-saas.svg",
                 icon: "\u{1F4C8}",
                 tech: ["Python", "FastAPI", "PostgreSQL", "WebSocket", "Railway"],
                 features: ["リアルタイムレート", "チャート分析", "シグナル通知", "マルチテナント"],
@@ -1740,7 +1687,7 @@ export default function HealthcareLP() {
                 detailedDescription: "太陽光・蓄電池などの分散型エネルギーリソースを統合制御するアグリゲーションシステム。発電予測、需給バランス最適化、実績レポートを実装。",
                 url: "https://renewableenergy-production-8368.up.railway.app/",
                 image: "bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700",
-                imageUrl: "/portfolio/energy-aggregation.png",
+                imageUrl: "/portfolio/energy-aggregation.svg",
                 icon: "\u26A1",
                 tech: ["Python", "時系列解析", "PostgreSQL", "REST API", "Railway"],
                 features: ["発電予測", "需給最適化", "遠隔制御", "実績レポート"],
@@ -1754,7 +1701,7 @@ export default function HealthcareLP() {
                 detailedDescription: "紙・PDFの領収書をOCRで構造化データに変換し、勘定科目を自動推定して会計ソフトへ連携。手入力を大幅に削減する経理向けシステム。",
                 url: "https://ocr-production-0e14.up.railway.app/",
                 image: "bg-gradient-to-br from-blue-600 via-sky-600 to-cyan-700",
-                imageUrl: "/portfolio/receipt-ocr.png",
+                imageUrl: "/portfolio/receipt-ocr.svg",
                 icon: "\u{1F9FE}",
                 tech: ["Python", "OCR", "生成AI", "会計API連携", "PostgreSQL"],
                 features: ["OCR読み取り", "勘定科目の自動推定", "会計ソフト連携", "仕訳出力"],
@@ -1768,7 +1715,7 @@ export default function HealthcareLP() {
                 detailedDescription: "Codex(AI)によるHTML生成から、Claude Code を介した WordPress への実装・公開までを自動化するワークフロー。記事作成から公開までの工数を削減。",
                 url: "https://wpaipublisher-production.up.railway.app/guide",
                 image: "bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700",
-                imageUrl: "/portfolio/wp-ai-publisher.png",
+                imageUrl: "/portfolio/wp-ai-publisher.svg",
                 icon: "\u{1F916}",
                 tech: ["Codex", "Claude Code", "WordPress REST API", "Python", "自動化"],
                 features: ["HTML自動生成", "AIによる実装", "WordPress自動投稿", "公開フロー自動化"],
@@ -1782,7 +1729,7 @@ export default function HealthcareLP() {
                 detailedDescription: "市場データから株価を予測し、分析結果をもとにSNS投稿までを自律的に実行するAIエージェント。情報収集・分析・発信のサイクルを自動化。",
                 url: "https://stockpriceppredictiontool-production.up.railway.app/",
                 image: "bg-gradient-to-br from-amber-600 via-rose-600 to-pink-700",
-                imageUrl: "/portfolio/ai-agent-stock.png",
+                imageUrl: "/portfolio/ai-agent-stock.svg",
                 icon: "\u{1F9E0}",
                 tech: ["Python", "機械学習", "LLM", "SNS API", "スケジューラ"],
                 features: ["株価予測", "自動投稿", "エージェント制御", "実績可視化"],
@@ -1796,7 +1743,7 @@ export default function HealthcareLP() {
                 detailedDescription: "Amazon Bedrock のナレッジベースを中核とした生成AIサービスのクラウド基盤。RAG構成、権限設計、監視・コスト最適化までを含む基盤構築。",
                 url: "https://bedrockknowledgebase-production.up.railway.app",
                 image: "bg-gradient-to-br from-cyan-700 via-blue-700 to-indigo-800",
-                imageUrl: "/portfolio/cloud-infra.png",
+                imageUrl: "/portfolio/cloud-infra.svg",
                 icon: "\u2601\uFE0F",
                 tech: ["AWS Bedrock", "GCP", "IaC", "RAG", "監視・コスト最適化"],
                 features: ["クラウド基盤設計", "RAG構成", "権限設計", "監視/コスト最適化"],
@@ -1810,7 +1757,7 @@ export default function HealthcareLP() {
                 detailedDescription: "ChatGPT の Skills を業務単位でカタログ化し、検索・比較・導入判断ができるアプリケーション（パイロット）。社内での活用促進を目的とする。",
                 url: "https://chatgptskillscatalog-production.up.railway.app/",
                 image: "bg-gradient-to-br from-emerald-600 via-teal-600 to-green-700",
-                imageUrl: "/portfolio/skills-catalog.png",
+                imageUrl: "/portfolio/skills-catalog.svg",
                 icon: "\u{1F4DA}",
                 tech: ["Python", "FastAPI", "PostgreSQL", "全文検索", "Railway"],
                 features: ["Skills一覧", "検索・絞り込み", "詳細比較", "導入ガイド"],
@@ -1824,7 +1771,7 @@ export default function HealthcareLP() {
                 detailedDescription: "D2C事業者向けのマーケティングオートメーション。顧客セグメント作成、シナリオ配信、効果測定までを一気通貫で実行できる基盤。",
                 url: "https://d2c-marketing-automation-production.up.railway.app/",
                 image: "bg-gradient-to-br from-pink-600 via-fuchsia-600 to-violet-700",
-                imageUrl: "/portfolio/d2c-marketing.png",
+                imageUrl: "/portfolio/d2c-marketing.svg",
                 icon: "\u{1F4E3}",
                 tech: ["Python", "FastAPI", "PostgreSQL", "メール配信", "分析基盤"],
                 features: ["顧客セグメント", "シナリオ配信", "効果測定", "ダッシュボード"],
@@ -1855,10 +1802,7 @@ export default function HealthcareLP() {
                       <img 
                         src={project.imageUrl} 
                         alt={project.title} 
-                        /* 実績画像はカード幅いっぱいに敷く（SVG側が背景まで含めて描かれているため） */
-                        className={`absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${showImage ? 'block' : 'hidden'}`}
-                        loading="lazy"
-                        decoding="async"
+                        className={`max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500 ${showImage ? 'block' : 'hidden'}`}
                         onLoad={() => handleImageLoad(index)}
                         onError={() => handleImageError(index)}
                       />
