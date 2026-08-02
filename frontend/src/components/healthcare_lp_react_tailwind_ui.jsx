@@ -5,7 +5,7 @@ import ChatModal from './ChatModal';
 import AppointmentModal from './AppointmentModal';
 import PhoneCallModal from './PhoneCallModal';
 import { useAuth } from '../contexts/AuthContext';
-import { generateProposal, generateText } from '../services/aiContent';
+import { generateProposal } from '../services/aiContent';
 
 // --- Inline Icon Components (no external deps) ---
 const IconPhone = (props) => (
@@ -1227,21 +1227,6 @@ export default function HealthcareLP() {
     return titles[key] || key;
   };
 
-  /**
-   * AI資料生成の疎通確認。
-   * APIキーはサーバー側にのみ存在するため、ここでは鍵の有無や形式は検査しない。
-   * バックエンドが 503 を返した場合は OPENAI_API_KEY 未設定を意味する。
-   */
-  const testAiConnection = async () => {
-    const result = await generateText('こんにちは。これは接続テストです。');
-
-    if (result.success) {
-      window.alert('AI資料生成の接続確認に成功しました。');
-      return;
-    }
-    window.alert(`AI資料生成に接続できませんでした: ${result.error ?? '不明なエラー'}`);
-  };
-
   // チャットモーダルを開く関数
   const openChatModal = () => {
     setChatModalOpen(true);
@@ -1399,13 +1384,6 @@ export default function HealthcareLP() {
                   className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                   AI資料を生成（無料）
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => testAiConnection()}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-2 px-6 rounded-xl text-sm transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl mt-2"
-                >
-                  APIキー設定確認
                 </button>
                 <p className="text-sm text-gray-500 text-center">送信により、プライバシーポリシーに同意したものとみなされます。</p>
               </form>
@@ -1673,7 +1651,7 @@ export default function HealthcareLP() {
                 detailedDescription: "SaaS 形式で提供する FX 分析ツール。リアルタイムレート配信、チャート分析、シグナル通知、テナントごとの権限管理を実装。",
                 url: "https://fx-production-f5d5.up.railway.app/",
                 image: "bg-gradient-to-br from-teal-600 via-emerald-600 to-green-700",
-                imageUrl: "/portfolio/fx-saas.svg",
+                imageUrl: "/portfolio/fx-saas.png",
                 icon: "\u{1F4C8}",
                 tech: ["Python", "FastAPI", "PostgreSQL", "WebSocket", "Railway"],
                 features: ["リアルタイムレート", "チャート分析", "シグナル通知", "マルチテナント"],
@@ -1687,7 +1665,7 @@ export default function HealthcareLP() {
                 detailedDescription: "太陽光・蓄電池などの分散型エネルギーリソースを統合制御するアグリゲーションシステム。発電予測、需給バランス最適化、実績レポートを実装。",
                 url: "https://renewableenergy-production-8368.up.railway.app/",
                 image: "bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700",
-                imageUrl: "/portfolio/energy-aggregation.svg",
+                imageUrl: "/portfolio/energy-aggregation.png",
                 icon: "\u26A1",
                 tech: ["Python", "時系列解析", "PostgreSQL", "REST API", "Railway"],
                 features: ["発電予測", "需給最適化", "遠隔制御", "実績レポート"],
@@ -1701,7 +1679,7 @@ export default function HealthcareLP() {
                 detailedDescription: "紙・PDFの領収書をOCRで構造化データに変換し、勘定科目を自動推定して会計ソフトへ連携。手入力を大幅に削減する経理向けシステム。",
                 url: "https://ocr-production-0e14.up.railway.app/",
                 image: "bg-gradient-to-br from-blue-600 via-sky-600 to-cyan-700",
-                imageUrl: "/portfolio/receipt-ocr.svg",
+                imageUrl: "/portfolio/receipt-ocr.png",
                 icon: "\u{1F9FE}",
                 tech: ["Python", "OCR", "生成AI", "会計API連携", "PostgreSQL"],
                 features: ["OCR読み取り", "勘定科目の自動推定", "会計ソフト連携", "仕訳出力"],
@@ -1715,7 +1693,7 @@ export default function HealthcareLP() {
                 detailedDescription: "Codex(AI)によるHTML生成から、Claude Code を介した WordPress への実装・公開までを自動化するワークフロー。記事作成から公開までの工数を削減。",
                 url: "https://wpaipublisher-production.up.railway.app/guide",
                 image: "bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700",
-                imageUrl: "/portfolio/wp-ai-publisher.svg",
+                imageUrl: "/portfolio/wp-ai-publisher.png",
                 icon: "\u{1F916}",
                 tech: ["Codex", "Claude Code", "WordPress REST API", "Python", "自動化"],
                 features: ["HTML自動生成", "AIによる実装", "WordPress自動投稿", "公開フロー自動化"],
@@ -1729,7 +1707,7 @@ export default function HealthcareLP() {
                 detailedDescription: "市場データから株価を予測し、分析結果をもとにSNS投稿までを自律的に実行するAIエージェント。情報収集・分析・発信のサイクルを自動化。",
                 url: "https://stockpriceppredictiontool-production.up.railway.app/",
                 image: "bg-gradient-to-br from-amber-600 via-rose-600 to-pink-700",
-                imageUrl: "/portfolio/ai-agent-stock.svg",
+                imageUrl: "/portfolio/ai-agent-stock.png",
                 icon: "\u{1F9E0}",
                 tech: ["Python", "機械学習", "LLM", "SNS API", "スケジューラ"],
                 features: ["株価予測", "自動投稿", "エージェント制御", "実績可視化"],
@@ -1743,7 +1721,7 @@ export default function HealthcareLP() {
                 detailedDescription: "Amazon Bedrock のナレッジベースを中核とした生成AIサービスのクラウド基盤。RAG構成、権限設計、監視・コスト最適化までを含む基盤構築。",
                 url: "https://bedrockknowledgebase-production.up.railway.app",
                 image: "bg-gradient-to-br from-cyan-700 via-blue-700 to-indigo-800",
-                imageUrl: "/portfolio/cloud-infra.svg",
+                imageUrl: "/portfolio/cloud-infra.png",
                 icon: "\u2601\uFE0F",
                 tech: ["AWS Bedrock", "GCP", "IaC", "RAG", "監視・コスト最適化"],
                 features: ["クラウド基盤設計", "RAG構成", "権限設計", "監視/コスト最適化"],
@@ -1757,7 +1735,7 @@ export default function HealthcareLP() {
                 detailedDescription: "ChatGPT の Skills を業務単位でカタログ化し、検索・比較・導入判断ができるアプリケーション（パイロット）。社内での活用促進を目的とする。",
                 url: "https://chatgptskillscatalog-production.up.railway.app/",
                 image: "bg-gradient-to-br from-emerald-600 via-teal-600 to-green-700",
-                imageUrl: "/portfolio/skills-catalog.svg",
+                imageUrl: "/portfolio/skills-catalog.png",
                 icon: "\u{1F4DA}",
                 tech: ["Python", "FastAPI", "PostgreSQL", "全文検索", "Railway"],
                 features: ["Skills一覧", "検索・絞り込み", "詳細比較", "導入ガイド"],
@@ -1771,7 +1749,7 @@ export default function HealthcareLP() {
                 detailedDescription: "D2C事業者向けのマーケティングオートメーション。顧客セグメント作成、シナリオ配信、効果測定までを一気通貫で実行できる基盤。",
                 url: "https://d2c-marketing-automation-production.up.railway.app/",
                 image: "bg-gradient-to-br from-pink-600 via-fuchsia-600 to-violet-700",
-                imageUrl: "/portfolio/d2c-marketing.svg",
+                imageUrl: "/portfolio/d2c-marketing.png",
                 icon: "\u{1F4E3}",
                 tech: ["Python", "FastAPI", "PostgreSQL", "メール配信", "分析基盤"],
                 features: ["顧客セグメント", "シナリオ配信", "効果測定", "ダッシュボード"],

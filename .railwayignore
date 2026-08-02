@@ -1,0 +1,25 @@
+# Railway build context excludes (Dockerfile.frontend runs `npm ci` itself)
+**/node_modules
+frontend/node_modules
+frontend/dist
+frontend/.vercel
+
+# Version control / IDE
+.git
+.vscode
+.idea
+
+# Legacy / unused backends not part of the frontend deploy
+_old-laravel-backend
+temp-laravel
+
+# Python backend (separate Railway service)
+backend
+
+# Unused duplicate source images (component loads from /public via absolute paths)
+frontend/src/assets/images
+frontend/src/components/*.png
+
+# Misc
+*.log
+.vercel
