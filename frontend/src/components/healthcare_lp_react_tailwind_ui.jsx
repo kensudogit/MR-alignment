@@ -1821,7 +1821,8 @@ export default function HealthcareLP() {
                       <img 
                         src={project.imageUrl} 
                         alt={project.title} 
-                        className={`absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${showImage ? 'block' : 'hidden'}`}
+                        /* display:none にすると loading="lazy" が発火せず永久に読み込まれないため、不透明度で切り替える */
+                        className={`absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${showImage ? 'opacity-100' : 'opacity-0'}`}
                         loading="lazy"
                         decoding="async"
                         onLoad={() => handleImageLoad(index)}
