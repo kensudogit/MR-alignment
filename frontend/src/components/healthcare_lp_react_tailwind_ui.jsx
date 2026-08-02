@@ -524,10 +524,11 @@ const BlogModal = ({ isOpen, onClose, blogCategory, onArticleClick }) => {
       />
       
       {/* Modal */}
-      <dialog 
-        className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100"
-        open
+      <div 
+        role="dialog"
+        aria-modal="true"
         aria-labelledby="blog-modal-title"
+        className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100"
       >
         {/* Header */}
         <div className={`${blogCategory.image} p-6 rounded-t-2xl`}>
@@ -567,7 +568,7 @@ const BlogModal = ({ isOpen, onClose, blogCategory, onArticleClick }) => {
                   {article.content}
                 </div>
                 <button
-                  onClick={() => onArticleClick(article)}
+                  onClick={() => onArticleClick(article, blogCategory)}
                   className="text-blue-600 hover:text-blue-800 font-semibold text-sm transition-colors duration-200 flex items-center gap-2"
                 >
                   詳細を読む
@@ -589,7 +590,7 @@ const BlogModal = ({ isOpen, onClose, blogCategory, onArticleClick }) => {
             閉じる
           </button>
         </div>
-      </dialog>
+      </div>
     </div>
   );
 };
@@ -601,9 +602,47 @@ BlogModal.propTypes = {
   onArticleClick: PropTypes.func.isRequired
 };
 
+// 記事に外部リンクが設定されていない場合でも、本文で紹介しているGitHubリポジトリを遷移先として使う。
+const resolveArticleUrl = (article) => {
+  if (!article) return null;
+  if (article.url) return article.url;
+  const github = article.content?.match(/https:\/\/github\.com\/[\w.-]+\/[\w.-]+/)?.[0];
+  if (github) return github;
+  return article.content?.match(/https?:\/\/[^\s)\]"']+/)?.[0] ?? null;
+};
+
+// カルーセル表示順（blogData の定義順と一致させない）
+const BLOG_CATEGORY_ORDER = [
+  'trends',
+  'aiMl',
+  'dxPromotion',
+  'security',
+  'cloud',
+  'blockchain',
+  'iot',
+  'pythonLearning',
+  'microservices',
+  'nocode',
+];
+
+const BLOG_IMAGE_MAP = {
+  trends: '/blog/trend.png',
+  aiMl: '/blog/aiml.png',
+  dxPromotion: '/blog/dx.png',
+  security: '/blog/security.png',
+  cloud: '/blog/cloud.png',
+  blockchain: '/blog/blockchain.png',
+  iot: '/blog/iot.png',
+  pythonLearning: '/blog/python.png',
+  microservices: '/blog/microservice.png',
+  nocode: '/blog/nocode.png',
+};
+
 // --- Article Detail Modal ---
 const ArticleModal = ({ isOpen, onClose, article, categoryInfo }) => {
   if (!isOpen || !article) return null;
+
+  const articleUrl = resolveArticleUrl(article);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -615,10 +654,11 @@ const ArticleModal = ({ isOpen, onClose, article, categoryInfo }) => {
       />
       
       {/* Modal */}
-      <dialog 
-        className="relative bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100"
-        open
+      <div 
+        role="dialog"
+        aria-modal="true"
         aria-labelledby="article-modal-title"
+        className="relative bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100"
       >
         {/* Header */}
         <div className={`${categoryInfo?.image || 'bg-gradient-to-br from-blue-400 to-indigo-500'} p-6 rounded-t-2xl`}>
@@ -675,24 +715,22 @@ const ArticleModal = ({ isOpen, onClose, article, categoryInfo }) => {
         <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex gap-3">
           <button 
             onClick={onClose}
-            className="btn-secondary flex-1"
+            className={articleUrl ? 'btn-secondary flex-1' : 'btn-gradient w-full'}
           >
             閉じる
           </button>
-          <button 
-            onClick={() => {
-              // ここで外部リンクや詳細ページへの遷移を実装
-              if (article.url) {
-                window.open(article.url, '_blank');
-              }
-            }}
-            className="btn-gradient flex-1"
-            disabled={!article.url}
-          >
-            詳細ページを見る
-          </button>
+          {articleUrl ? (
+            <a
+              href={articleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-gradient flex-1 text-center"
+            >
+              詳細ページを見る
+            </a>
+          ) : null}
         </div>
-      </dialog>
+      </div>
     </div>
   );
 };
@@ -957,166 +995,17 @@ export default function HealthcareLP() {
   };
 
   // 記事クリックハンドラー
-  const handleArticleClick = (article) => {
+  const handleArticleClick = (article, category) => {
     setSelectedArticle(article);
-    setSelectedArticleCategory(selectedBlog);
+    setSelectedArticleCategory(category || selectedBlog);
   };
 
-  // ブログスライド機能
-  const blogCategories = [
-    {
-      title: "トレンド",
-      description: "最新のITトレンドと市場動向を分析",
-      image: "bg-gradient-to-br from-blue-400 to-indigo-500",
-      imageUrl: "/blog/trend.png",
-      articles: [
-        "【2024年最新】生成AIが変えるビジネスモデル：ChatGPT以降の企業変革事例",
-        "メタバースからWeb3へ：次世代インターネットの実用化が始まった",
-        "量子コンピューティングの商用化が加速：IBM・Google・Microsoftの最新動向",
-        "エッジAIの普及で変わる製造業：リアルタイム品質管理の新時代",
-        "サステナブルテックの台頭：グリーンITで実現する環境経営"
-      ]
-    },
-    {
-      title: "AI/ML",
-      description: "人工知能と機械学習の技術解説",
-      image: "bg-gradient-to-br from-purple-400 to-pink-500",
-      imageUrl: "/blog/aiml.png",
-      articles: [
-        "【実装ガイド】RAGシステム構築の完全マニュアル：企業文書を活用したAI回答システム",
-        "大規模言語モデル（LLM）の選び方：GPT-4、Claude、Gemini徹底比較",
-        "機械学習Ops（MLOps）の導入戦略：AIモデルの本格運用で失敗しない方法",
-        "コンピュータビジョンの最新技術：YOLO v8からSegment Anythingまで",
-        "AI倫理とガバナンス：企業が取り組むべきAIガイドライン策定のポイント",
-        "Azure OpenAIを活用したRAGシステム：実装から運用まで完全ガイド"
-      ]
-    },
-    {
-      title: "DX推進",
-      description: "デジタル変革の戦略と実践",
-      image: "bg-gradient-to-br from-green-400 to-teal-500",
-      imageUrl: "/blog/dx.png",
-      articles: [
-        "【成功事例】中小企業のDX推進：3ヶ月で業務効率30%向上を実現した方法",
-        "デジタル人材の確保と育成：ITスキル不足を解決する実践的アプローチ",
-        "レガシーシステム刷新の戦略：段階的移行でリスクを最小化する方法",
-        "データドリブン経営の実現：BIツール導入から意思決定の高速化まで",
-        "アジャイル開発の組織導入：スクラムマスター育成とチーム変革のポイント"
-      ]
-    },
-    {
-      title: "セキュリティ",
-      description: "サイバーセキュリティの最新動向",
-      image: "bg-gradient-to-br from-red-400 to-orange-500",
-      imageUrl: "/blog/security.png",
-      articles: [
-        "【緊急対応】ランサムウェア攻撃の対策と復旧：被害を最小限に抑える方法",
-        "ゼロトラストセキュリティの実装：従来の境界防御からID中心の防御へ",
-        "クラウドセキュリティのベストプラクティス：AWS・Azure・GCPの設定ガイド",
-        "脅威インテリジェンスの活用：攻撃者の手口を先読みする防御戦略",
-        "インシデント対応の自動化：SOARツールで24時間365日の監視を実現"
-      ]
-    },
-    {
-      title: "クラウド",
-      description: "クラウド技術とベストプラクティス",
-      image: "bg-gradient-to-br from-cyan-400 to-blue-500",
-      imageUrl: "/blog/cloud.png",
-      articles: [
-        "【移行ガイド】オンプレミスからクラウドへ：段階的移行で失敗しない方法",
-        "マルチクラウド戦略の設計：AWS・Azure・GCPを組み合わせた最適構成",
-        "サーバーレスアーキテクチャの実践：Lambda・Azure Functions・Cloud Functions比較",
-        "Kubernetes運用の実践：コンテナオーケストレーションでスケーラブルなシステム構築",
-        "クラウドコスト最適化のテクニック：FinOpsで年間数百万円のコスト削減を実現"
-      ]
-    },
-    {
-      title: "ブロックチェーン",
-      description: "分散型技術とその応用",
-      image: "bg-gradient-to-br from-indigo-400 to-purple-500",
-      imageUrl: "/blog/blockchain.png",
-      articles: [
-        "【実用化事例】企業ブロックチェーンの導入：サプライチェーン管理の革新",
-        "DeFiプロトコルの技術解説：Uniswap・Compound・Aaveの仕組みとリスク",
-        "NFTのビジネス活用：デジタル資産としての価値創造とマーケティング戦略",
-        "Web3エコシステムの構築：DAO・DeFi・NFTを統合した次世代プラットフォーム",
-        "中央銀行デジタル通貨（CBDC）の動向：日本・米国・中国の取り組み比較"
-      ]
-    },
-    {
-      title: "IOT",
-      description: "モノのインターネットとスマートシティ",
-      image: "bg-gradient-to-br from-yellow-400 to-orange-500",
-      imageUrl: "/blog/iot.png",
-      articles: [
-        "【導入事例】製造業IoTの成功パターン：センサーデータで品質管理を革新",
-        "スマートシティの実現：交通・エネルギー・防災を統合した都市OS",
-        "エッジコンピューティングの実践：リアルタイム処理でIoTデータを活用",
-        "5GとIoTの組み合わせ：超低遅延通信で実現する新サービス",
-        "IoTセキュリティの課題と対策：デバイス認証からデータ暗号化まで"
-      ]
-    },
-    {
-      title: "Python学習",
-      description: "Pythonプログラミングの実践的学習教材",
-      image: "bg-gradient-to-br from-orange-400 to-red-500",
-      imageUrl: "/blog/python.png",
-      articles: [
-        "【実践教材】Pythonスクレイピング技術を通した学習アプローチ：AWS Lambdaと組み合わせた実践的な教材",
-        "AWS Lambda関数の実装とベストプラクティス：サーバーレス開発の基礎から応用まで",
-        "非同期プログラミングとスクレイピング技術：効率的なWebデータ収集の実装方法",
-        "【GitHub教材】https://github.com/kensudogit/lambda：詳細な学習教材とサンプルコード",
-        "段階的学習プログラム：初心者から中級者まで対応した10のセクション構成",
-        "演習問題とサンプルコード：実際に動かしながら学べる実践的な教材",
-        "エラーハンドリングとログ管理：本格的なアプリケーション開発に必要な知識",
-        "クラウド開発の理解：AWSサービスとの連携方法を実践的に学習",
-        "スクレイピング技術の習得：BeautifulSoup4とaiohttpを使った効率的なデータ収集",
-        "実践的なPython学習：AWS Lambdaとスクレイピング技術を組み合わせた教材"
-      ]
-    },
-    {
-      title: "マイクロサービス",
-      description: "マイクロサービスアーキテクチャの実践的学習教材",
-      image: "bg-gradient-to-br from-indigo-400 to-purple-500",
-      imageUrl: "/blog/microservice.png",
-      articles: [
-        "【実装事例】マイクロカーネル型倉庫管理システム：COOOLa Microプロジェクトの詳細解説",
-        "Spring Cloudを使ったマイクロサービス開発：サービスディスカバリとAPIゲートウェイの実装",
-        "プラグインシステムとOSGiの活用：動的ロード可能な機能モジュールの設計",
-        "【実装ガイド】RAGシステム構築の完全マニュアル：企業文書を活用したAI回答システム",
-        "【GitHub教材】https://github.com/kensudogit/cooola-micro：実践的なマイクロサービス教材",
-        "マイクロカーネルアーキテクチャ：コアシステムとプラグインの分離設計",
-        "サービス間通信パターン：REST API、RabbitMQ、gRPCの使い分け",
-        "分散システムの監視とログ管理：Prometheus、Grafana、Jaegerの活用",
-        "コンテナ化とオーケストレーション：Docker、Kubernetes、Helmの実践",
-        "ドメイン駆動設計（DDD）の適用：マイクロサービス境界の設計指針",
-        "実践的なマイクロサービス開発：Spring Boot 3.x + JavaSE-21 LTSの最新技術スタック"
-      ]
-    },
-    {
-      title: "ノーコード開発",
-      description: "ノーコード・ローコードプラットフォームの技術解説",
-      image: "bg-gradient-to-br from-orange-400 to-red-500",
-      imageUrl: "/blog/nocode.png",
-      articles: [
-        "【実装ガイド】ノーコード開発プラットフォーム構築：Web・モバイル・メタバース・VR/AR対応",
-        "【実装ガイド】AIオーケストレーションエンジン：自己進化・自己複製システムの構築",
-        "【実装ガイド】Web3統合ノーコードプラットフォーム：NFT・DAO・DID・メタバース対応",
-        "【実装ガイド】Three.jsアセットプリセット：建物・木・キャラクターの3Dモデル管理",
-        "【GitHub教材】https://github.com/kensudogit/noCodeDevelopmentPlatform：実践的なノーコード教材",
-        "ドラッグ&ドロップエディタ：直感的なUIでアプリケーションを構築",
-        "コンポーネントライブラリ：再利用可能なUI要素の集約",
-        "リアルタイムプレビュー：変更を即座に確認できる機能",
-        "コード生成：視覚的設計から実際のコードを自動生成",
-        "マルチプラットフォーム対応：Web、モバイル、メタバース、VR/AR",
-        "AI支援機能：コンポーネント提案・レイアウト最適化・コンテンツ生成",
-        "Web3統合：NFT・DAO・DID・メタバース対応",
-        "デプロイメント自動化：GitOps・CI/CD・環境管理・スケーリング",
-        "3Dアセット管理：建物・木・キャラクターの3Dモデル管理",
-        "実践的なノーコード開発：Python + FastAPI + React + TypeScript"
-      ]
-    }
-  ];
+  // blogData を唯一の情報源にし、カルーセル用設定を派生させる
+  const blogCategories = BLOG_CATEGORY_ORDER.map((key) => ({
+    key,
+    ...blogData[key],
+    imageUrl: BLOG_IMAGE_MAP[key],
+  }));
 
   const nextBlogSlide = () => {
     setCurrentBlogSlide((prev) => (prev + 1) % blogCategories.length);
@@ -2021,20 +1910,16 @@ export default function HealthcareLP() {
             {/* スライド表示エリア */}
             <div className="mx-16 overflow-hidden">
               <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentBlogSlide * 100}%)` }}>
-                {blogCategories.map((category, index) => {
-                  const blogKey = Object.keys(blogData)[index];
-                  const blogCategory = blogData[blogKey];
-                  
-                  return (
-                    <div key={`blog-${category.title}-${index}`} className="w-full flex-shrink-0 px-4">
+                {blogCategories.map((category, index) => (
+                    <div key={`blog-${category.key}-${index}`} className="w-full flex-shrink-0 px-4">
                       <button 
                         className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 hover:border-blue-200 transition-all duration-500 hover:scale-105 cursor-pointer overflow-hidden w-full text-left"
-                        onClick={() => setSelectedBlog(blogCategory)}
+                        onClick={() => setSelectedBlog(category)}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            setSelectedBlog(blogCategory);
+                            setSelectedBlog(category);
                           }
                         }}
                         aria-label={`${category.title}の詳細を見る`}
@@ -2065,32 +1950,23 @@ export default function HealthcareLP() {
                       {category.description}
                     </p>
                     <div className="space-y-3 mb-4">
-                      {category.articles.map((article, articleIndex) => {
-                        // 記事タイトルから対応する記事データを検索
-                        const articleData = blogCategory?.articles?.find(a => a.title === article);
-                        return (
-                          <div key={`article-${article}-${articleIndex}`} className="group/article">
+                      {category.articles.map((article, articleIndex) => (
+                          <div key={`article-${article.title}-${articleIndex}`} className="group/article">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (articleData) {
-                                  handleArticleClick(articleData);
-                                }
+                                handleArticleClick(article, category);
                               }}
                               className="flex items-center gap-2 text-sm text-gray-500 group-hover:text-blue-600 transition-colors duration-300 w-full text-left hover:bg-gray-50 p-2 rounded-lg"
-                              disabled={!articleData}
                             >
                               <div className="w-1.5 h-1.5 bg-blue-400 rounded-full flex-shrink-0"></div>
-                              <span className="flex-1">{article}</span>
-                              {articleData && (
-                                <svg className="w-4 h-4 opacity-0 group-hover/article:opacity-100 transition-opacity duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                              )}
+                              <span className="flex-1">{article.title}</span>
+                              <svg className="w-4 h-4 opacity-0 group-hover/article:opacity-100 transition-opacity duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
                             </button>
                           </div>
-                        );
-                      })}
+                      ))}
                     </div>
                     <div className="flex items-center text-blue-600 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                       カテゴリ詳細
@@ -2101,8 +1977,7 @@ export default function HealthcareLP() {
                   </div>
                 </button>
                     </div>
-                  );
-                })}
+                ))}
               </div>
             </div>
 
