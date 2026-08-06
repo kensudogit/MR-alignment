@@ -1687,6 +1687,20 @@ export default function HealthcareLP() {
                 industry: "D2C・マーケティング",
                 duration: "3ヶ月",
                 team: "1名"
+              },
+              {
+                title: "技術継承プラットフォーム",
+                description: "製造現場の保全実績をRAGで検索・継承できるナレッジ基盤",
+                detailedDescription: "Excel・日報・PDFの保全実績データをPostgreSQL + pgvectorに集約し、LangChain・LlamaIndexによるベクトル＋キーワードのハイブリッドRAG検索でベテランの知見継承とトラブルシューティングを支援するプラットフォーム。",
+                url: "https://technologysuccession-production.up.railway.app/",
+                image: "bg-gradient-to-br from-orange-600 via-amber-600 to-yellow-700",
+                imageUrl: "/portfolio/technology-succession.png",
+                icon: "\u{1F3ED}",
+                tech: ["Python", "FastAPI", "LangChain", "LlamaIndex", "pgvector"],
+                features: ["保全実績のデータ化", "ハイブリッドRAG検索", "トラブルシューティング支援", "ベテラン知見の継承"],
+                industry: "製造業",
+                duration: "1ヶ月",
+                team: "1名"
               }
             ].map((project, index) => {
               const imageState = imageLoadStates[index] || { loaded: false, error: false };
