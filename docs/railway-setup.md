@@ -54,11 +54,44 @@ railway variables set OPENAI_API_KEY="sk-..."
 | `RATE_LIMIT_AUTH` | `5/minute` | 認証エンドポイントの上限 |
 | `RATE_LIMIT_CONTACT` | `10/hour` | お問い合わせの上限 |
 | `RATE_LIMIT_OPENAI` | `10/minute` | AI生成の上限 |
+| `RATE_LIMIT_DOCUMENT` | `5/hour` | 資料請求（`/api/documents`）の上限。未認証で呼べるため厳しめ |
 | `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_USE_TLS` | — | SMTP 設定 |
+| `MAIL_FROM_ADDRESS` / `MAIL_FROM_NAME` | `noreply@example.com` / `MR Alignment` | 送信元。SPF/DKIM を設定済みのドメインにすること |
 | `CONTACT_MAIL_TO` | — | お問い合わせ通知先。未設定でも DB には保存される |
 | `WEB_CONCURRENCY` | `2` | uvicorn のワーカー数 |
 | `LOG_LEVEL` | `INFO` | |
 | `CORS_ALLOW_ORIGIN_REGEX` | — | Vercel プレビュー等を許可する場合 |
+
+---
+
+## 2-1. AI資料のメール送付を有効にする
+
+LP の「ITサービス資料ダウンロード（無料）」フォームは、生成した資料を
+**入力されたメールアドレス宛に送信**します（`POST /api/documents`）。
+これには SMTP の設定が必要です。**`MAIL_HOST` が未設定だとメールは送信されず、
+資料は画面に表示されるだけになります**（エラーにはなりません）。
+
+SendGrid を使う場合の例:
+
+```bash
+railway variables set MAIL_HOST=smtp.sendgrid.net
+railway variables set MAIL_PORT=587
+railway variables set MAIL_USERNAME=apikey          # 文字列 "apikey" 固定
+railway variables set MAIL_PASSWORD="SG.xxxxx"      # SendGrid の APIキー
+railway variables set MAIL_USE_TLS=true
+railway variables set MAIL_FROM_ADDRESS="noreply@kensudo.jp"
+railway variables set MAIL_FROM_NAME="須藤技術士事務所"
+railway variables set CONTACT_MAIL_TO="info@kensudo.jp"
+```
+
+注意点:
+
+- **`MAIL_FROM_ADDRESS` は SPF / DKIM を設定済みの自社ドメインにすること。**
+  お客様のアドレスを From にすると、受信側で詐称と判定され届きません。
+- `CONTACT_MAIL_TO` を設定すると、資料請求があったことが担当者にも通知されます。
+  このフォームは DB に保存していないため、**未設定だとリード情報が残りません。**
+- 資料メールの `Reply-To` は `CONTACT_MAIL_TO`、担当者通知の `Reply-To` は
+  お客様のアドレスになります。どちらから返信しても相手に届きます。
 
 ---
 
@@ -136,7 +169,10 @@ curl https://<your-app>.up.railway.app/api/health/ready
 | 「データベースに接続できませんでした」 | `DATABASE_URL` 未設定、PostgreSQL プラグイン未追加 | `${{Postgres.DATABASE_URL}}` を設定 |
 | フロントから CORS エラー | `FRONTEND_URL` が実際のドメインと不一致 | Vercel のドメインを正確に設定 |
 | AI資料生成が 503 | `OPENAI_API_KEY` 未設定 | Variables に設定して再デプロイ |
-| AI資料生成が 401 | 未ログイン | このAPIは認証必須（課金の暴走を防ぐため） |
+| AI資料生成が 401 | 未ログイン | `/api/openai/generate` は認証必須（課金の暴走を防ぐため）。LP のフォームは認証不要の `/api/documents` を使う |
+| 資料は表示されるがメールが届かない | `MAIL_HOST` 未設定 | 「2-1. AI資料のメール送付を有効にする」を設定。レスポンスの `email_sent` が `false` になっている |
+| メールが迷惑メール扱いされる | `MAIL_FROM_ADDRESS` のドメインに SPF/DKIM が未設定 | 送信ドメインの DNS を設定する |
+| 資料請求が 429 | `RATE_LIMIT_DOCUMENT`（既定 5/hour・IP単位）に到達 | 正当な利用で足りなければ値を緩める |
 | ログイン後すぐログアウトされる | `JWT_SECRET_KEY` が未設定で再起動のたびに変わっている | 固定値を設定 |
 | レート制限が緩い | `WEB_CONCURRENCY` が 2 以上 | レート制限はプロセス内メモリのため、実効上限は「ワーカー数×設定値」になる。厳密に効かせるなら Redis 実装へ置き換える |
 

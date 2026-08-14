@@ -199,4 +199,40 @@ export const openaiAPI = {
     api.post<{ success: boolean; content: string }>('/openai/generate', payload),
 };
 
+// --- AI資料のメール送付 -----------------------------------------------------
+
+export interface DocumentRequestPayload {
+  companyName: string;
+  lastName: string;
+  firstName: string;
+  email: string;
+  industry?: string;
+  dept?: string;
+  role?: string;
+  additionalRequirements?: string;
+}
+
+export interface DocumentResponse {
+  status: string;
+  message: string;
+  reference: string;
+  /** 節キー → 本文。表示内容とメールの内容は一致する */
+  content: Record<string, string>;
+  email_sent: boolean;
+}
+
+/**
+ * 資料ダウンロードフォーム専用のエンドポイント。
+ *
+ * /openai/generate と違い未認証で呼べる。その代わりプロンプトは送らず、
+ * フォームの入力値だけを送る（プロンプトはサーバー側で組み立てられる）。
+ * 生成した資料は、ここで送った email 宛にサーバーから送信される。
+ */
+export const documentAPI = {
+  request: (payload: DocumentRequestPayload) =>
+    // 生成（OpenAI待ち）とSMTP送信を1リクエストで行うため、
+    // 既定の30秒では足りない。ここだけタイムアウトを延ばす。
+    api.post<DocumentResponse>('/documents', payload, { timeout: 120_000 }),
+};
+
 export default api;

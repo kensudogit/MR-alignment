@@ -13,7 +13,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import settings
 from app.database import engine
-from app.routers import ai, auth, contact, health
+from app.routers import ai, auth, contact, documents, health
 
 logging.basicConfig(
     level=settings.log_level.upper(),
@@ -128,6 +128,7 @@ app.include_router(health.router, prefix=settings.api_prefix)
 app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(contact.router, prefix=settings.api_prefix)
 app.include_router(ai.router, prefix=settings.api_prefix)
+app.include_router(documents.router, prefix=settings.api_prefix)
 
 
 # コンテナ / Railway のヘルスチェックは prefix なしのパスを叩くため、
@@ -151,5 +152,6 @@ async def root() -> dict[str, object]:
             f"{settings.api_prefix}/auth/register": "新規登録",
             f"{settings.api_prefix}/contact": "お問い合わせ",
             f"{settings.api_prefix}/openai/generate": "AI資料生成（要認証）",
+            f"{settings.api_prefix}/documents": "AI資料の生成とメール送付",
         },
     }

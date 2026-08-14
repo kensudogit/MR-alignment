@@ -16,6 +16,7 @@ os.environ.setdefault("FRONTEND_URL", "http://localhost:3000")
 os.environ.setdefault("RATE_LIMIT_AUTH", "1000/minute")
 os.environ.setdefault("RATE_LIMIT_CONTACT", "1000/minute")
 os.environ.setdefault("RATE_LIMIT_OPENAI", "1000/minute")
+os.environ.setdefault("RATE_LIMIT_DOCUMENT", "1000/minute")
 os.environ.pop("OPENAI_API_KEY", None)
 
 import pytest  # noqa: E402

@@ -24,6 +24,16 @@ frontend/env.production
 frontend/.env.new
 frontend/.env.production
 
+# Python（FastAPI バックエンド）
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/.venv/
+backend/venv/
+
 # Docker
 .dockerignore
 docker-compose.override.yml

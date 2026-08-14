@@ -11,6 +11,7 @@ from app.schemas.auth import (
     UserResponse,
 )
 from app.schemas.contact import ContactCreate, ContactCreated, ContactDetail, ContactList
+from app.schemas.document import DocumentRequest, DocumentResponse
 
 __all__ = [
     "GenerateRequest",
@@ -27,4 +28,6 @@ __all__ = [
     "ContactCreated",
     "ContactDetail",
     "ContactList",
+    "DocumentRequest",
+    "DocumentResponse",
 ]

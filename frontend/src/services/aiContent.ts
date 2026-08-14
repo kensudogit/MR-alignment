@@ -1,4 +1,6 @@
-import { openaiAPI, toApiResult } from './api';
+import { documentAPI, openaiAPI, toApiResult } from './api';
+
+import type { DocumentRequestPayload } from './api';
 
 /**
  * AI 資料生成のプロンプト組み立てとレスポンス整形。
@@ -130,7 +132,7 @@ export const generateText = async (
   }
 };
 
-/** 提案資料を取得する（資料生成用） */
+/** 提案資料を取得する（資料生成用・要ログイン） */
 export const generateProposal = async (
   info: Record<string, unknown>,
 ): Promise<{ success: boolean; content?: ProposalContent; error?: string }> => {
@@ -141,4 +143,40 @@ export const generateProposal = async (
     return { success: false, error: result.error };
   }
   return { success: true, content: parseProposal(result.content) };
+};
+
+export interface DocumentResult {
+  success: boolean;
+  /** 節キー → 本文。メールで送られたものと同一 */
+  content?: Record<string, string>;
+  reference?: string;
+  /** 入力されたメールアドレスへ送信できたか */
+  emailSent?: boolean;
+  /** 画面に出す案内文（サーバーが生成） */
+  message?: string;
+  error?: string;
+}
+
+/**
+ * 資料ダウンロードフォームから資料を請求する（未ログインで利用可）。
+ *
+ * 生成とメール送信はサーバー側で行われるため、ここではプロンプトを組み立てない。
+ * 戻り値の content は、実際に送られたメールと同じ内容。
+ */
+export const requestDocument = async (
+  payload: DocumentRequestPayload,
+): Promise<DocumentResult> => {
+  try {
+    const { data } = await documentAPI.request(payload);
+    return {
+      success: true,
+      content: data.content,
+      reference: data.reference,
+      emailSent: data.email_sent,
+      message: data.message,
+    };
+  } catch (error) {
+    const result = toApiResult(error);
+    return { success: false, error: result.error };
+  }
 };

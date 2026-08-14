@@ -73,6 +73,9 @@ class Settings(BaseSettings):
     rate_limit_auth: str = "5/minute"
     rate_limit_contact: str = "10/hour"
     rate_limit_openai: str = "10/minute"
+    # 資料請求は未認証で呼べる（＝OpenAIの課金が発生する）ため、
+    # 認証必須の /openai/generate よりも厳しくしておく。
+    rate_limit_document: str = "5/hour"
 
     @property
     def cors_origins(self) -> list[str]:

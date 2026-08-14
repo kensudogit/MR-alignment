@@ -5,7 +5,7 @@ import ChatModal from './ChatModal';
 import AppointmentModal from './AppointmentModal';
 import PhoneCallModal from './PhoneCallModal';
 import { useAuth } from '../contexts/AuthContext';
-import { generateProposal } from '../services/aiContent';
+import { requestDocument } from '../services/aiContent';
 
 // --- Inline Icon Components (no external deps) ---
 const IconPhone = (props) => (
@@ -1018,43 +1018,63 @@ export default function HealthcareLP() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    
-    // フォームデータを取得
-    const formData = new FormData(e.target);
-    const userInfo = {
-      name: `${formData.get('lastName')} ${formData.get('firstName')}`,
-      company: formData.get('companyName'),
-      industry: formData.get('industry'),
-      position: formData.get('role'),
-      dept: formData.get('dept'),
-      email: formData.get('email'),
-      additionalRequirements: formData.get('additionalRequirements')
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    // サーバーへ送るのはフォームの入力値のみ。
+    // AI資料生成はバックエンド経由で行い、フロントエンドはAPIキーもプロンプトも持たない
+    // （APIキーを持つとビルド成果物から読み取れてしまう）。
+    const payload = {
+      industry: formData.get('industry') || '',
+      companyName: formData.get('companyName') || '',
+      dept: formData.get('dept') || '',
+      role: formData.get('role') || '',
+      lastName: formData.get('lastName') || '',
+      firstName: formData.get('firstName') || '',
+      email: formData.get('email') || '',
+      additionalRequirements: formData.get('additionalRequirements') || '',
     };
 
-    try {
-      // AI資料生成はバックエンド経由で行う。
-      // フロントエンドはAPIキーを一切保持しない（保持するとビルド成果物から読み取れてしまう）。
-      showLoadingModal();
+    // 画面表示用（デモ内容へフォールバックする際にも使う）
+    const userInfo = {
+      name: `${payload.lastName} ${payload.firstName}`,
+      company: payload.companyName,
+      industry: payload.industry,
+      position: payload.role,
+      dept: payload.dept,
+      email: payload.email,
+      additionalRequirements: payload.additionalRequirements,
+    };
 
-      const result = await generateProposal({
-        name: userInfo.name,
-        organization: userInfo.company,
-        industry: userInfo.industry,
-        role: userInfo.position,
-        email: userInfo.email,
-        interest: userInfo.additionalRequirements,
-      });
+    // 生成〜メール送信の完了まで表示し続ける。閉じ忘れを防ぐため finally で必ず閉じる。
+    const closeLoading = showLoadingModal();
+
+    try {
+      // 生成された資料は、payload.email 宛にサーバーから送信される
+      const result = await requestDocument(payload);
 
       if (result.success && result.content) {
-        showGeneratedContent(result.content, userInfo);
+        showGeneratedContent(result.content, userInfo, {
+          emailSent: result.emailSent,
+          notice: result.message,
+          reference: result.reference,
+        });
+        form.reset();
         return;
       }
 
-      // 生成に失敗した場合はデモ内容にフォールバックし、その旨を明示する
-      showGeneratedContent(generateDemoContent(userInfo), userInfo, true);
+      // 生成に失敗した場合はデモ内容にフォールバックする。
+      // このときメールは送信されていないため、その旨も明示する。
+      showGeneratedContent(generateDemoContent(userInfo), userInfo, {
+        isDemo: true,
+        notice: result.error,
+      });
     } catch (error) {
       console.error('AI資料生成エラー:', error);
-      showGeneratedContent(generateDemoContent(userInfo), userInfo, true);
+      showGeneratedContent(generateDemoContent(userInfo), userInfo, { isDemo: true });
+    } finally {
+      closeLoading();
     }
   };
 
@@ -1072,7 +1092,7 @@ export default function HealthcareLP() {
     };
   };
 
-  // ローディングモーダル表示
+  // ローディングモーダル表示。閉じる関数を返す。
   const showLoadingModal = () => {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -1080,19 +1100,64 @@ export default function HealthcareLP() {
       <div class="bg-white rounded-lg p-8 text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
         <h3 class="text-lg font-semibold text-gray-900 mb-2">AI資料を生成中...</h3>
-        <p class="text-gray-600">しばらくお待ちください</p>
+        <p class="text-gray-600">生成後、ご入力のメールアドレスへお送りします</p>
+        <p class="text-sm text-gray-500 mt-2">30秒ほどかかる場合があります</p>
       </div>
     `;
     document.body.appendChild(modal);
-    
-    // 3秒後に自動で閉じる
-    setTimeout(() => {
-      document.body.removeChild(modal);
-    }, 3000);
+
+    // 旧実装は3秒後に無条件で閉じていたが、生成には数十秒かかるため
+    // 「表示が消えたのに何も起きない」状態になっていた。完了時に呼び出し側が閉じる。
+    return () => modal.remove();
+  };
+
+  // innerHTML へ差し込む値のエスケープ。
+  // 資料本文はAIの生成結果であり、そのまま差し込むとスクリプトが動きうる。
+  const escapeHtml = (value) =>
+    String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+  // 送信結果の案内バナー
+  const buildNoticeBanner = ({ isDemo, emailSent, notice, reference, email }) => {
+    if (isDemo) {
+      return `
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded mb-4">
+          <div class="font-semibold">デモ内容を表示しています</div>
+          <div class="text-sm mt-1">
+            AI資料を生成できなかったため、メールは送信していません。
+            ${notice ? escapeHtml(notice) : 'しばらく時間をおいて再度お試しください。'}
+          </div>
+        </div>`;
+    }
+
+    if (emailSent) {
+      return `
+        <div class="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded mb-4">
+          <div class="font-semibold">${escapeHtml(email)} 宛に資料をお送りしました</div>
+          <div class="text-sm mt-1">
+            ${notice ? escapeHtml(notice) : ''}
+            ${reference ? `（資料番号: ${escapeHtml(reference)}）` : ''}
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded mb-4">
+        <div class="font-semibold">メールの送信に失敗しました</div>
+        <div class="text-sm mt-1">
+          資料は作成できています。この画面の内容をご確認ください。
+          ${reference ? `（資料番号: ${escapeHtml(reference)}）` : ''}
+        </div>
+      </div>`;
   };
 
   // 生成されたコンテンツ表示
-  const showGeneratedContent = (content, userInfo, isDemo = false) => {
+  const showGeneratedContent = (content, userInfo, options = {}) => {
+    const { isDemo = false, emailSent = false, notice = '', reference = '' } = options;
     // contentが文字列の場合は、JSONとして解析を試行
     let parsedContent = content;
     if (typeof content === 'string') {
@@ -1124,12 +1189,12 @@ export default function HealthcareLP() {
             <h2 class="text-2xl font-bold text-gray-900">AI資料生成完了</h2>
             <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
           </div>
-          ${isDemo ? '<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">デモモード: 実際のAPIキーが設定されていないため、模擬結果を表示しています</div>' : ''}
+          ${buildNoticeBanner({ isDemo, emailSent, notice, reference, email: userInfo.email })}
           <div class="space-y-6">
             ${Object.entries(parsedContent).map(([key, value]) => `
               <div class="border-l-4 border-blue-500 pl-4">
-                <h3 class="font-semibold text-lg text-gray-900 mb-2">${getSectionTitle(key)}</h3>
-                <div class="text-gray-700 whitespace-pre-line">${typeof value === 'string' ? value : JSON.stringify(value, null, 2)}</div>
+                <h3 class="font-semibold text-lg text-gray-900 mb-2">${escapeHtml(getSectionTitle(key))}</h3>
+                <div class="text-gray-700 whitespace-pre-line">${escapeHtml(typeof value === 'string' ? value : JSON.stringify(value, null, 2))}</div>
               </div>
             `).join('')}
           </div>
