@@ -25,15 +25,15 @@ services:
   # ------------------------------------------------------------ バックエンド
   backend:
     build:
-      context: ./backend-python
+      context: ./backend
       dockerfile: Dockerfile
     container_name: mr_alignment_backend
     ports:
       - "8000:8000"
     volumes:
       # 開発時のホットリロード用
-      - ./backend-python/app:/app/app
-      - ./backend-python/migrations:/app/migrations
+      - ./backend/app:/app/app
+      - ./backend/migrations:/app/migrations
     environment:
       APP_ENV: local
       APP_DEBUG: "true"

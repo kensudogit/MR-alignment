@@ -115,11 +115,32 @@ railway variables set CONTACT_MAIL_TO="info@kensudo.jp"
 }
 ```
 
+### 【最初に確認】デプロイ対象のブランチ
+
+**Settings → Source → Branch が `main-clean` になっていることを確認してください。**
+
+`main` は 2025-08-20 で更新が止まった旧構成（Laravel時代）のブランチです。
+`railway.json` も `Dockerfile.frontend` も含まれていないため、
+Railway は Dockerfile を見つけられず Railpack の自動判定にフォールバックし、
+次のエラーで失敗します。
+
+```
+✖ Railpack could not determine how to build the app.
+```
+
+このメッセージが出たら、まずブランチ設定を疑ってください。
+ログの「The app contents that Railpack analyzed contains:」の一覧に
+`railway.json` が無ければ、古いブランチを見ています。
+
 ### バックエンドサービスの作成
 
 同じリポジトリからもう 1 つサービスを作り、Settings で指定します。
 
-- **Build → Dockerfile Path**: `backend/Dockerfile`
+- **Source → Branch**: `main-clean`
+- **Source → Root Directory**: `backend`
+  （`backend/railway.json` が読み込まれ、`backend/Dockerfile` でビルドされます。
+  ルートの `railway.json` はフロントエンド用なので、ここを設定しないと
+  フロントエンドがもう1つ建ってしまいます）
 - **Networking**: ドメインを生成（このURLをフロントエンドの `VITE_API_URL` に設定する）
 - 「1. 必須の Variables」と「2-1」の環境変数を**このサービスに**設定する
 
