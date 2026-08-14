@@ -5,7 +5,7 @@
 >
 > - 対象: `C:\devphp\MR-alignment`
 > - ブランチ: `main-clean`
-> - 最終更新: 2026-08-02
+> - 最終更新: 2026-08-14
 > - **バックエンドを Laravel(PHP) から FastAPI(Python) へ全面移行済み**
 
 ---
@@ -24,6 +24,7 @@
 | 会員登録・ログイン | **バックエンド認証（JWT）** | `backend/app/routers/auth.py` |
 | お問い合わせ | **PostgreSQL 永続化 + メール通知** | `backend/app/routers/contact.py` |
 | AI 資料生成（OpenAI） | **サーバー経由・認証必須** | `backend/app/routers/ai.py` |
+| 資料ダウンロードフォーム（AI資料をメール送付） | **未認証で利用可・入力アドレスへ送信** | `backend/app/routers/documents.py` |
 | チャット相談 | フロント UI + バックエンド経由の AI 応答 | `frontend/src/components/ChatModal.tsx` |
 | 面談予約 / 電話発信 | フロント内で完結 | `AppointmentModal.tsx` / `PhoneCallModal.tsx` |
 
@@ -104,9 +105,9 @@ MR-alignment/
 │   │   ├── security.py         bcrypt / JWT
 │   │   ├── rate_limit.py       スライディングウィンドウ制限
 │   │   ├── models/             base / user / contact / revoked_token
-│   │   ├── schemas/            auth / contact / ai
-│   │   ├── routers/            health / auth / contact / ai
-│   │   └── services/           openai_client / mailer
+│   │   ├── schemas/            auth / contact / ai / document
+│   │   ├── routers/            health / auth / contact / ai / documents
+│   │   └── services/           openai_client / mailer / document
 │   ├── migrations/versions/0001_initial_schema.py
 │   ├── tests/                  pytest（59 ケース）
 │   ├── alembic.ini / pyproject.toml
@@ -121,7 +122,7 @@ MR-alignment/
 │   │   │   ├── healthcare_lp_react_tailwind_ui.jsx  ★LP本体
 │   │   │   ├── AuthModal / ChatModal / AppointmentModal
 │   │   │   ├── PhoneCallModal / CookieConsent       ※以上 使用中
-│   │   │   └── ContactModal / DownloadModal / DemoModal ※未使用
+│   │   │   └── ContactModal                        ※未使用（T-10で導線追加予定）
 │   │   ├── contexts/AuthContext.tsx   JWT 認証
 │   │   ├── services/api.ts            唯一の API クライアント
 │   │   ├── services/aiContent.ts      プロンプト組み立て
@@ -130,19 +131,17 @@ MR-alignment/
 │
 ├── database/init/01-init.sql   PostgreSQL 拡張のみ（テーブル定義なし）
 ├── docker-compose.yml          postgres / backend / frontend / mailpit / pgadmin
-├── Dockerfile.frontend         フロントエンド本番用
-├── railway.json                Railway 設定（backend/Dockerfile を参照）
-└── _old-laravel-backend/       ★vendor/ のみ残存。手動削除してください
+├── Dockerfile.frontend         フロントエンド本番用（ルートの railway.json が参照）
+├── railway.json                Railway 設定（フロントエンド用）
+├── docker-start.bat / docker-stop.bat / docker-logs.bat
+└── README.md
 ```
 
-### 手動削除が必要なもの
-
-マウント越しの削除が非常に遅いため残しています。いずれも未追跡で再生成可能です。
-
-```powershell
-Remove-Item -Recurse -Force C:\devphp\MR-alignment\_old-laravel-backend
-Remove-Item -Recurse -Force C:\devphp\MR-alignment\temp-laravel
-```
+> ルート直下は README.md のみを残し、Laravel 時代の作業ログ（`.md` 34本）と
+> 一度きりの作業スクリプト（`.bat`/`.sh` 22本）、
+> 本プロジェクトと無関係なサンプルコード（`*_auto_response.py` 等 13本）、
+> LP 比較用のダンプ（`_*_lp.jsx` 等 7本）は削除済みです。
+> 参照が必要な場合は git 履歴から取得してください。
 
 ---
 
@@ -174,8 +173,8 @@ Remove-Item -Recurse -Force C:\devphp\MR-alignment\temp-laravel
 | `react` / `react-dom` | ^18.2.0 | ✅ |
 | `axios` | ^1.6.0 | ✅ |
 | `prop-types` | ^15.8.1 | ✅ |
-| `framer-motion` | ^10.16.16 | ⚠️ 未使用コンポーネントのみ |
-| `react-router-dom` | ^6.8.0 | ❌ 未使用（削除候補） |
+
+> `framer-motion` と `react-router-dom` は未使用のため削除済み。
 
 開発依存: `vite` ^4.4.5, `typescript` ^5.0.2, `tailwindcss` ^3.4.0, `eslint` 一式 ほか
 
@@ -202,6 +201,7 @@ Remove-Item -Recurse -Force C:\devphp\MR-alignment\temp-laravel
 | GET | `/api/contact` | **要** | — | 自分の問い合わせ一覧 |
 | GET | `/api/contact/{reference}` | **要** | — | 詳細（他人のものは 404） |
 | POST | `/api/openai/generate` | **要** | 10/分 | AI 資料生成 |
+| POST | `/api/documents` | 不要 | 5/時 | AI 資料を生成し、入力されたメールアドレスへ送付 |
 
 ### 主要リクエスト／レスポンス
 
@@ -388,18 +388,24 @@ erDiagram
 
 ### `railway.json`
 
+**フロントとバックエンドで 2 サービスに分けてデプロイします。**
+
+| サービス | 設定ファイル | Root Directory |
+|---|---|---|
+| フロントエンド | ルートの `railway.json`（`Dockerfile.frontend`） | （ルート） |
+| バックエンド | `backend/railway.json`（`backend/Dockerfile`） | `backend` |
+
 ```json
-{
-  "build": { "builder": "DOCKERFILE", "dockerfilePath": "backend/Dockerfile" },
-  "deploy": {
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10,
-    "healthcheckPath": "/health",
-    "healthcheckTimeout": 30
-  }
-}
+// ルート（フロントエンド）
+{ "build": { "builder": "DOCKERFILE", "dockerfilePath": "Dockerfile.frontend" } }
+// backend/railway.json（バックエンド）
+{ "build": { "builder": "DOCKERFILE", "dockerfilePath": "Dockerfile" } }
 ```
 
+> **デプロイ対象ブランチは `main-clean`。** `main` は 2025-08-20 で更新が止まっており、
+> `railway.json` も `Dockerfile.frontend` も含まれないため
+> Railpack へフォールバックしてビルドに失敗します。
+>
 > 旧版は `railway.json` と `railway.toml` が同内容を二重定義していました。toml は削除済み。
 
 ### Railway Variables（必須）
@@ -458,8 +464,9 @@ erDiagram
 |---|---|---|
 | `backend/Dockerfile` | バックエンド | 開発・本番・Railway 共通 |
 | `frontend/Dockerfile` | フロントエンド | ローカル開発 |
-| `frontend/Dockerfile.prod` | フロントエンド | 本番（nginx、ポート80固定） |
 | `Dockerfile.frontend` | フロントエンド | 本番（nginx、`$PORT` 対応） |
+
+> `frontend/Dockerfile.prod` は `Dockerfile.frontend` と重複していたため削除済み。
 
 ---
 
@@ -527,6 +534,7 @@ erDiagram
 | `RATE_LIMIT_AUTH` | `5/minute` |
 | `RATE_LIMIT_CONTACT` | `10/hour` |
 | `RATE_LIMIT_OPENAI` | `10/minute` |
+| `RATE_LIMIT_DOCUMENT` | `5/hour`（未認証で呼べるため厳しめ） |
 
 ### フロントエンド
 
@@ -534,7 +542,10 @@ erDiagram
 |---|---|---|---|
 | `VITE_API_URL` | ○ | `http://localhost:8000` | **オリジンのみ**。`/api` は付けない |
 | `VITE_ENVIRONMENT` | — | `development` | |
-| `VITE_APP_ENV` / `VITE_APP_NAME` | — | — | `env.production` で使用 |
+
+> `VITE_API_URL` は **ビルド時**に成果物へ埋め込まれます。実行時の環境変数では
+> 差し替わりません。`Dockerfile.frontend` で `ARG` として宣言した変数のみが
+> ビルドへ渡り、未設定ならビルドを失敗させています。
 
 > 🔴 **`VITE_` プレフィックスの変数はビルド成果物に埋め込まれ、
 > ブラウザから読み取れます。秘密情報は絶対に置かないでください。**
@@ -595,12 +606,12 @@ icon / tech / features / industry / duration / team` を持ちます。
 
 | モーダル | 状況 |
 |---|---|
-| `ContactModal.tsx` | `/api/contact` に接続済み。**導線を追加すれば使える** |
-| `DownloadModal.jsx` | `/api/openai/generate` に接続済み。要導線 |
-| `DemoModal.tsx` | バックエンド連携なし |
+| `ContactModal.tsx` | `/api/contact` に接続済み。**導線を追加すれば使える**（T-10） |
 
 > 旧 `AIImageModal.tsx` / `ReportModal.tsx` は存在しないエンドポイントを呼ぶ
 > 別ドメインの残骸だったため削除済み。
+> `DownloadModal.jsx` は LP のリードフォーム（`/api/documents`）と機能が重複し
+> どこからも開かれていなかったため削除。`DemoModal.tsx` も未使用のため削除。
 
 ---
 
@@ -614,7 +625,7 @@ pip install -e ".[dev]"
 pytest
 ```
 
-`tests/` に 59 ケース。SQLite（aiosqlite）のインメモリ DB を使い、
+`tests/` に 101 ケース。SQLite（aiosqlite）のインメモリ DB を使い、
 PostgreSQL / OpenAI / SMTP へは接続しません。
 
 | ファイル | 検証内容 |
@@ -622,7 +633,11 @@ PostgreSQL / OpenAI / SMTP へは接続しません。
 | `test_auth.py` | 登録・ログイン・ログアウト・プロフィール・パスワード変更、organization/role の保存、ハッシュ化、応答の一様性、トークン失効 |
 | `test_contact.py` | DB 永続化、受付番号の一意性、IP/UA 記録、メール失敗時の継続、他人の問い合わせ不可視 |
 | `test_ai.py` | 認証必須、apiKey の無視、未知キーの除去、内部情報の非漏洩 |
+| `test_documents.py` | 未認証での利用、入力アドレスへの送付、プロンプト差し替えの拒否、HTMLエスケープ、生成失敗時に送信しないこと |
 | `test_config_and_health.py` | 本番設定の検証、URL 変換、レート制限、CORS、ヘルスチェック |
+
+> `bcrypt` は 5.0 以降で passlib と非互換になり「password cannot be longer than
+> 72 bytes」で認証系が全滅します。`pyproject.toml` の `bcrypt<5.0` は必ず守ること。
 
 ### フロントエンド
 
@@ -664,11 +679,9 @@ src/
 **I-04. 管理者ロールと問い合わせ管理画面** — `GET /api/contact` は現状
 「自分の問い合わせ」しか返しません。`users.role` で権限判定を追加すれば全件を扱えます。
 
-**I-05. 未使用コードの削除** — `DownloadModal` / `DemoModal`、
-`react-router-dom` / `framer-motion`、重複画像（`components/*.png` 22枚）。
+**I-05. 未使用コードの削除** — ✅ 完了（2026-08-14）
 
-**I-06. ドキュメントとスクリプトの整理** — ルート直下に `.md` が 39 本、
-`.bat`/`.sh` が 26 本。大半は Laravel 時代の作業ログで現構成には当てはまりません。
+**I-06. ドキュメントとスクリプトの整理** — ✅ 完了（2026-08-14）
 
 ### 🟡 P3: 品質・運用
 
@@ -696,12 +709,12 @@ src/
 
 | ID | 内容 |
 |---|---|
-| **T-03** | `_old-laravel-backend/` と `temp-laravel/` を手動削除 |
-| **T-04** | 削除された PHP ファイル 157 本を git にコミット（`git add -A`） |
-| **T-05** | ローカルで `pytest` を実行し、59 ケースが通ることを確認 |
-| **T-06** | `docker compose up --build` で起動確認 |
-| **T-07** | Railway の Variables を `docs/railway-setup.md` に従って設定 |
-| **T-08** | Vercel 側の `VITE_API_URL` を Railway のドメインへ更新 |
+| **T-03** | ~~`_old-laravel-backend/` と `temp-laravel/` を手動削除~~ ✅ 完了 |
+| **T-04** | ~~削除された PHP ファイル 157 本を git にコミット~~ ✅ 完了 |
+| **T-05** | ~~ローカルで `pytest` を実行~~ ✅ 完了（101 ケース通過） |
+| **T-06** | ~~`docker compose up --build` で起動確認~~ ✅ 完了 |
+| **T-07** | Railway の Variables を `docs/railway-setup.md` に従って設定 ⚠️ **未完了** |
+| **T-08** | **バックエンドサービスを Railway に作成し、フロントに `VITE_API_URL` を設定する** ⚠️ **未完了**。現状フロントエンドしか動いておらず API は到達不能。`VITE_API_URL` 未設定のため現行バンドルには `http://localhost:8000` が焼き込まれている |
 | **T-09** | 開発実績の `duration` / `team` を実績値へ更新 |
 
 ### 🟡 機能追加
@@ -719,8 +732,8 @@ src/
 |---|---|
 | T-14 | `healthcare_lp_react_tailwind_ui.jsx` を分割 |
 | T-15 | `blogData` / `featureData` / 開発実績をソースから分離（将来的には DB 化） |
-| T-16 | 未使用コンポーネントと依存の削除 |
-| T-17 | 画像の重複解消 |
+| T-16 | ~~未使用コンポーネントと依存の削除~~ ✅ 完了 |
+| T-17 | ~~画像の重複解消~~ ✅ 完了（`src/assets/images` と `src/components/*.png` 計 46 枚・約 80MB を削除。LP は `public/` から絶対パスで読む） |
 | T-18 | `console.log` の削除 |
 
 ### 🔵 品質・運用
@@ -730,7 +743,7 @@ src/
 | T-19 | フロントエンドのテスト導入 |
 | T-20 | GitHub Actions で CI |
 | T-21 | レート制限を Redis 化 |
-| T-22 | ルートの `.md` 39本 / `.bat` 26本 を整理 |
+| T-22 | ~~ルートの `.md` 39本 / `.bat` 26本 を整理~~ ✅ 完了 |
 | T-23 | `revoked_tokens` の定期クリーンアップ |
 
 ---
