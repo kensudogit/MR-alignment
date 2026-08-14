@@ -1,0 +1,30 @@
+# Dockerfile.frontend はリポジトリのルートをビルドコンテキストにする。
+# Railway は .railwayignore を見るが docker build は見ないため、
+# ローカルや他のCIで同じイメージを再現できるよう内容を揃えてある。
+
+# 依存関係（Dockerfile 内で npm ci するため不要。
+# 壊れたシンボリックリンクを含むとコンテキストの読み込み自体が失敗する）
+**/node_modules
+frontend/dist
+frontend/.vercel
+
+# バージョン管理 / IDE
+.git
+.github
+.vscode
+.idea
+
+# Python バックエンド（別サービスとしてデプロイする）
+backend
+_old-laravel-backend
+temp-laravel
+
+# 未使用の重複画像（コンポーネントは /public から絶対パスで読む）
+frontend/src/assets/images
+frontend/src/components/*.png
+
+# その他
+*.log
+.vercel
+.env
+**/.env

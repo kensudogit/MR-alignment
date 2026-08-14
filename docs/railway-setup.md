@@ -97,26 +97,52 @@ railway variables set CONTACT_MAIL_TO="info@kensudo.jp"
 
 ## 3. ビルド設定
 
-`railway.json` で指定済みです。追加操作は不要です。
+**このリポジトリは Railway 上で 2 つのサービスに分けてデプロイします。**
+1 つのサービスにまとめることはできません（フロントエンドは nginx、
+バックエンドは uvicorn で、待ち受けるプロセスが異なるため）。
+
+| サービス | ビルド対象 | 役割 |
+|---|---|---|
+| フロントエンド | `Dockerfile.frontend`（ルートの `railway.json` が指定） | LP の静的ファイルを nginx で配信 |
+| バックエンド | `backend/Dockerfile` | FastAPI。**別途サービスを作成する必要がある** |
+
+ルートの `railway.json` はフロントエンド用です。
 
 ```json
 {
-  "build": {
-    "builder": "DOCKERFILE",
-    "dockerfilePath": "backend/Dockerfile"
-  },
-  "deploy": {
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10,
-    "healthcheckPath": "/health",
-    "healthcheckTimeout": 30
-  }
+  "build": { "builder": "DOCKERFILE", "dockerfilePath": "Dockerfile.frontend" },
+  "deploy": { "startCommand": "/docker-start.sh", "restartPolicyType": "ON_FAILURE" }
 }
 ```
+
+### バックエンドサービスの作成
+
+同じリポジトリからもう 1 つサービスを作り、Settings で指定します。
+
+- **Build → Dockerfile Path**: `backend/Dockerfile`
+- **Networking**: ドメインを生成（このURLをフロントエンドの `VITE_API_URL` に設定する）
+- 「1. 必須の Variables」と「2-1」の環境変数を**このサービスに**設定する
 
 - ポートは Railway が注入する `PORT` を使用します（既定 8000）
 - ヘルスチェックは `/health`（DB に触らないため高速に応答）
 - 依存サービスを含む確認は `/api/health/ready`
+
+### フロントエンドサービスの Variables
+
+| 変数名 | 値 | 備考 |
+|---|---|---|
+| `VITE_API_URL` | `https://<バックエンドのサービス>.up.railway.app` | **必須**。末尾に `/api` は付けない |
+
+> **`VITE_` の変数はビルド時に成果物へ埋め込まれます。**
+> 実行時に設定しても反映されません。また `Dockerfile.frontend` 側で
+> `ARG` として宣言した変数だけがビルドへ渡ります。
+> 未設定のままビルドしようとすると、意図的にビルドを失敗させています
+> （既定値 `http://localhost:8000` が焼き込まれると、
+> 画面は表示されるのに API 呼び出しだけが黙って失敗するため）。
+
+> **`VITE_OPENAI_API_KEY` は絶対に設定しないでください。**
+> `VITE_` 変数はブラウザから読み取れるため、APIキーが公開されます。
+> OpenAI のキーは**バックエンドサービスの** `OPENAI_API_KEY` にのみ設定します。
 
 ---
 
@@ -165,6 +191,8 @@ curl https://<your-app>.up.railway.app/api/health/ready
 
 | 症状 | 原因 | 対処 |
 |---|---|---|
+| `OPENAI_API_KEY` を設定したのに反映されない | フロントエンドのサービスに設定している | このキーを読むのは**バックエンドのサービス**。nginx は環境変数を一切参照しない |
+| `JWT_SECRET_KEY` を設定したのに反映されない | 変数名が `JWT_SECRET` になっている | 読み込むのは `JWT_SECRET_KEY`（`backend/app/config.py`） |
 | 起動直後にクラッシュし、ログに「本番設定エラー」 | `APP_DEBUG=true` or `JWT_SECRET_KEY` 未設定 | Variables を修正 |
 | 「データベースに接続できませんでした」 | `DATABASE_URL` 未設定、PostgreSQL プラグイン未追加 | `${{Postgres.DATABASE_URL}}` を設定 |
 | フロントから CORS エラー | `FRONTEND_URL` が実際のドメインと不一致 | Vercel のドメインを正確に設定 |

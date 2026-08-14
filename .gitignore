@@ -35,7 +35,8 @@ backend/.venv/
 backend/venv/
 
 # Docker
-.dockerignore
+# .dockerignore はビルド結果を左右する設定ファイルのため追跡する
+# （除外していたため存在せず、ローカルでの docker build が失敗していた）
 docker-compose.override.yml
 
 # IDE
