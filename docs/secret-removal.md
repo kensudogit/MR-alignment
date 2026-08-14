@@ -1,5 +1,28 @@
 # git 履歴からのシークレット除去手順（T-02）
 
+> ## ✅ 実施済み（2026-08-14）
+>
+> `git filter-repo` により **手順 1〜6 と 8-2 を完了**しました。
+>
+> | 項目 | 結果 |
+> |---|---|
+> | 履歴に残る実キー（40文字以上） | **0 件**（GitHub から再 clone して確認） |
+> | `frontend/.env.new` | 全履歴から削除（0 コミット） |
+> | `frontend/env.production` | 全履歴から削除（0 コミット） |
+> | 書き換え後の作業ツリー | 書き換え前と **tree ハッシュが完全一致**（中身は不変） |
+> | `main` / `main-clean` | 両方を force push 済み |
+> | pre-commit フック | `.githooks/pre-commit` を追加・動作確認済み |
+>
+> バックアップ: `C:\devphp\MR-alignment-backup.git`（書き換え前の mirror）
+>
+> ### ⚠️ 残っている作業
+>
+> - **手順 0（APIキーの無効化）は未完了です。** 履歴から消えても、既存の clone・
+>   GitHub のキャッシュ・フォークからキーを取り出せる可能性が残ります。
+>   **必ず Revoke → 再発行してください。**
+> - 手順 7（GitHub サポートへのキャッシュ削除依頼、フォークの確認）
+> - 手順 8-3（Secret Scanning / Push Protection の有効化）
+
 ## この作業が必要な理由
 
 `.gitignore` への追加と `git rm --cached` は**過去のコミットからファイルを消しません**。
@@ -176,19 +199,17 @@ frontend/temp-deploy/
 backend/.env
 ```
 
-### 8-2. pre-commit フックでシークレットを検知する
+### 8-2. pre-commit フックでシークレットを検知する（対応済み）
 
-`.git/hooks/pre-commit` に以下を置き、実行権限を付けてください。
+`.githooks/pre-commit` を追跡しています。`.git/hooks/` は clone 時に共有されないため、
+**クローンごとに一度だけ**以下を実行して有効化してください。
 
 ```bash
-#!/bin/bash
-# APIキーらしき文字列のコミットを拒否する
-if git diff --cached -U0 | grep -qE '^\+.*(sk-proj-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{32,})'; then
-    echo "エラー: APIキーらしき文字列が含まれています。コミットを中止しました。" >&2
-    echo "        該当箇所を確認し、環境変数へ移してください。" >&2
-    exit 1
-fi
+git config core.hooksPath .githooks
 ```
+
+APIキーらしき文字列（`sk-proj-…` / `sk-…` / SendGrid の `SG.…`）の追加と、
+`.env` ファイルの新規追跡を拒否します。
 
 より本格的に運用する場合は [gitleaks](https://github.com/gitleaks/gitleaks) の導入を推奨します。
 

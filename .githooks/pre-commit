@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# APIキーらしき文字列のコミットを拒否する。
+#
+# 有効化（クローンごとに1回）:
+#   git config core.hooksPath .githooks
+#
+# .git/hooks/ は共有されないため、追跡されるこのディレクトリに置いている。
+
+if git diff --cached -U0 \
+   | grep -qE '^\+.*(sk-proj-[A-Za-z0-9_-]{40,}|sk-[A-Za-z0-9]{32,}|SG\.[A-Za-z0-9_-]{20,})'; then
+    echo "" >&2
+    echo "エラー: APIキーらしき文字列が含まれています。コミットを中止しました。" >&2
+    echo "        該当箇所を環境変数へ移してください。" >&2
+    echo "        秘密情報はサーバー側の環境変数にのみ置きます（VITE_ 変数は" >&2
+    echo "        ビルド成果物へ埋め込まれ、ブラウザから読み取れます）。" >&2
+    echo "" >&2
+    echo "        どうしても通す必要がある場合のみ: git commit --no-verify" >&2
+    echo "" >&2
+    exit 1
+fi
+
+# .env は追跡しない（テンプレートの *.example のみ追跡する）
+if git diff --cached --name-only --diff-filter=A \
+   | grep -qE '(^|/)\.env($|\.)' ; then
+    echo "" >&2
+    echo "エラー: .env ファイルを追加しようとしています。コミットを中止しました。" >&2
+    echo "        テンプレートが必要な場合は .env.example を使ってください。" >&2
+    echo "" >&2
+    exit 1
+fi
+
+exit 0
