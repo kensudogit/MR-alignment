@@ -1,5 +1,41 @@
 # Railway セットアップ手順
 
+> ## 現在の構成（2026-08-14 時点・稼働中）
+>
+> | サービス | URL | ビルド |
+> |---|---|---|
+> | `mr-alignment`（フロント） | https://mr-alignment-production.up.railway.app | `Dockerfile.frontend` |
+> | `mr-alignment-api`（API） | https://mr-alignment-api-production.up.railway.app | `backend/Dockerfile` |
+> | `Postgres` | （内部） | Railway プラグイン |
+>
+> `/api/health/ready` の結果: `database: ok` / `openai: configured` / **`mail: not_configured`**
+>
+> **残作業: SMTP が未設定のため、AI資料のメール送信だけが行われません**
+> （資料の生成と画面表示は動作し、`email_sent: false` が返ります）。
+> 設定方法は「2-1」を参照してください。
+>
+> ### バックエンドの再デプロイ
+>
+> `mr-alignment-api` は CLI からデプロイしています（GitHub 連携ではありません）。
+> ルートの `railway.json` はフロント用のため、**`--path-as-root` が必須**です。
+> これを付けないとバックエンドのサービスに `Dockerfile.frontend` がビルドされます。
+>
+> ```bash
+> railway up backend --path-as-root --service mr-alignment-api
+> ```
+>
+> git push で自動デプロイしたい場合は、ダッシュボードで GitHub 連携を設定し、
+> **Branch を `main-clean`、Root Directory を `backend`** にしてください。
+>
+> ### フロントエンドの再デプロイ
+>
+> `VITE_API_URL` はビルド時に埋め込まれるため、変数を変えたら**再ビルド**が必要です。
+> `railway redeploy` は既存イメージの再配置なので反映されません。
+>
+> ```bash
+> railway up --service mr-alignment
+> ```
+
 ## 前提
 
 バックエンドは **環境変数のみ** から設定を読み込みます（`backend/app/config.py`）。
