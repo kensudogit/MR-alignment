@@ -69,6 +69,11 @@ class Settings(BaseSettings):
     mail_from_name: str = "MR Alignment"
     contact_mail_to: str | None = None
 
+    # ------------------------------------------------------------- 学習データ
+    # ファインチューニングに着手してよい最小件数。
+    # これを下回る状態で学習しても、文体は安定せず費用だけがかかる。
+    finetune_minimum_examples: int = 100
+
     # ------------------------------------------------------------- レート制限
     rate_limit_auth: str = "5/minute"
     rate_limit_contact: str = "10/hour"

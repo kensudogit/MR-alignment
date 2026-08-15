@@ -13,18 +13,32 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
+from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.config import settings
+from app.dependencies import CurrentUser, DbSession, client_ip
+from app.models import DocumentStatus
 from app.rate_limit import rate_limit
 from app.schemas import DocumentRequest, DocumentResponse
+from app.schemas.document import (
+    DocumentDetail,
+    DocumentListOut,
+    DocumentStatusUpdate,
+    DocumentSummary,
+    RevisionCreate,
+    RevisionOut,
+)
 from app.services.document import (
     build_prompt,
     build_user_info,
     generate_reference,
     parse_proposal,
+    section_title,
 )
+from app.services.document_store import DocumentStore
 from app.services.mailer import send_document_mail, send_document_notification
 from app.services.openai_client import (
     OpenAIRequestFailed,
@@ -59,12 +73,17 @@ async def _notify_safely(payload: DocumentRequest, reference: str) -> None:
 async def request_document(
     payload: DocumentRequest,
     background_tasks: BackgroundTasks,
+    request: Request,
+    db: DbSession,
 ) -> DocumentResponse:
     """AI資料を生成し、入力されたメールアドレスへ送付する。
 
     資料メールの送信は同期的に行う。送信できたかどうかを画面へ返し、
     「メールが届かない」と利用者が待ち続けることを避けるため。
     担当者への通知は届かなくても利用者に影響しないのでバックグラウンドへ回す。
+
+    生成結果は必ず DB へ残す。後からファインチューニングの教師データを
+    作れるのは、ここで記録したものだけ。
     """
     try:
         raw = await generate_content(build_prompt(payload), build_user_info(payload))
@@ -85,6 +104,20 @@ async def request_document(
     generated_at = datetime.now(tz=timezone.utc)
 
     email_sent = await send_document_mail(payload, sections, reference, generated_at)
+
+    # 保存に失敗しても利用者への送付は成立させる。
+    # 記録は重要だが、目の前の価値提供を止めてまで優先するものではない。
+    try:
+        await DocumentStore(db).create(
+            payload=payload,
+            sections=sections,
+            reference=reference,
+            model=settings.openai_model,
+            email_sent=email_sent,
+            ip_address=client_ip(request),
+        )
+    except SQLAlchemyError:
+        logger.exception("AI資料の保存に失敗しました reference=%s", reference)
 
     background_tasks.add_task(_notify_safely, payload, reference)
 
@@ -108,3 +141,151 @@ async def request_document(
         content=sections,
         email_sent=email_sent,
     )
+
+
+# --------------------------------------------------------------------- 管理用
+# ここから下はすべて認証必須。生成物の確認と手直しに使う。
+#
+# 手直しの登録が、この機能群の中心。
+# 「AIが生成したもの」と「人が直したもの」の対だけが学習データになる。
+
+
+def _to_summary(document) -> DocumentSummary:  # noqa: ANN001 - ORM モデル
+    return DocumentSummary(
+        reference=document.reference,
+        company_name=document.company_name,
+        industry=document.industry,
+        person_name=document.person_name,
+        status=document.status.value,
+        email_sent=document.email_sent,
+        revision_count=len(document.revisions),
+        model=document.model,
+        prompt_version=document.prompt_version,
+        created_at=document.created_at,
+    )
+
+
+@router.get("/records", response_model=DocumentListOut)
+async def list_documents(
+    _current_user: CurrentUser,
+    db: DbSession,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    status_filter: Annotated[DocumentStatus | None, Query(alias="status")] = None,
+) -> DocumentListOut:
+    total, documents = await DocumentStore(db).list(limit, offset, status_filter)
+    return DocumentListOut(total=total, items=[_to_summary(d) for d in documents])
+
+
+@router.get("/records/stats")
+async def document_stats(_current_user: CurrentUser, db: DbSession) -> dict[str, object]:
+    """学習データの貯まり具合。
+
+    ファインチューニングに着手してよいかの判断材料。
+    """
+    store = DocumentStore(db)
+    total, _ = await store.list(limit=1, offset=0, status=None)
+    trainable = await store.count_trainable()
+    return {
+        "total": total,
+        "trainable": trainable,
+        "minimum_recommended": settings.finetune_minimum_examples,
+        "ready": trainable >= settings.finetune_minimum_examples,
+    }
+
+
+@router.get("/records/{reference}", response_model=DocumentDetail)
+async def get_document(
+    reference: str,
+    _current_user: CurrentUser,
+    db: DbSession,
+) -> DocumentDetail:
+    document = await DocumentStore(db).get_by_reference(reference)
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="指定された資料が見つかりません"
+        )
+
+    return DocumentDetail(
+        reference=document.reference,
+        company_name=document.company_name,
+        industry=document.industry,
+        department=document.department,
+        role=document.role,
+        person_name=document.person_name,
+        additional_requirements=document.additional_requirements,
+        status=document.status.value,
+        email_sent=document.email_sent,
+        model=document.model,
+        prompt_version=document.prompt_version,
+        created_at=document.created_at,
+        generated_sections=document.sections,
+        current_sections=document.latest_sections,
+        revisions=[RevisionOut.model_validate(r) for r in document.revisions],
+    )
+
+
+@router.post(
+    "/records/{reference}/revisions",
+    response_model=RevisionOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_revision(
+    reference: str,
+    payload: RevisionCreate,
+    current_user: CurrentUser,
+    db: DbSession,
+) -> RevisionOut:
+    """人が手直しした版を登録する。
+
+    ここに溜まったものだけが、後のファインチューニングの正解データになる。
+    """
+    store = DocumentStore(db)
+    document = await store.get_by_reference(reference)
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="指定された資料が見つかりません"
+        )
+
+    # 生成物に無い節を足せると学習データの構造が崩れる
+    unknown = set(payload.sections) - set(document.sections)
+    if unknown:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                "生成物に存在しない節が含まれています: "
+                + ", ".join(sorted(section_title(k) for k in unknown))
+            ),
+        )
+
+    revision = await store.add_revision(
+        document=document,
+        sections=payload.sections,
+        note=payload.note,
+        editor_id=current_user.id,
+        mark_reviewed=payload.mark_reviewed,
+    )
+    logger.info(
+        "資料の手直しを登録しました reference=%s changed=%s",
+        reference,
+        revision.changed_section_count,
+    )
+    return RevisionOut.model_validate(revision)
+
+
+@router.patch("/records/{reference}/status", response_model=DocumentSummary)
+async def update_document_status(
+    reference: str,
+    payload: DocumentStatusUpdate,
+    _current_user: CurrentUser,
+    db: DbSession,
+) -> DocumentSummary:
+    store = DocumentStore(db)
+    document = await store.get_by_reference(reference)
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="指定された資料が見つかりません"
+        )
+
+    updated = await store.update_status(document, DocumentStatus(payload.status))
+    return _to_summary(updated)

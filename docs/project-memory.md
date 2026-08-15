@@ -201,7 +201,12 @@ MR-alignment/
 | GET | `/api/contact` | **要** | — | 自分の問い合わせ一覧 |
 | GET | `/api/contact/{reference}` | **要** | — | 詳細（他人のものは 404） |
 | POST | `/api/openai/generate` | **要** | 10/分 | AI 資料生成 |
-| POST | `/api/documents` | 不要 | 5/時 | AI 資料を生成し、入力されたメールアドレスへ送付 |
+| POST | `/api/documents` | 不要 | 5/時 | AI 資料を生成し、入力されたメールアドレスへ送付。生成結果はDBへ記録 |
+| GET | `/api/documents/records` | **要** | — | 生成した資料の一覧（状態で絞り込み可） |
+| GET | `/api/documents/records/stats` | **要** | — | 学習データの貯まり具合 |
+| GET | `/api/documents/records/{reference}` | **要** | — | 生成物・最新版・手直し履歴 |
+| POST | `/api/documents/records/{reference}/revisions` | **要** | — | 人が手直しした版を登録（部分更新） |
+| PATCH | `/api/documents/records/{reference}/status` | **要** | — | 状態変更（generated/reviewed/sent/rejected） |
 
 ### 主要リクエスト／レスポンス
 
@@ -296,6 +301,25 @@ MR-alignment/
 | `created_at` / `updated_at` | timestamptz | NOT NULL |
 
 複合インデックス `ix_contacts_status_created_at (status, created_at)`。
+
+### `generated_documents` / `document_revisions`
+
+AI資料の記録。ファインチューニングの教師データはここからしか作れない。
+
+| テーブル | 役割 |
+|---|---|
+| `generated_documents` | AIが生成したものを**そのまま**保存。入力・モデル・プロンプト版も残す |
+| `document_revisions` | 人が手直しした版。何度でも積める。最後が最新 |
+
+**この2つの差分が学習データになる。** 価値があるのはAIの出力ではなく、
+人が直した後の文章なので、生成物を上書きせず別テーブルへ積む。
+
+- `status` が `reviewed` / `sent` かつ手直しがあるものだけが学習対象。
+  生成したままのものを教師データにすると、AIの出力でAIを学習させることになる
+- `prompt_version` を残すのは、プロンプトを変えた前後の出力が混ざると
+  文体が安定しないため。プロンプトを変更したら
+  `app/services/document.py` の `PROMPT_VERSION` を必ず上げること
+- 手直しは**部分更新**。直した節だけ送れば、残りは直前の内容を引き継ぐ
 
 ### `revoked_tokens`
 

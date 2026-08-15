@@ -1,6 +1,9 @@
 """AI資料のメール送付（資料ダウンロードフォーム）のスキーマ。"""
 from __future__ import annotations
 
+from datetime import datetime
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 ADDITIONAL_REQUIREMENTS_MAX_LENGTH = 2000
@@ -57,3 +60,90 @@ class DocumentResponse(BaseModel):
     #  画面表示用。メール本文と同じ内容を返し、表示と送付物を一致させる
     content: dict[str, str]
     email_sent: bool = Field(description="入力されたアドレスへ送信できたか")
+
+
+# ------------------------------------------------------------------ 記録の閲覧
+# 以下は管理用。認証必須で、生成された資料の確認と手直しに使う。
+
+
+class DocumentSummary(BaseModel):
+    """一覧表示用。本文は含めない。"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    reference: str
+    company_name: str
+    industry: str | None
+    person_name: str
+    status: str
+    email_sent: bool
+    revision_count: int = Field(description="人が手直しした回数")
+    model: str
+    prompt_version: str
+    created_at: datetime
+
+
+class DocumentListOut(BaseModel):
+    total: int
+    items: list[DocumentSummary]
+
+
+class RevisionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    sections: dict[str, str]
+    note: str | None
+    changed_section_count: int
+    created_at: datetime
+
+
+class DocumentDetail(BaseModel):
+    """1件の詳細。生成物と手直し履歴の両方を返す。"""
+
+    reference: str
+    company_name: str
+    industry: str | None
+    department: str | None
+    role: str | None
+    person_name: str
+    additional_requirements: str | None
+    status: str
+    email_sent: bool
+    model: str
+    prompt_version: str
+    created_at: datetime
+
+    #  AIが生成したそのまま
+    generated_sections: dict[str, str]
+    #  最新の内容（手直しがあればそちら）
+    current_sections: dict[str, str]
+    revisions: list[RevisionOut]
+
+
+class RevisionCreate(BaseModel):
+    """人が手直しした版を登録する。
+
+    直した節だけを送れば足りる（部分更新）。送らなかった節は
+    直前の内容が引き継がれる。
+
+    節キーは生成物と同じものだけを受け付ける。勝手な節を足せると
+    学習データの構造が崩れる。
+    """
+
+    sections: dict[str, str] = Field(min_length=1)
+    note: str | None = Field(default=None, max_length=1000)
+    #  この修正で確認済みとするか
+    mark_reviewed: bool = True
+
+    @field_validator("sections")
+    @classmethod
+    def _non_empty_values(cls, value: dict[str, str]) -> dict[str, str]:
+        cleaned = {k: v.strip() for k, v in value.items() if v and v.strip()}
+        if not cleaned:
+            raise ValueError("本文が空です")
+        return cleaned
+
+
+class DocumentStatusUpdate(BaseModel):
+    status: Literal["generated", "reviewed", "sent", "rejected"]

@@ -5,6 +5,7 @@ import 漏れがあると autogenerate がテーブルを削除する差分を�
 """
 from app.models.base import Base, TimestampMixin
 from app.models.contact import Contact, ContactMethod, ContactStatus, Urgency
+from app.models.document import DocumentRevision, DocumentStatus, GeneratedDocument
 from app.models.revoked_token import RevokedToken
 from app.models.user import User
 
@@ -17,4 +18,7 @@ __all__ = [
     "ContactStatus",
     "Urgency",
     "RevokedToken",
+    "GeneratedDocument",
+    "DocumentRevision",
+    "DocumentStatus",
 ]

@@ -41,6 +41,11 @@ SECTION_TITLES = {
 
 COMPANY_NAME = "須藤技術士事務所"
 
+# プロンプトを変えたら必ず上げること。
+# 学習データを作るとき、どの版の出力かで質が変わるため、
+# 版が混ざったまま教師データにすると文体が安定しない。
+PROMPT_VERSION = "v1"
+
 
 def generate_reference() -> str:
     """資料番号を採番する。
