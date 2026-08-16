@@ -13,6 +13,7 @@ import html
 import json
 import secrets
 from datetime import datetime, timezone
+from typing import Protocol
 
 from app.schemas.document import DocumentRequest
 
@@ -62,7 +63,26 @@ def industry_label(value: str) -> str:
     return INDUSTRY_LABELS.get(value, value)
 
 
-def build_prompt(request: DocumentRequest) -> str:
+class PromptSource(Protocol):
+    """プロンプト組み立てに必要な項目だけを持つもの。
+
+    生成時は DocumentRequest、学習データ作成時は DB に保存した記録が入る。
+    両者で同じ関数を通すことが重要で、別々に組み立てると
+    「学習したプロンプトと本番のプロンプトが違う」状態になり、
+    学習しても効果が出ない。
+    """
+
+    company_name: str
+    industry: str
+    department: str
+    role: str
+    additional_requirements: str
+
+    @property
+    def full_name(self) -> str: ...
+
+
+def build_prompt(request: PromptSource) -> str:
     """資料生成のプロンプトを組み立てる。
 
     フロントエンドの services/aiContent.ts と同じ構成にしてあるが、
@@ -94,7 +114,7 @@ def build_prompt(request: DocumentRequest) -> str:
     )
 
 
-def build_user_info(request: DocumentRequest) -> dict[str, str]:
+def build_user_info(request: PromptSource) -> dict[str, str]:
     """モデルへ渡す参考データ。
 
     値は openai_client.build_user_message 側で

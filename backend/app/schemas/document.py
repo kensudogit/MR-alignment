@@ -147,3 +147,33 @@ class RevisionCreate(BaseModel):
 
 class DocumentStatusUpdate(BaseModel):
     status: Literal["generated", "reviewed", "sent", "rejected"]
+
+
+# ------------------------------------------------------------------ 学習データ
+
+
+class SectionQuality(BaseModel):
+    key: str
+    title: str
+    documents: int
+    edited: int
+    edit_rate: float = Field(description="手が入った割合。高いほどAIが苦手な節")
+    mean_similarity: float = Field(description="1.0 なら一切直されていない")
+
+
+class EvaluationOut(BaseModel):
+    documents: int
+    untouched_rate: float = Field(description="一度も手が入らなかった資料の割合")
+    mean_similarity: float
+    sections: list[SectionQuality]
+    worst_sections: list[str] = Field(description="最も手が入っている節（改善の優先順位）")
+
+
+class ExportSummary(BaseModel):
+    """書き出しの結果。JSONL 本体は別エンドポイントで取得する。"""
+
+    trainable: int
+    minimum_required: int
+    train: int
+    validation: int
+    ready: bool

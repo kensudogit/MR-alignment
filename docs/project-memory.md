@@ -207,6 +207,9 @@ MR-alignment/
 | GET | `/api/documents/records/{reference}` | **要** | — | 生成物・最新版・手直し履歴 |
 | POST | `/api/documents/records/{reference}/revisions` | **要** | — | 人が手直しした版を登録（部分更新） |
 | PATCH | `/api/documents/records/{reference}/status` | **要** | — | 状態変更（generated/reviewed/sent/rejected） |
+| GET | `/api/documents/training/summary` | **要** | — | 書き出せる件数の確認 |
+| GET | `/api/documents/training/export` | **要** | — | 学習データを JSONL で書き出す |
+| GET | `/api/documents/training/evaluation` | **要** | — | 手直し量から生成品質を測る |
 
 ### 主要リクエスト／レスポンス
 
@@ -320,6 +323,31 @@ AI資料の記録。ファインチューニングの教師データはここか
   文体が安定しないため。プロンプトを変更したら
   `app/services/document.py` の `PROMPT_VERSION` を必ず上げること
 - 手直しは**部分更新**。直した節だけ送れば、残りは直前の内容を引き継ぐ
+
+### ファインチューニングの進め方
+
+```text
+GET /api/documents/training/evaluation   まず品質を測る
+GET /api/documents/training/summary      件数を確認
+GET /api/documents/training/export       JSONL を書き出す
+```
+
+**着手前に evaluation を見ること。** `untouched_rate`（一度も手が入らなかった
+割合）が高ければ、そもそも学習は不要。`worst_sections` が示す節だけ
+プロンプトを直すほうが安く早い。
+
+書き出しは `finetune_minimum_examples`（既定 100）未満だと **409 で拒否**する。
+足りないまま学習しても文体は安定せず、費用と時間だけがかかる。
+どうしても試す場合は `force=true`。
+
+> **system / user は生成時とまったく同じ関数（`build_prompt` /
+> `build_user_message`）を通している。** 別々に組み立てると
+> 「学習したプロンプトと本番のプロンプトが違う」状態になり、学習しても
+> 効果が出ない。`services/document.py` の `PromptSource` プロトコルが
+> 生成時（`DocumentRequest`）と学習時（保存済みレコード）の両方を受ける。
+>
+> プロンプトを変更したら `PROMPT_VERSION` を上げること。版が混ざったまま
+> 教師データにすると文体が安定しない。
 
 ### `revoked_tokens`
 

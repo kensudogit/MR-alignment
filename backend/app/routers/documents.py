@@ -13,9 +13,10 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.config import settings
@@ -28,8 +29,11 @@ from app.schemas.document import (
     DocumentListOut,
     DocumentStatusUpdate,
     DocumentSummary,
+    EvaluationOut,
+    ExportSummary,
     RevisionCreate,
     RevisionOut,
+    SectionQuality,
 )
 from app.services.document import (
     build_prompt,
@@ -39,12 +43,14 @@ from app.services.document import (
     section_title,
 )
 from app.services.document_store import DocumentStore
+from app.services.evaluation import evaluate
 from app.services.mailer import send_document_mail, send_document_notification
 from app.services.openai_client import (
     OpenAIRequestFailed,
     OpenAIUnavailable,
     generate_content,
 )
+from app.services.training_export import NotEnoughExamples, export
 
 logger = logging.getLogger(__name__)
 
@@ -271,6 +277,107 @@ async def create_revision(
         revision.changed_section_count,
     )
     return RevisionOut.model_validate(revision)
+
+
+@router.get("/training/evaluation", response_model=EvaluationOut)
+async def training_evaluation(
+    _current_user: CurrentUser,
+    db: DbSession,
+    limit: int = Query(default=500, ge=1, le=2000),
+) -> EvaluationOut:
+    """人がどれだけ直したかを測る。
+
+    ファインチューニングをやるべきかの判断材料であり、
+    やった後に効果があったかの判定にも同じ指標を使う。
+    """
+    _total, documents = await DocumentStore(db).list(limit=limit, offset=0, status=None)
+    result = evaluate(documents)
+
+    return EvaluationOut(
+        documents=result.documents,
+        untouched_rate=result.untouched_rate,
+        mean_similarity=result.mean_similarity,
+        sections=[
+            SectionQuality(
+                key=s.key,
+                title=s.title,
+                documents=s.documents,
+                edited=s.edited,
+                edit_rate=s.edit_rate,
+                mean_similarity=s.mean_similarity,
+            )
+            for s in result.sections
+        ],
+        worst_sections=[s.title for s in result.worst_sections()],
+    )
+
+
+@router.get("/training/summary", response_model=ExportSummary)
+async def training_summary(
+    _current_user: CurrentUser,
+    db: DbSession,
+) -> ExportSummary:
+    """書き出せる件数の確認。実際に流す前の下見に使う。"""
+    store = DocumentStore(db)
+    _total, documents = await store.list(limit=2000, offset=0, status=None)
+
+    try:
+        result = export(documents, allow_below_threshold=True)
+    except NotEnoughExamples:  # pragma: no cover - allow_below_threshold で来ない
+        result = None
+
+    trainable = await store.count_trainable()
+    return ExportSummary(
+        trainable=trainable,
+        minimum_required=settings.finetune_minimum_examples,
+        train=len(result.train) if result else 0,
+        validation=len(result.validation) if result else 0,
+        ready=trainable >= settings.finetune_minimum_examples,
+    )
+
+
+@router.get("/training/export")
+async def training_export(
+    _current_user: CurrentUser,
+    db: DbSession,
+    split: Literal["train", "validation"] = Query(default="train"),
+    validation_ratio: float = Query(default=0.2, ge=0.0, le=0.5),
+    force: bool = Query(
+        default=False,
+        description="件数が閾値未満でも書き出す（文体は安定しません）",
+    ),
+) -> PlainTextResponse:
+    """OpenAI のファインチューニング形式（JSONL）で書き出す。
+
+    system / user は生成時とまったく同じ組み立てを通している。
+    ここがずれると、学習したプロンプトと本番のプロンプトが食い違い、
+    学習しても効果が出ない。
+    """
+    _total, documents = await DocumentStore(db).list(limit=2000, offset=0, status=None)
+
+    try:
+        result = export(
+            documents,
+            validation_ratio=validation_ratio,
+            allow_below_threshold=force,
+        )
+    except NotEnoughExamples as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"学習データが不足しています（{exc.available} / {exc.required} 件）。"
+                "この状態で学習しても文体は安定せず、費用と時間だけがかかります。"
+                "どうしても試す場合は force=true を付けてください。"
+            ),
+        ) from None
+
+    records = result.train if split == "train" else result.validation
+    filename = f"finetune-{split}.jsonl"
+    return PlainTextResponse(
+        content=result.to_jsonl(records),
+        media_type="application/jsonl",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.patch("/records/{reference}/status", response_model=DocumentSummary)
