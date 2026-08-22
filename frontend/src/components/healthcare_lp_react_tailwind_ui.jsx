@@ -1276,6 +1276,7 @@ export default function HealthcareLP() {
             <a href="#blog" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">ブログ・ニュース</a>
             <a href="#faq" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">よくある質問</a>
             <Link to="/process" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発の進め方</Link>
+            <Link to="/coding-agents" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">AI開発講習</Link>
           </nav>
           <div className="flex items-center gap-3">
             {false ? (
@@ -1959,6 +1960,7 @@ export default function HealthcareLP() {
                 <li><a href="#faq" className="hover:text-white transition-colors">よくある質問</a></li>
                 <li><a href="#portfolio" className="hover:text-white transition-colors">開発実績</a></li>
                 <li><Link to="/process" className="hover:text-white transition-colors">開発の進め方</Link></li>
+                <li><Link to="/coding-agents" className="hover:text-white transition-colors">AI開発講習</Link></li>
                 <li><a href="#blog" className="hover:text-white transition-colors">ブログ・ニュース</a></li>
               </ul>
             </div>

@@ -635,9 +635,14 @@ export default function ProcessPage() {
             </div>
             <span className="text-sm font-bold gradient-text">須藤技術士事務所</span>
           </Link>
-          <Link to="/" className="btn-secondary">
-            トップへ戻る
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/coding-agents" className="hidden text-sm text-gray-700 hover:text-healthcare-600 md:inline">
+              AI開発講習
+            </Link>
+            <Link to="/" className="btn-secondary">
+              トップへ戻る
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -721,6 +726,9 @@ export default function ProcessPage() {
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link to="/" className="btn-gradient">
                 トップページへ
+              </Link>
+              <Link to="/coding-agents" className="btn-secondary">
+                AI開発講習を見る
               </Link>
               <Link to="/#portfolio" className="btn-secondary">
                 開発実績を見る

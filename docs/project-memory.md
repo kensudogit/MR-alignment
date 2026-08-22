@@ -124,7 +124,9 @@ MR-alignment/
 │   │   │   ├── PhoneCallModal / CookieConsent       ※以上 使用中
 │   │   │   ├── ScrollToHash.tsx      ルート遷移後のアンカー移動
 │   │   │   └── ContactModal                        ※未使用（T-10で導線追加予定）
-│   │   ├── pages/ProcessPage.tsx      開発の進め方（/process）
+│   │   ├── pages/
+│   │   │   ├── ProcessPage.tsx        開発の進め方（/process）
+│   │   │   └── CodingAgentsPage.tsx   コーディングエージェント講習（/coding-agents）
 │   │   ├── contexts/AuthContext.tsx   JWT 認証
 │   │   ├── services/api.ts            唯一の API クライアント
 │   │   ├── services/aiContent.ts      プロンプト組み立て
@@ -173,7 +175,7 @@ MR-alignment/
 | ライブラリ | バージョン | 実使用 |
 |---|---|---|
 | `react` / `react-dom` | ^18.2.0 | ✅ |
-| `react-router-dom` | ^7.18.2 | ✅ `/process` ページ追加に伴い再導入 |
+| `react-router-dom` | ^7.18.2 | ✅ `/process` `/coding-agents` の追加に伴い再導入 |
 | `axios` | ^1.6.0 | ✅ |
 | `prop-types` | ^15.8.1 | ✅ |
 
@@ -457,9 +459,27 @@ erDiagram
 { "build": { "builder": "DOCKERFILE", "dockerfilePath": "Dockerfile" } }
 ```
 
-> **デプロイ対象ブランチは `main-clean`。** `main` は 2025-08-20 で更新が止まっており、
-> `railway.json` も `Dockerfile.frontend` も含まれないため
-> Railpack へフォールバックしてビルドに失敗します。
+> **GitHub への push では Railway へ反映されません（2026-08-22 時点）。**
+> `mr-alignment` サービスはリポジトリと連携済み（`source.repo` あり）ですが、
+> 稼働中のデプロイは 2026-08-14 の `railway up`（CLI）で、それ以降の push では
+> デプロイが作られていません。`main` 側の 2026-08-16 のコミットでも発火していないため、
+> 監視ブランチの問題ではなく自動デプロイ自体が動いていないと見られます。
+>
+> 反映するときは CLI を使ってください。**サービス名の指定が必須**です
+> （CLI にリンクされているのは `mr-alignment-api` の方なので、省略すると
+> バックエンドへデプロイしてしまいます）。
+>
+> ```bash
+> railway up --service mr-alignment      # フロントエンド（ルートの railway.json）
+> railway up --service mr-alignment-api  # バックエンド（backend/ で実行）
+> ```
+>
+> 自動デプロイを復旧させる場合は、Railway の Settings → Source で
+> 監視ブランチと自動デプロイの有効／無効を確認してください。
+>
+> ブランチは `main-clean` が最新で、`main` はその手前にあります。
+> （以前ここには「`main` は 2025-08-20 で止まっており `railway.json` を含まない」と
+> 書かれていましたが、現在の `main` は両ファイルを含んでおり、記述が古くなっていました）
 >
 > 旧版は `railway.json` と `railway.toml` が同内容を二重定義していました。toml は削除済み。
 
@@ -618,6 +638,7 @@ erDiagram
 |---|---|---|
 | `/` | `healthcare_lp_react_tailwind_ui.jsx` | LP 本体 |
 | `/process` | `pages/ProcessPage.tsx` | 開発の進め方（要件整理〜デプロイの10工程 + レガシー移行 `#migration`） |
+| `/coding-agents` | `pages/CodingAgentsPage.tsx` | OpenAI Codex と Claude Code の実務講習（10章＋演習） |
 | その他 | 同上 LP | 未知のパスは LP を返す |
 
 > ホスティング側は Vercel の `rewrites` と nginx の `try_files` で
@@ -625,6 +646,11 @@ erDiagram
 >
 > `ScrollToHash` コンポーネントが、`/process` から `/#portfolio` のように
 > 別ページのアンカーへ戻る導線を処理します（遷移直後は対象要素が未描画のため）。
+>
+> 🔴 `CodingAgentsPage.tsx` は**外部ツールの仕様**（コマンド・設定キー・モデル料金）を載せています。
+> ページ内に確認時点を表示しているので、内容を更新したら `FACT_CHECKED_ON` も必ず併せて更新すること。
+> Codex 側の記載は learn.chatgpt.com の公式ドキュメント、Claude 側のモデルIDと料金は
+> Anthropic の料金表に一致させています。推測で書き足さないこと。
 
 ### LP のセクション
 
