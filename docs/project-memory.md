@@ -122,7 +122,9 @@ MR-alignment/
 │   │   │   ├── healthcare_lp_react_tailwind_ui.jsx  ★LP本体
 │   │   │   ├── AuthModal / ChatModal / AppointmentModal
 │   │   │   ├── PhoneCallModal / CookieConsent       ※以上 使用中
+│   │   │   ├── ScrollToHash.tsx      ルート遷移後のアンカー移動
 │   │   │   └── ContactModal                        ※未使用（T-10で導線追加予定）
+│   │   ├── pages/ProcessPage.tsx      開発の進め方（/process）
 │   │   ├── contexts/AuthContext.tsx   JWT 認証
 │   │   ├── services/api.ts            唯一の API クライアント
 │   │   ├── services/aiContent.ts      プロンプト組み立て
@@ -171,10 +173,11 @@ MR-alignment/
 | ライブラリ | バージョン | 実使用 |
 |---|---|---|
 | `react` / `react-dom` | ^18.2.0 | ✅ |
+| `react-router-dom` | ^7.18.2 | ✅ `/process` ページ追加に伴い再導入 |
 | `axios` | ^1.6.0 | ✅ |
 | `prop-types` | ^15.8.1 | ✅ |
 
-> `framer-motion` と `react-router-dom` は未使用のため削除済み。
+> `framer-motion` は未使用のため削除済み。
 
 開発依存: `vite` ^4.4.5, `typescript` ^5.0.2, `tailwindcss` ^3.4.0, `eslint` 一式 ほか
 
@@ -606,21 +609,37 @@ erDiagram
 
 ## 画面一覧
 
-**単一ページ（SPA・ルーティングなし）**。ナビゲーションはアンカーでページ内スクロールし、
+**2ページ構成（react-router-dom）**。LP 内のナビゲーションはアンカーでページ内スクロールし、
 詳細はモーダルで表示します。
 
-### セクション
+### ルート
+
+| パス | コンポーネント | 内容 |
+|---|---|---|
+| `/` | `healthcare_lp_react_tailwind_ui.jsx` | LP 本体 |
+| `/process` | `pages/ProcessPage.tsx` | 開発の進め方（要件整理〜デプロイの10工程） |
+| その他 | 同上 LP | 未知のパスは LP を返す |
+
+> ホスティング側は Vercel の `rewrites` と nginx の `try_files` で
+> すべて `index.html` に寄せてあるため、`/process` を直接開いても 404 になりません。
+>
+> `ScrollToHash` コンポーネントが、`/process` から `/#portfolio` のように
+> 別ページのアンカーへ戻る導線を処理します（遷移直後は対象要素が未描画のため）。
+
+### LP のセクション
 
 | # | アンカー | 名称 |
 |---|---|---|
 | 1 | （先頭） | ヒーロー（キャッチコピー・CTA・統計） |
 | 2 | `#features` | 機能（サービス紹介カード） |
-| 3 | `#cases` | 導入事例 |
-| 4 | `#portfolio` | 開発実績（8件） |
-| 5 | `#pricing` | 料金 |
-| 6 | `#blog` | ブログ・ニュース |
-| 7 | `#faq` | よくある質問 |
-| 8 | （フッタ） | リンク集 |
+| 3 | `#portfolio` | 開発実績（8件） |
+| 4 | `#blog` | ブログ・ニュース |
+| 5 | `#faq` | よくある質問 |
+| 6 | （フッタ） | リンク集 |
+
+> 導入効果（`#cases`）と料金（`#pricing`）のセクションは削除済みです。
+> 実在しない企業の数値と月額料金を載せていたため、ヘッダー／フッターの
+> 導線ごと外しました。
 
 ### 開発実績（`#portfolio`）
 

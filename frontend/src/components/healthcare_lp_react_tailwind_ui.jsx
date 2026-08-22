@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import ChatModal from './ChatModal';
 import AppointmentModal from './AppointmentModal';
@@ -1272,10 +1273,9 @@ export default function HealthcareLP() {
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-gray-700">
             <a href="#features" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">機能</a>
-            <a href="#cases" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">導入事例</a>
-            <a href="#pricing" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">料金</a>
             <a href="#blog" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">ブログ・ニュース</a>
             <a href="#faq" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">よくある質問</a>
+            <Link to="/process" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発の進め方</Link>
           </nav>
           <div className="flex items-center gap-3">
             {false ? (
@@ -1447,184 +1447,6 @@ export default function HealthcareLP() {
               imageUrl={FEATURE_PHOTOS.itConsulting.photo}
               imageBg="bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600"
             />
-          </div>
-        </div>
-      </section>
-
-      {/* Cases / Proof */}
-      <section id="cases" className="py-20 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 relative">
-              導入効果
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">実際の企業でのIT導入効果を数値でご紹介します。</p>
-          </div>
-          <div className="grid gap-12 md:grid-cols-3">
-            <div className="md:col-span-1 animate-fade-in-left">
-              <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">実績数値</h3>
-                <div className="space-y-6">
-                  <div className="text-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                    <div className="text-3xl font-bold text-green-600 mb-2">+45%</div>
-                    <div className="text-gray-700 font-medium">業務効率化</div>
-                  </div>
-                  <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-                    <div className="text-3xl font-bold text-blue-600 mb-2">-60%</div>
-                    <div className="text-gray-700 font-medium">システム運用コスト</div>
-                  </div>
-                  <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl border border-purple-200">
-                    <div className="text-3xl font-bold text-purple-600 mb-2">+30%</div>
-                    <div className="text-gray-700 font-medium">開発スピード</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="md:col-span-2 grid grid-cols-1 gap-6 sm:grid-cols-2 animate-fade-in-right">
-              <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl border border-gray-100 hover:border-blue-200 transition-all duration-500 hover:scale-105">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors duration-300">製造業 A社</h4>
-                </div>
-                <p className="text-gray-600 leading-relaxed text-base group-hover:text-gray-700 transition-colors duration-300">レガシーシステムをクラウド移行し、運用コストを 60% 削減。開発・デプロイサイクルを 3倍高速化。</p>
-                <div className="mt-4 flex items-center text-blue-600 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  詳細を見る
-                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-              <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl border border-gray-100 hover:border-green-200 transition-all duration-500 hover:scale-105">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <h4 className="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300">金融業 B社</h4>
-                </div>
-                <p className="text-gray-600 leading-relaxed text-base group-hover:text-gray-700 transition-colors duration-300">データ分析基盤を構築し、顧客行動予測の精度を 45% 向上。マーケティングROIを大幅改善。</p>
-                <div className="mt-4 flex items-center text-green-600 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  詳細を見る
-                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-              <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl border border-gray-100 hover:border-purple-200 transition-all duration-500 hover:scale-105">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <h4 className="text-lg font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">小売業 C社</h4>
-                </div>
-                <p className="text-gray-600 leading-relaxed text-base group-hover:text-gray-700 transition-colors duration-300">DX戦略の策定と実行により、デジタル化率を 80% 向上。業務効率化で年間 2億円のコスト削減を実現。</p>
-                <div className="mt-4 flex items-center text-purple-600 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  詳細を見る
-                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-              <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl border border-gray-100 hover:border-red-200 transition-all duration-500 hover:scale-105">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <h4 className="text-lg font-bold text-gray-900 group-hover:text-red-700 transition-colors duration-300">教育機関 D</h4>
-                </div>
-                <p className="text-gray-600 leading-relaxed text-base group-hover:text-gray-700 transition-colors duration-300">セキュリティ強化により、サイバー攻撃の検知率を 95% 向上。インシデント対応時間を 70% 短縮。</p>
-                <div className="mt-4 flex items-center text-red-600 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  詳細を見る
-                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 relative">
-              料金（例）
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">プロジェクト規模・技術要件に応じてお見積りします。以下は一例です。</p>
-          </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { 
-                name: "スタンダード", 
-                price: "¥150,000/月", 
-                features: ["システム開発（小規模）", "クラウド移行支援", "メールサポート"],
-                color: "blue",
-                icon: "💼"
-              },
-              { 
-                name: "プロフェッショナル", 
-                price: "¥300,000/月", 
-                features: ["システム開発（中規模）", "データ分析基盤", "セキュリティ対策", "専任コンサルタント"],
-                color: "purple",
-                icon: "⭐",
-                popular: true
-              },
-              { 
-                name: "エンタープライズ", 
-                price: "お見積り", 
-                features: ["大規模システム開発", "DX戦略策定", "24時間サポート", "専任チーム"],
-                color: "green",
-                icon: "🚀"
-              },
-            ].map((p, index) => (
-              <div key={p.name} className={`group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl border-2 transition-all duration-500 hover:scale-105 ${
-                p.popular 
-                  ? 'border-purple-300 scale-105 ring-4 ring-purple-100' 
-                  : 'border-gray-200 hover:border-blue-300'
-              }`}>
-                {p.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                      おすすめ
-                    </span>
-                  </div>
-                )}
-                <div className="p-8">
-                  <div className="text-center mb-6">
-                    <div className="text-4xl mb-4">{p.icon}</div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{p.name}</h3>
-                    <div className={`text-4xl font-bold mb-2 ${
-                      p.color === 'blue' ? 'text-blue-600' : 
-                      p.color === 'purple' ? 'text-purple-600' : 'text-green-600'
-                    }`}>
-                      {p.price}
-                    </div>
-                    {p.price !== "お見積り" && (
-                      <p className="text-gray-500 text-sm">月額料金</p>
-                    )}
-                  </div>
-                  <ul className="space-y-4 mb-8">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                          p.color === 'blue' ? 'bg-blue-100 text-blue-600' : 
-                          p.color === 'purple' ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600'
-                        }`}>
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <span className="text-gray-700 font-medium">{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button className={`w-full py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 group-hover:scale-105 ${
-                    p.color === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700' : 
-                    p.color === 'purple' ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700' : 
-                    'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-                  } shadow-lg hover:shadow-xl`}>
-                    問い合わせる
-                  </button>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -2135,8 +1957,8 @@ export default function HealthcareLP() {
               <ul className="space-y-2 text-gray-300">
                 <li><a href="#faq" className="hover:text-white transition-colors">お問い合わせ</a></li>
                 <li><a href="#faq" className="hover:text-white transition-colors">よくある質問</a></li>
-                <li><a href="#cases" className="hover:text-white transition-colors">導入事例</a></li>
                 <li><a href="#portfolio" className="hover:text-white transition-colors">開発実績</a></li>
+                <li><Link to="/process" className="hover:text-white transition-colors">開発の進め方</Link></li>
                 <li><a href="#blog" className="hover:text-white transition-colors">ブログ・ニュース</a></li>
               </ul>
             </div>
