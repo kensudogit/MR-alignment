@@ -617,7 +617,7 @@ erDiagram
 | パス | コンポーネント | 内容 |
 |---|---|---|
 | `/` | `healthcare_lp_react_tailwind_ui.jsx` | LP 本体 |
-| `/process` | `pages/ProcessPage.tsx` | 開発の進め方（要件整理〜デプロイの10工程） |
+| `/process` | `pages/ProcessPage.tsx` | 開発の進め方（要件整理〜デプロイの10工程 + レガシー移行 `#migration`） |
 | その他 | 同上 LP | 未知のパスは LP を返す |
 
 > ホスティング側は Vercel の `rewrites` と nginx の `try_files` で

@@ -320,6 +320,112 @@ const PHASES: Phase[] = [
   },
 ]
 
+type MigrationStep = {
+  id: string
+  no: string
+  title: string
+  lead: string
+  points: string[]
+}
+
+const MIGRATION_STEPS: MigrationStep[] = [
+  {
+    id: 'migration-boundary',
+    no: 'STEP 1',
+    title: '境界を引く',
+    lead:
+      '最初に切り出す単位を決めます。テーブル単位で切ると、どちらかが必ず相手のデータベースを' +
+      '覗きに行くことになるため、業務のまとまりで切ります。',
+    points: [
+      '切り出す業務と、その業務でどのデータが「正」か（system of record）を1つに決める',
+      'レガシー側との接続点を洗い出す — API 経由か、DB 直参照か、バッチファイルか',
+      '現行の振る舞いを記録に残す。仕様書ではなく、実際の入出力を採取する',
+      '仕様が曖昧な箇所を先に潰す。移行後に「前はこう動いていた」で揉めるのはここ',
+    ],
+  },
+  {
+    id: 'migration-acl',
+    no: 'STEP 2',
+    title: '腐敗防止層（ACL）を置く',
+    lead:
+      'レガシー側のデータの持ち方が新サービスへ入り込まないよう、変換層を境界に置きます。' +
+      'ここを省くと、新しく作ったはずのサービスが旧システムの制約を引きずります。',
+    points: [
+      '新サービス側にインターフェース（ポート）を定義し、実装をレガシー接続側へ置く。依存の向きを逆にする',
+      'レガシー由来の型は変換層の外へ出さない。パッケージ境界で物理的に閉じる',
+      '旧システム特有の事情はここで吸収 — コード体系、全角と半角、和暦、意味を持つ NULL、桁揃えの空白',
+      '接続失敗・タイムアウト・想定外の応答は、新サービス側のドメイン例外へ翻訳する',
+      'テストは2層 — 実レスポンス例を使った変換テストと、偽の実装を挿した新サービス側のテスト',
+    ],
+  },
+  {
+    id: 'migration-strangler',
+    no: 'STEP 3',
+    title: '段階的に切り替える',
+    lead:
+      '入口にルーティングを置き、機能単位で新サービスへ流していきます。旧システムは一度に' +
+      '止めず、外側から少しずつ置き換えて最後に残骸だけにします。',
+    points: [
+      '切替はフィーチャーフラグで制御し、テナント・拠点・ユーザー単位に絞って開始する',
+      '切り戻しはフラグを戻すだけで済む状態を保つ。デプロイが必要な切り戻しは、深夜に機能しない',
+      'シャドー実行 — 新系を呼ぶが結果は捨て、旧系との差分だけを記録する。本番データで安全に精度を測れる',
+      '差分がゼロになってから読み取りを切り替える。切り替えの判断は感覚ではなく差分件数で行う',
+      '旧システムへの導線が完全に消えるまで、消す作業に入らない',
+    ],
+  },
+  {
+    id: 'migration-data',
+    no: 'STEP 4',
+    title: '止めずにデータを移す',
+    lead:
+      '一括コピーではなく、追いつかせてから切り替えます。停止時間はゼロに近づけられますが、' +
+      'その代わり「両方に書いている期間」の整合をどう守るかを設計する必要があります。',
+    points: [
+      '1. 初期コピー — 過去分をまとめて移す',
+      '2. 差分追随 — 更新時刻や変更ログで、コピー中に発生した更新に追いつく',
+      '3. 二重書き込み — 新旧の両方へ書く。片方だけ成功した場合の扱いを先に決めておく',
+      '4. 照合 — 件数と金額を突き合わせ、不一致を検出する仕組みを動かし続ける',
+      '5. 読み取り切替 — 照合が安定してから参照先を新系へ移す',
+      '6. 旧系の書き込み停止 — ここまで来て初めて旧システムを閉じる',
+    ],
+  },
+]
+
+const CONSISTENCY = [
+  {
+    title: '「正」は常に1つ',
+    body:
+      '移行中はどちらも書き込み可能な状態になります。どの期間はどちらが正なのかを明示し、' +
+      '食い違ったときにどちらを採るかを決めておきます。',
+  },
+  {
+    title: '同じ処理が二度来ても壊れない',
+    body:
+      '再送・リトライ・バッチの再実行は必ず起きます。処理に冪等キーを持たせ、二重計上を' +
+      '構造的に防ぎます。件数のずれは、たいていここから生まれます。',
+  },
+  {
+    title: '不一致は検出できる状態にする',
+    body:
+      '照合ジョブを常時動かし、件数と金額の差分を可視化します。気づける状態にしておけば、' +
+      '不一致が起きること自体は許容できます。',
+  },
+  {
+    title: 'ずれてよい範囲を業務と合意する',
+    body:
+      '完全な同期を求めると設計が跳ね上がります。「数分の遅れは許容、金額は即時一致が必須」' +
+      'のように、業務側と線を引きます。',
+  },
+]
+
+const BUSINESS_IMPACT = [
+  '締め処理・月次バッチ・繁忙期を外して切替日を決める',
+  '切り戻し手順を先に用意し、本番相当の環境で一度実際に実行しておく',
+  '切替の単位を小さく保つ。影響が出ても一部の拠点で止まる',
+  '現場への事前周知と、当日の問い合わせ窓口を決めておく',
+  '旧システムの参照が必要になる期間を見込み、読み取り専用で残す',
+]
+
 const CHECKLIST = [
   '要件に「成功の判定基準」が書かれているか',
   '秘密情報がブラウザ側へ渡っていないか',
@@ -346,6 +452,13 @@ function PhaseNav() {
           </li>
         ))}
       </ol>
+      <a
+        href="#migration"
+        className="mt-3 flex items-center gap-3 rounded-xl bg-amber-50/70 px-3 py-2 text-sm text-amber-800 transition-colors duration-200 hover:bg-amber-100"
+      >
+        <span className="font-mono text-xs font-bold text-accent-amber">+</span>
+        <span className="font-medium">レガシーシステムからの移行</span>
+      </a>
     </nav>
   )
 }
@@ -414,6 +527,93 @@ function PhaseSection({ phase }: { phase: Phase }) {
   )
 }
 
+function MigrationSection() {
+  return (
+    <section id="migration" className="scroll-mt-28">
+      <div className="glass-card overflow-hidden rounded-3xl">
+        <div className="border-b border-white/40 bg-gradient-to-r from-amber-50 to-white px-6 py-8 md:px-10">
+          <span className="rounded-full bg-accent-amber/15 px-3 py-1 text-xs font-bold text-amber-700">
+            特に相談の多い領域
+          </span>
+          <h2 className="mt-4 text-2xl font-extrabold text-gray-900 md:text-3xl">
+            レガシーシステムからの移行
+          </h2>
+          <p className="mt-4 max-w-3xl leading-relaxed text-gray-600">
+            動いている基幹システムを止めずに、新しいサービスへ移していく仕事です。
+            技術的な難しさよりも、切り戻せる状態を保ちながら少しずつ進む段取りが成否を分けます。
+            一度に置き換えず、外側から順に置き換えて最後に旧システムを閉じる進め方をとります。
+          </p>
+        </div>
+
+        <div className="space-y-8 px-6 py-8 md:px-10">
+          {MIGRATION_STEPS.map((step) => (
+            <div key={step.id} id={step.id} className="scroll-mt-28">
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="rounded-md bg-amber-100 px-2 py-0.5 font-mono text-xs font-bold text-amber-800">
+                  {step.no}
+                </span>
+                <h3 className="text-lg font-bold text-gray-900">{step.title}</h3>
+              </div>
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-600">{step.lead}</p>
+              <ul className="mt-3 space-y-2">
+                {step.points.map((point) => (
+                  <li key={point} className="flex gap-2 text-sm leading-relaxed text-gray-700">
+                    <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-amber" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 border-t border-white/40 bg-white/50 px-6 py-8 md:grid-cols-2 md:px-10">
+          <div>
+            <h3 className="mb-4 text-sm font-bold text-healthcare-700">データ整合性をどう守るか</h3>
+            <dl className="space-y-4">
+              {CONSISTENCY.map((item) => (
+                <div key={item.title}>
+                  <dt className="text-sm font-bold text-gray-900">{item.title}</dt>
+                  <dd className="mt-1 text-sm leading-relaxed text-gray-600">{item.body}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+          <div>
+            <h3 className="mb-4 text-sm font-bold text-healthcare-700">業務影響をどう抑えるか</h3>
+            <ul className="space-y-2">
+              {BUSINESS_IMPACT.map((item) => (
+                <li key={item} className="flex gap-2 text-sm leading-relaxed text-gray-700">
+                  <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-healthcare-400" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-white/40 px-6 py-8 md:px-10">
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <span className="rounded-full bg-accent-amber/15 px-3 py-1 text-xs font-bold text-amber-700">
+              実例 — このサイト
+            </span>
+            <h3 className="text-base font-bold text-gray-900">
+              段階移行ではなく一括移行を選んだ判断
+            </h3>
+          </div>
+          <p className="max-w-3xl text-sm leading-relaxed text-gray-600">
+            このサイトのバックエンドは PHP / Laravel から Python / FastAPI へ全面的に移しましたが、
+            上記の段階移行は使わず一括で切り替えています。移行対象が小さく、保持データも限られており、
+            並行稼働の仕組みを作るほうが移行そのものより高くつくと判断したためです。
+            段階移行は、止められない業務と積み上がったデータがあるときに効いてきます。
+            規模に対して重い手順を選ぶと、それ自体が失敗の原因になります。
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function ProcessPage() {
   useEffect(() => {
     // LP 側はタイトルを設定していないため、離脱時に元へ戻す。
@@ -456,7 +656,11 @@ export default function ProcessPage() {
             <Link to="/" className="mx-1 font-medium text-healthcare-600 underline decoration-healthcare-300 underline-offset-2">
               このサイト自身
             </Link>
-            の実装を例に説明します。
+            の実装を例に説明します。稼働中のシステムを止めずに移行する進め方は
+            <a href="#migration" className="mx-1 font-medium text-amber-700 underline decoration-amber-300 underline-offset-2">
+              レガシーシステムからの移行
+            </a>
+            にまとめています。
           </p>
           <ul className="mt-8 flex flex-wrap gap-2">
             {STACK.map((item) => (
@@ -476,6 +680,7 @@ export default function ProcessPage() {
           {PHASES.map((phase) => (
             <PhaseSection key={phase.id} phase={phase} />
           ))}
+          <MigrationSection />
         </div>
 
         <section className="mt-16">
