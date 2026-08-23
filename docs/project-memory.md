@@ -132,7 +132,7 @@ MR-alignment/
 │   │   ├── routers/            health / auth / contact / ai / documents
 │   │   └── services/           openai_client / mailer / document
 │   ├── migrations/versions/0001_initial_schema.py
-│   ├── tests/                  pytest（101 ケース）
+│   ├── tests/                  pytest（134 ケース）
 │   ├── alembic.ini / pyproject.toml
 │   ├── Dockerfile              マルチステージ・非rootユーザー
 │   ├── docker-entrypoint.sh    設定検証→DB待ち→migrate→起動
@@ -764,7 +764,7 @@ pip install -e ".[dev]"
 pytest
 ```
 
-`tests/` に 101 ケース。SQLite（aiosqlite）のインメモリ DB を使い、
+`tests/` に 134 ケース。SQLite（aiosqlite）のインメモリ DB を使い、
 PostgreSQL / OpenAI / SMTP へは接続しません。
 
 | ファイル | 検証内容 |
@@ -774,6 +774,7 @@ PostgreSQL / OpenAI / SMTP へは接続しません。
 | `test_ai.py` | 認証必須、apiKey の無視、未知キーの除去、内部情報の非漏洩 |
 | `test_documents.py` | 未認証での利用、入力アドレスへの送付、プロンプト差し替えの拒否、HTMLエスケープ、生成失敗時に送信しないこと |
 | `test_config_and_health.py` | 本番設定の検証、URL 変換、レート制限、CORS、ヘルスチェック |
+| `test_mailer.py` | SMTP の接続方式（465=SMTPS / 587=STARTTLS / mailpit=平文）、タイムアウト、MAIL_HOST 未設定時 |
 
 > `bcrypt` は 5.0 以降で passlib と非互換になり「password cannot be longer than
 > 72 bytes」で認証系が全滅します。`pyproject.toml` の `bcrypt<5.0` は必ず守ること。
@@ -853,7 +854,7 @@ src/
 |---|---|
 | **T-03** | ~~`_old-laravel-backend/` と `temp-laravel/` を手動削除~~ ✅ 完了 |
 | **T-04** | ~~削除された PHP ファイル 157 本を git にコミット~~ ✅ 完了 |
-| **T-05** | ~~ローカルで `pytest` を実行~~ ✅ 完了（101 ケース通過） |
+| **T-05** | ~~ローカルで `pytest` を実行~~ ✅ 完了（2026-08-23 に 134 ケース通過） |
 | **T-06** | ~~`docker compose up --build` で起動確認~~ ✅ 完了 |
 | **T-07** | Railway の Variables を `docs/railway-setup.md` に従って設定 🟡 **一部完了**（`OPENAI_API_KEY` 登録済み。`DATABASE_URL` / `JWT_SECRET_KEY` / `APP_ENV=production` / `APP_DEBUG=false` / `FRONTEND_URL` / SMTP 一式 / `CONTACT_MAIL_TO` が未確認。`CONTACT_MAIL_TO` を入れないと問い合わせ・資料請求の通知メールが届かない） |
 | **T-08** | ~~バックエンドサービスを Railway に作成し、フロントに `VITE_API_URL` を設定する~~ ✅ 完了（2026-08-23 に稼働を確認）。フロント `https://mr-alignment-production.up.railway.app` / API `https://mr-alignment-api-production.up.railway.app`。公開中のバンドルは API のドメインを指しており、`/api/health/ready` は `database: ok` / `openai: configured`、CORS も許可済み |

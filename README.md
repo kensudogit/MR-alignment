@@ -58,7 +58,7 @@ uvicorn app.main:app --reload
 ```
 
 ```bash
-pytest                        # 101 ケース。SQLite を使うため PostgreSQL 不要
+pytest                        # 134 ケース。SQLite を使うため PostgreSQL 不要
 ```
 
 ### フロントエンド
