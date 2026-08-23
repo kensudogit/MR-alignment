@@ -154,7 +154,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
               value={formData.email}
               onChange={handleInputChange}
               required
-              placeholder="example@mr-alignment.com"
+              placeholder="you@example.com"
             />
           </div>
 

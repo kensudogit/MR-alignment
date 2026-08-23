@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { contactAPI, toApiResult, type ContactPayload } from '../services/api';
+import { siteInfo, hasEmail, hasPhone, telHref } from '../config/site';
 import './ContactModal.css';
 
 interface ContactModalProps {
@@ -102,7 +103,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                placeholder="example@mr-alignment.com"
+                placeholder="you@example.com"
               />
             </div>
           </div>
@@ -219,25 +220,40 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
           </div>
         </form>
 
-        <div className="contact-info">
-          <h3>その他の連絡方法</h3>
-          <div className="contact-methods">
-            <div className="contact-method">
-              <span className="method-icon">📧</span>
-              <div>
-                <strong>メール</strong>
-                <p>support@mr-alignment.com</p>
-              </div>
-            </div>
-            <div className="contact-method">
-              <span className="method-icon">📞</span>
-              <div>
-                <strong>電話</strong>
-                <p>03-1234-5678（平日 9:00-18:00）</p>
-              </div>
+        {/* 連絡先は config/site.ts が唯一の情報源。
+            以前はここに実在しないアドレス（support@mr-alignment.com）と
+            ダミーの電話番号が直書きされていた。導線がなく開かれないモーダルだったため
+            気づかれていなかったが、そのまま出すと連絡が取れない案内になる。 */}
+        {(hasEmail() || hasPhone()) && (
+          <div className="contact-info">
+            <h3>その他の連絡方法</h3>
+            <div className="contact-methods">
+              {hasEmail() && (
+                <div className="contact-method">
+                  <span className="method-icon">📧</span>
+                  <div>
+                    <strong>メール</strong>
+                    <p>
+                      <a href={`mailto:${siteInfo.email}`}>{siteInfo.email}</a>
+                    </p>
+                  </div>
+                </div>
+              )}
+              {hasPhone() && (
+                <div className="contact-method">
+                  <span className="method-icon">📞</span>
+                  <div>
+                    <strong>電話</strong>
+                    <p>
+                      <a href={telHref()}>{siteInfo.tel}</a>
+                      {siteInfo.businessHours ? `（${siteInfo.businessHours}）` : ''}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
