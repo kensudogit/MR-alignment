@@ -112,3 +112,12 @@ backend/public/build/
 # 一時的なLaravel雛形
 temp-laravel/
 backend/temp-laravel/
+
+# Terraform
+infra/terraform/**/.terraform/
+infra/terraform/**/*.tfstate
+infra/terraform/**/*.tfstate.*
+infra/terraform/**/.terraform.lock.hcl
+infra/terraform/envs/*.tfvars
+infra/terraform/envs/*.backend.hcl
+crash.log

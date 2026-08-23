@@ -30,6 +30,8 @@
 | 面談予約の管理 | **管理者のみ（`ADMIN_EMAILS`）。一覧・詳細・状態変更** | `pages/AdminAppointmentsPage.tsx`（`/admin/appointments`） |
 | お問い合わせ | **`/api/contact` へ送信。ヘッダー・相談導線・機能詳細から開く** | `ContactModal.tsx` |
 | 法定表記・事業者情報 | 稼働（内容は `src/config/site.ts` から生成） | `pages/LegalPage.tsx`（`/legal`） |
+| 本番インフラ（AWS） | **Terraform 一式**（ECS Fargate / RDS / ElastiCache / S3+CloudFront / SES / WAF / CloudWatch） | `infra/terraform/`、手順は `infra/README.md` |
+| CI / CD | **GitHub Actions**（pytest・ruff・mypy・tsc・マイグレーション往復 / OIDC で ECR→ECS と S3→CloudFront） | `.github/workflows/` |
 
 ### 旧 Laravel 版からの変更点
 
@@ -134,7 +136,7 @@ MR-alignment/
 │   │   ├── routers/            health / auth / contact / ai / documents
 │   │   └── services/           openai_client / mailer / document
 │   ├── migrations/versions/0001_initial_schema.py
-│   ├── tests/                  pytest（182 ケース）
+│   ├── tests/                  pytest（209 ケース）
 │   ├── alembic.ini / pyproject.toml
 │   ├── Dockerfile              マルチステージ・非rootユーザー
 │   ├── docker-entrypoint.sh    設定検証→DB待ち→migrate→起動
@@ -502,6 +504,76 @@ erDiagram
         timestamptz revoked_at
     }
 ```
+
+---
+
+## AWS構成（商用）
+
+詳細な手順とコストの目安は **`infra/README.md`**。Terraform は `infra/terraform/`。
+
+```
+訪問者 ─▶ CloudFront ─▶ S3（React のビルド成果物）
+       └▶ ALB + WAF ─▶ ECS Fargate（FastAPI ×2〜6）
+                          ├─ RDS PostgreSQL 15
+                          ├─ ElastiCache Redis（レート制限の共有）
+                          └─ SES（メール送信）
+```
+
+### 単一プロセス前提だった箇所を直した
+
+Railway では1インスタンスだったため表面化していなかったが、
+ECS でタスクを複数動かすと壊れる箇所があった。
+
+| 箇所 | 何が起きるか | 対応 |
+|---|---|---|
+| レート制限がプロセス内メモリ | 実効上限が「タスク数 × ワーカー数」倍に緩む。面談予約（5/hour）では枠の枯渇に直結 | `REDIS_URL` があれば Redis の ZSET で共有（`app/rate_limit.py`）。Redis 障害時はプロセス内へ縮退し、素通しにはしない |
+| 起動時に全タスクが `alembic upgrade head` | 同じ DDL が並走して片方が落ち、そのタスクだけ起動に失敗する | `pg_advisory_xact_lock` で直列化（`migrations/env.py`）。待たされた側は既に head なので何もしない |
+
+### X-Forwarded-For の先頭を信じていた（詐称可能）
+
+`client_ip()` は XFF の**先頭**を返していた。先頭はクライアントが自称した値で、
+ヘッダを付けて送るだけで別人になりすませる。IP 単位のレート制限は
+リクエストごとに素通りし、監査用に残す IP も嘘になっていた。
+
+現在は「前段のプロキシが書いた分」だけを信じ、右から `TRUSTED_PROXY_HOPS`
+個目を採る。規則は `backend/tests/test_client_ip.py` で固定している。
+
+**既定は 0（ヘッダを一切信用しない）**。間違える向きを選んだ結果で、
+
+| 間違え方 | 起きること |
+|---|---|
+| 多すぎる側（実構成1段なのに 0） | 全員が同じ IP に見え、レート制限を全利用者で共有する。不便だが破られない |
+| 少なすぎる側（実構成2段なのに 1） | クライアントが書いた値を信じ、ヘッダを付け替えるだけで制限を回避できる |
+
+後者は攻撃者に主導権を渡すため、設定漏れは前者へ倒す。
+実際の段数はデプロイ後にアクセスログの `client_ip` で確認して設定する
+（AWS の ECS では ALB 1段と分かっているので Terraform が `1` を明示している）。
+段数が実構成と合っていない場合は、起動後の最初のリクエストで警告が出る。
+
+### ログ
+
+本番は1行1JSON（`LOG_JSON`。未指定なら `APP_ENV=production` のときだけ有効）。
+`request_id` を ContextVar で持ち回し、応答ヘッダ `X-Request-Id` にも入れる。
+ALB の `X-Amzn-Trace-Id` があればそれを引き継ぐ。
+
+```
+fields @timestamp, status, duration_ms, path
+| filter status >= 500
+| sort @timestamp desc
+```
+
+「メール送信に失敗」と「未処理の例外」はログのメトリクスフィルタで拾い、
+CloudWatch アラームから SNS で通知する。**予約は入っているのに誰も知らない**
+状態が、この事業で最も損害の大きい壊れ方のため。
+
+### メール（SES）
+
+既存の smtplib のまま SES の SMTP エンドポイントへ送る。
+DKIM・MAIL FROM ドメイン・DMARC・設定セット（バウンス/苦情の SNS 通知）を
+Terraform で作る。
+
+> **SES は初期状態がサンドボックス**で、検証済みアドレス宛にしか送れない。
+> 見込み客へ届けるには本番アクセスの申請が別途必要（審査に数日）。
 
 ---
 
@@ -903,7 +975,7 @@ src/
 |---|---|
 | **T-03** | ~~`_old-laravel-backend/` と `temp-laravel/` を手動削除~~ ✅ 完了 |
 | **T-04** | ~~削除された PHP ファイル 157 本を git にコミット~~ ✅ 完了 |
-| **T-05** | ~~ローカルで `pytest` を実行~~ ✅ 完了（2026-08-23 に 182 ケース通過） |
+| **T-05** | ~~ローカルで `pytest` を実行~~ ✅ 完了（2026-08-23 に 209 ケース通過） |
 | **T-06** | ~~`docker compose up --build` で起動確認~~ ✅ 完了 |
 | **T-07** | Railway の Variables を `docs/railway-setup.md` に従って設定 🟡 **一部完了**（`OPENAI_API_KEY` 登録済み。`DATABASE_URL` / `JWT_SECRET_KEY` / `APP_ENV=production` / `APP_DEBUG=false` / `FRONTEND_URL` / SMTP 一式 / `CONTACT_MAIL_TO` が未確認。`CONTACT_MAIL_TO` を入れないと問い合わせ・資料請求の通知メールが届かない） |
 | **T-08** | ~~バックエンドサービスを Railway に作成し、フロントに `VITE_API_URL` を設定する~~ ✅ 完了（2026-08-23 に稼働を確認）。フロント `https://mr-alignment-production.up.railway.app` / API `https://mr-alignment-api-production.up.railway.app`。公開中のバンドルは API のドメインを指しており、`/api/health/ready` は `database: ok` / `openai: configured`、CORS も許可済み |

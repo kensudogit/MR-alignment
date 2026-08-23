@@ -1,0 +1,178 @@
+name: Deploy to AWS
+
+# 本番へのデプロイ。
+#
+# 認証はアクセスキーではなく OIDC（一時認証情報）で行う。
+# ロールは Terraform が作る（infra/terraform/cicd.tf）。
+#
+# GitHub の Settings → Secrets and variables → Actions → Variables に設定する値:
+#   AWS_ROLE_ARN / AWS_REGION / ECR_REPOSITORY / ECS_CLUSTER / ECS_SERVICE
+#   S3_BUCKET / CLOUDFRONT_ID / VITE_API_URL
+# いずれも terraform output で出る（outputs.tf の next_steps）。
+
+on:
+  push:
+    branches: [main-clean]
+  # 手動でも流せるようにする（切り戻しや、CI だけ直したときの再デプロイ用）
+  workflow_dispatch:
+
+# 同時に走らせない。2つのデプロイが交差すると、
+# 古いイメージのタスク定義で上書きされうる
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  id-token: write # OIDC のトークン発行に必要
+  contents: read
+
+jobs:
+  backend:
+    name: バックエンド（ECR → ECS）
+    runs-on: ubuntu-latest
+    environment: production
+    # AWS 側がまだ無いうちは何もしない（失敗ではなくスキップ）。
+    # Terraform を apply して Variables を設定すると、自動で動き始める
+    if: vars.AWS_ROLE_ARN != ''
+
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: AWS 認証（OIDC）
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: ECR ログイン
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      # タグは commit SHA。latest だと「今どの版が動いているか」が
+      # 分からなくなり、切り戻し先も特定できない
+      - name: ビルドと push
+        id: build
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          TAG: ${{ github.sha }}
+        run: |
+          IMAGE="$REGISTRY/$REPOSITORY:$TAG"
+          docker buildx build \
+            --file backend/Dockerfile \
+            --tag "$IMAGE" \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            --push \
+            backend
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: 現在のタスク定義を取得
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "$(aws ecs describe-services \
+              --cluster '${{ vars.ECS_CLUSTER }}' \
+              --services '${{ vars.ECS_SERVICE }}' \
+              --query 'services[0].taskDefinition' --output text)" \
+            --query taskDefinition > task-definition.json
+
+      - name: イメージを差し替え
+        id: render
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: backend
+          image: ${{ steps.build.outputs.image }}
+
+      # マイグレーションはコンテナ起動時に実行される（docker-entrypoint.sh）。
+      # 複数タスクが同時に流しても壊れないよう、PostgreSQL の
+      # アドバイザリロックで直列化してある（backend/migrations/env.py）。
+      #
+      # デプロイの失敗時は ECS のサーキットブレーカーが前の版へ自動で戻す
+      # （infra/terraform/ecs.tf の deployment_circuit_breaker）。
+      - name: ECS へデプロイ
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render.outputs.task-definition }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          service: ${{ vars.ECS_SERVICE }}
+          wait-for-service-stability: true
+
+      - name: 疎通確認
+        run: |
+          for i in $(seq 1 10); do
+            if curl -fsS "${{ vars.VITE_API_URL }}/health" > /dev/null; then
+              echo "API 応答を確認しました"
+              exit 0
+            fi
+            echo "待機中... ($i/10)"
+            sleep 10
+          done
+          echo "API が応答しません" >&2
+          exit 1
+
+  frontend:
+    name: フロントエンド（S3 → CloudFront）
+    runs-on: ubuntu-latest
+    environment: production
+    if: vars.AWS_ROLE_ARN != ''
+    # API が新しくなってから配る。逆にすると、
+    # 新しい画面が古い API を叩く時間帯ができる
+    needs: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 依存関係
+        working-directory: frontend
+        run: npm ci
+
+      # VITE_ 変数はビルド時に成果物へ焼き込まれる。実行時には差し替えられない
+      - name: ビルド
+        working-directory: frontend
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: npm run build
+
+      - name: AWS 認証（OIDC）
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # ハッシュ付きのファイル（assets/*）は内容が変わればファイル名も変わるため、
+      # 長期キャッシュしてよい。先に置く
+      - name: 静的アセットを同期
+        working-directory: frontend
+        run: |
+          aws s3 sync dist "s3://${{ vars.S3_BUCKET }}" \
+            --delete \
+            --exclude "index.html" \
+            --cache-control "public, max-age=31536000, immutable"
+
+      # index.html は最後。先に置くと、まだ無い JS を指した HTML が配られる
+      - name: index.html を配置
+        working-directory: frontend
+        run: |
+          aws s3 cp dist/index.html "s3://${{ vars.S3_BUCKET }}/index.html" \
+            --cache-control "no-cache, must-revalidate"
+
+      - name: CloudFront のキャッシュを削除
+        run: |
+          ID=$(aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_ID }}" \
+            --paths "/index.html" "/" \
+            --query 'Invalidation.Id' --output text)
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "${{ vars.CLOUDFRONT_ID }}" --id "$ID"

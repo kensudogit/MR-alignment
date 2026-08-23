@@ -1,0 +1,59 @@
+# 本番の変数。
+#
+#   cp envs/prod.tfvars.example envs/prod.tfvars
+#   （prod.tfvars は .gitignore 済み。実値をコミットしないこと）
+#
+#   terraform plan  -var-file=envs/prod.tfvars
+#   terraform apply -var-file=envs/prod.tfvars
+
+project     = "mr-alignment"
+environment = "prod"
+region      = "ap-northeast-1"
+
+# ---------------------------------------------------------------- ドメイン
+# Route53 の公開ホストゾーンが必要。
+# ドメインを他社で取っている場合は、ネームサーバーを Route53 に向けること。
+domain_name     = "example.jp"
+route53_zone_id = "Z0123456789ABCDEFGHIJ"
+api_subdomain   = "api"
+
+# ---------------------------------------------------------------- メール
+# mail_from_address は domain_name のドメインにすること（SES の検証対象）
+mail_from_address = "noreply@example.jp"
+mail_from_name    = "須藤技術士事務所"
+contact_mail_to   = "kensudo@jcom.zaq.ne.jp"
+
+# 面談予約の管理画面を開けるアカウント（カンマ区切り）
+admin_emails = "kensudo@jcom.zaq.ne.jp"
+
+# ---------------------------------------------------------------- 通知
+# CloudWatch アラームと SES のバウンス通知の宛先。
+# apply 後に届く購読確認メールを承認するまで通知は飛ばない
+alert_email = "kensudo@jcom.zaq.ne.jp"
+
+# ---------------------------------------------------------------- CI/CD
+# GitHub Actions から OIDC でデプロイするリポジトリ
+github_repository = "kensudogit/MR-alignment"
+
+# ---------------------------------------------------------------- 規模とコスト
+#
+# 下は「まず動かす」ための最小構成。月額の目安は infra/README.md を参照。
+# アクセスが増えたらここを上げる。
+
+backend_desired_count = 2
+backend_min_count     = 2
+backend_max_count     = 6
+backend_cpu           = 512
+backend_memory        = 1024
+web_concurrency       = 2
+
+db_instance_class        = "db.t4g.micro"
+db_multi_az              = false # 商用で停止が許されないなら true（料金は約2倍）
+db_backup_retention_days = 14
+
+redis_node_type = "cache.t4g.micro"
+
+# NAT Gateway を1つに絞る（月額 約$32 の節約。その AZ が落ちると外向き通信が止まる）
+single_nat_gateway = true
+
+enable_waf = true

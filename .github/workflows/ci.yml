@@ -1,0 +1,151 @@
+name: CI
+
+# main-clean への push と、そこへの Pull Request で回す。
+# デプロイ（deploy.yml）はこのワークフローの成功を前提にする。
+
+on:
+  push:
+    branches: [main-clean]
+  pull_request:
+    branches: [main-clean]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: バックエンド（pytest / ruff / mypy）
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: 依存関係
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: ruff
+        working-directory: backend
+        run: ruff check .
+
+      - name: mypy
+        working-directory: backend
+        run: mypy app
+
+      # テストは SQLite(インメモリ) で全経路を通す（tests/conftest.py）。
+      # PostgreSQL は起動しない
+      - name: pytest
+        working-directory: backend
+        run: pytest
+
+  migrations:
+    name: マイグレーション（実際の PostgreSQL へ適用）
+    runs-on: ubuntu-latest
+
+    # テストは SQLite で動くため、PostgreSQL 固有の記述
+    # （ENUM 型・部分ユニークインデックス）はここでしか検証されない
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: mr_alignment
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: 依存関係
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: upgrade head
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/mr_alignment
+          JWT_SECRET_KEY: ci-only
+        run: alembic upgrade head
+
+      # 巻き戻せないマイグレーションは、事故のときに戻す手段が無い。
+      # 全部落として、もう一度上げ直せることまで見る
+      - name: downgrade base → upgrade head（往復できること）
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/mr_alignment
+          JWT_SECRET_KEY: ci-only
+        run: |
+          alembic downgrade base
+          alembic upgrade head
+
+      # 注: `alembic check` は使っていない。
+      # モデル側に server_default を書かず、マイグレーション側にだけ書く方針のため、
+      # compare_server_default が毎回 modify_default を差分として報告してしまう
+      # （実際のスキーマは一致している）。
+
+  frontend:
+    name: フロントエンド（tsc / build）
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 依存関係
+        working-directory: frontend
+        run: npm ci
+
+      - name: 型チェック
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      # VITE_API_URL が無いとビルドを止める仕組みがあるため、CI では仮の値を渡す
+      - name: ビルド
+        working-directory: frontend
+        env:
+          VITE_API_URL: https://api.example.com
+        run: npm run build
+
+  docker:
+    name: コンテナイメージのビルド確認
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # push はしない。デプロイ前に「そもそも積めるか」だけ確認する
+      - name: バックエンド
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

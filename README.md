@@ -8,6 +8,9 @@
 - 認証: JWT（Bearer トークン。Cookie は使いません）
 
 > **設計・API 一覧・DB 定義・TODO は [docs/project-memory.md](./docs/project-memory.md) が唯一の参照点です。**
+>
+> **本番（AWS）の構築手順は [infra/README.md](./infra/README.md) にあります。**
+> ECS Fargate + RDS + S3/CloudFront + SES を Terraform で作ります。
 > 実装や調査の前に、まずそちらを読んでください。この README は起動手順だけを扱います。
 
 ---
