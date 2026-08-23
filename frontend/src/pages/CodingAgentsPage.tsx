@@ -557,6 +557,300 @@ const CHAPTERS: Chapter[] = [
   },
 ]
 
+// --- 付録: Skill の構築手順 -------------------------------------------------
+//
+// 出典（2026年8月時点で確認）:
+//   Codex       https://developers.openai.com/codex/skills
+//   Claude Code https://code.claude.com/docs/en/skills
+// パス・フィールド名は推測で書かないこと。変更したら FACT_CHECKED_ON も更新する。
+
+type SkillStep = {
+  no: string
+  title: string
+  lead: string
+  blocks: { label: string; tone: 'codex' | 'claude' | 'common'; code: string[] }[]
+  note?: string
+}
+
+const SKILL_LOCATIONS: { scope: string; codex: string; claude: string }[] = [
+  {
+    scope: 'リポジトリで共有',
+    codex: '.agents/skills/<name>/SKILL.md（実行ディレクトリからリポジトリルートまで探索）',
+    claude: '.claude/skills/<name>/SKILL.md（下位ディレクトリの .claude/skills も読む）',
+  },
+  {
+    scope: '個人用',
+    codex: '~/.agents/skills/<name>/SKILL.md',
+    claude: '~/.claude/skills/<name>/SKILL.md',
+  },
+  {
+    scope: '組織で配布',
+    codex: '/etc/codex/skills（管理者用の配置場所）',
+    claude: '管理設定、またはプラグインの <plugin>/skills/<name>/SKILL.md',
+  },
+  {
+    scope: '手動で呼ぶ',
+    codex: '$skill-name と入力。/skills で一覧（ChatGPT では @ で選択）',
+    claude: '/skill-name と入力',
+  },
+  {
+    scope: '自動で選ばせる',
+    codex: 'description が依頼と一致したとき Codex が選ぶ',
+    claude: 'description が依頼と一致したとき Claude が読み込む',
+  },
+  {
+    scope: '同名が衝突したとき',
+    codex: '統合されない。どちらも選択肢に出る',
+    claude: '組織 > 個人 > プロジェクトの順に優先。プラグインは plugin-name:skill-name で分かれる',
+  },
+]
+
+const SKILL_STEPS: SkillStep[] = [
+  {
+    no: 'S1',
+    title: '何を Skill にするか決める',
+    lead:
+      '「同じ指示を3回以上打ち直した」「手順が5行を超える」「担当者によって結果がぶれる」のいずれかに当てはまるものだけを切り出します。' +
+      '1行で済む指示まで Skill にすると一覧が膨らみ、肝心なときに選ばれなくなります。',
+    blocks: [
+      {
+        label: '切り出す価値があるもの',
+        tone: 'common',
+        code: [
+          'リリース前の確認手順（lint → 型検査 → テスト → 差分の確認）',
+          'コードレビューの観点リスト（自社の禁止事項を含む）',
+          '障害対応の初動（見るログの場所と、まず止めるもの）',
+          '新規APIを追加するときの雛形と命名規約',
+        ],
+      },
+      {
+        label: '作らないほうがよいもの',
+        tone: 'common',
+        code: [
+          '「テストを実行して」など、そのまま頼めば済むもの',
+          'プロジェクト全体に常時効かせたい規約（AGENTS.md / CLAUDE.md に書く）',
+          '毎回内容が変わる一度きりの作業',
+        ],
+      },
+    ],
+  },
+  {
+    no: 'S2',
+    title: 'ディレクトリを作る',
+    lead:
+      'ディレクトリ名がそのまま呼び出し名になります。小文字とハイフンで、読んで用途が分かる名前を付けてください。',
+    blocks: [
+      {
+        label: 'OpenAI Codex（リポジトリで共有）',
+        tone: 'codex',
+        code: ['mkdir -p .agents/skills/release-check'],
+      },
+      {
+        label: 'Claude Code（リポジトリで共有）',
+        tone: 'claude',
+        code: ['mkdir -p .claude/skills/release-check'],
+      },
+    ],
+    note:
+      '個人で試す段階なら ~/.agents/skills/ と ~/.claude/skills/ に置きます。チームで使うと決めた時点で' +
+      'リポジトリ側へ移してコミットしてください。手順がコードと同じ履歴に乗ることに意味があります。',
+  },
+  {
+    no: 'S3',
+    title: 'SKILL.md を書く',
+    lead:
+      'どちらも「YAML の前書き ＋ 本文」という同じ形式です。前書きは「いつ使うか」を書く場所、本文は「何をするか」を書く場所です。' +
+      '本文は命令形で、入力と出力を明示します。',
+    blocks: [
+      {
+        label: 'OpenAI Codex — .agents/skills/release-check/SKILL.md',
+        tone: 'codex',
+        code: [
+          '---',
+          'name: release-check',
+          'description: リリース前の確認を行う。デプロイ・タグ付け・本番反映の前に使う。調査や実装だけの依頼では使わない。',
+          '---',
+          '',
+          '## 手順',
+          '',
+          '1. `npm run lint` を実行し、警告が0件であることを確認する',
+          '2. `npx tsc --noEmit` を実行し、型エラーが0件であることを確認する',
+          '3. `pytest` を実行し、失敗したテスト名をそのまま報告する',
+          '4. `git diff --stat origin/main` で変更範囲を確認する',
+          '',
+          '## 出力',
+          '',
+          '各コマンドの結果を、成功・失敗が分かる形で列挙する。',
+          '1件でも失敗したら「リリース不可」と明記し、原因の当たりを付けて止まる。',
+          '結果を報告するだけで、コードは変更しない。',
+        ],
+      },
+      {
+        label: 'Claude Code — .claude/skills/release-check/SKILL.md',
+        tone: 'claude',
+        code: [
+          '---',
+          'name: release-check',
+          'description: リリース前の確認を行う。デプロイ・タグ付け・本番反映の前に使う。調査や実装だけの依頼では使わない。',
+          'allowed-tools: Bash(npm run lint) Bash(npx tsc --noEmit) Bash(pytest *)',
+          'disable-model-invocation: true',
+          '---',
+          '',
+          '## 現在の差分',
+          '',
+          '!`git diff --stat origin/main`',
+          '',
+          '## 手順',
+          '',
+          '1. `npm run lint` を実行し、警告が0件であることを確認する',
+          '2. `npx tsc --noEmit` を実行し、型エラーが0件であることを確認する',
+          '3. `pytest` を実行し、失敗したテスト名をそのまま報告する',
+          '',
+          '## 出力',
+          '',
+          '各コマンドの結果を、成功・失敗が分かる形で列挙する。',
+          '1件でも失敗したら「リリース不可」と明記し、原因の当たりを付けて止まる。',
+        ],
+      },
+    ],
+    note:
+      'Claude Code は本文中の !`コマンド` を先に実行し、その出力を埋め込んでから読み込みます（動的コンテキスト）。' +
+      '上の例では差分が最初から手元にある状態で始まります。Codex にこの記法はないため、本文で実行を指示します。',
+  },
+  {
+    no: 'S4',
+    title: '長い資料とスクリプトを分ける',
+    lead:
+      'SKILL.md は入口だけにして、詳細は別ファイルへ逃がします。両ツールとも必要になったときだけ読み込むため、' +
+      '参照資料が長くても普段のコストは増えません。',
+    blocks: [
+      {
+        label: 'ディレクトリ構成（Codex は scripts / references / assets が慣例）',
+        tone: 'common',
+        code: [
+          'release-check/',
+          '├── SKILL.md          必須。入口と手順',
+          '├── references/',
+          '│   └── checklist.md  詳細なチェック項目（必要になったら読ませる）',
+          '├── scripts/',
+          '│   └── verify.sh     決定的に動かしたい処理',
+          '└── assets/           雛形やテンプレート',
+        ],
+      },
+      {
+        label: 'Claude Code — 同梱スクリプトを承認なしで実行させる',
+        tone: 'claude',
+        code: [
+          '---',
+          'name: release-check',
+          'description: ...',
+          'allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/verify.sh *)',
+          '---',
+          '',
+          '`${CLAUDE_SKILL_DIR}/scripts/verify.sh` を実行して結果を報告する。',
+          '判断に迷ったら `references/checklist.md` を読むこと。',
+        ],
+      },
+    ],
+    note:
+      '${CLAUDE_SKILL_DIR} は SKILL.md のあるディレクトリに置き換わります。本文と allowed-tools で同じ書き方をすると、' +
+      '実行時に承認を求められません。スクリプトにするのは「毎回まったく同じ結果になってほしい処理」だけにしてください。',
+  },
+  {
+    no: 'S5',
+    title: '呼び出して、意図した場面で選ばれるか確かめる',
+    lead:
+      '作った直後に必ず2通りで試します。名前で直接呼ぶ経路と、普通の依頼文から自動で選ばれる経路です。' +
+      '自動で選ばれないときに直すのは本文ではなく description です。',
+    blocks: [
+      {
+        label: 'OpenAI Codex',
+        tone: 'codex',
+        code: [
+          '/skills            # 認識されている Skill の一覧を見る',
+          '$release-check     # 名前で直接呼ぶ',
+          '',
+          '# 自動選択の確認: 「本番に出す前の確認をして」と普通に頼んでみる',
+        ],
+      },
+      {
+        label: 'Claude Code',
+        tone: 'claude',
+        code: [
+          '/release-check     # 名前で直接呼ぶ',
+          '',
+          '# 自動選択の確認: 「リリース前チェックをやって」と普通に頼んでみる',
+          '# SKILL.md の編集は再起動なしで反映される',
+        ],
+      },
+    ],
+    note:
+      '意図しない場面で勝手に選ばれるほうが厄介です。その場合は description に「〜のときは使わない」を書き足すか、' +
+      'Codex なら agents/openai.yaml の policy.allow_implicit_invocation を false、Claude Code なら ' +
+      'disable-model-invocation: true にして、手動呼び出し専用にします。',
+  },
+]
+
+const SKILL_FRONTMATTER: { purpose: string; codex: string; claude: string }[] = [
+  { purpose: '名前', codex: 'name', claude: 'name（省略時はディレクトリ名）' },
+  { purpose: 'いつ使うか', codex: 'description', claude: 'description、補足に when_to_use' },
+  {
+    purpose: '自動起動を止める',
+    codex: 'agents/openai.yaml の policy.allow_implicit_invocation: false',
+    claude: 'disable-model-invocation: true',
+  },
+  {
+    purpose: '実行を事前に許可する',
+    codex: '（Skill 側にはない。サンドボックスと承認ポリシーで制御）',
+    claude: 'allowed-tools（逆に禁止するのは disallowed-tools）',
+  },
+  { purpose: '別コンテキストで走らせる', codex: '（なし）', claude: 'context: fork と、担当を選ぶ agent' },
+  { purpose: '対象ファイルを限定する', codex: '（なし）', claude: 'paths（glob）' },
+  {
+    purpose: '引数を受け取る',
+    codex: '$skill-name のあとに続けて書く（例: $skill-installer linear）',
+    claude: 'arguments / argument-hint と、本文の $ARGUMENTS・$1',
+  },
+  {
+    purpose: '表示名やアイコン',
+    codex: 'agents/openai.yaml の interface（display_name / icon_small / brand_color など）',
+    claude: '（なし）',
+  },
+  {
+    purpose: '個別に無効化する',
+    codex: '~/.codex/config.toml の [[skills.config]] に path と enabled = false（変更後は再起動）',
+    claude: '権限設定の deny ルールで拒否する',
+  },
+]
+
+const SKILL_PITFALLS = [
+  {
+    title: 'description に「何をするか」しか書かない',
+    body:
+      '選ばれるかどうかは description で決まります。「いつ使うか」と「いつ使わないか」を、利用者が実際に打つ言葉で書いてください。' +
+      '一覧に載る分量には上限があり（Codex はコンテキストの最大2%または8,000文字、Claude Code は description と when_to_use を合わせて1,536文字）、' +
+      '超えた分は切り捨てられます。要点を先頭に置くこと。',
+  },
+  {
+    title: '本文にすべて詰め込む',
+    body:
+      '一度読み込まれた本文は、その後のやり取りの間ずっと文脈に残ります。SKILL.md は入口だけにして、' +
+      '詳細は references/ へ逃がしてください。長い資料を読ませたいのではなく、必要なときだけ読ませたいはずです。',
+  },
+  {
+    title: '広い権限を前書きに書いてしまう',
+    body:
+      'Claude Code の allowed-tools は、リポジトリに置かれた Skill でも効きます。他人のリポジトリで作業する前に ' +
+      '.claude/skills/ の中身を読む習慣を付けてください。配る側なら、必要な最小のコマンドだけを列挙します。',
+  },
+  {
+    title: '両方のツールで手順が食い違う',
+    body:
+      '同じ作業なら本文はできるだけ同じ文章にしてください。差が出るのは置き場所と前書きだけのはずです。' +
+      '片方だけ直して放置すると、どちらが正しいのか誰にも分からなくなります。',
+  },
+]
+
 const CURRICULUM = [
   { time: '0:00–0:40', body: '01 位置づけ / 02 導入 — 環境構築まで全員そろえる' },
   { time: '0:40–1:40', body: '03 権限とサンドボックス — 最重要。演習に時間を取る' },
@@ -592,6 +886,48 @@ const PITFALLS = [
     body: 'エージェントは古い前提のまま自信を持って間違えます。構成変更と同じコミットで指示書を直します。',
   },
 ]
+
+function CodeBlock({ label, tone, code }: { label: string; tone: 'codex' | 'claude' | 'common'; code: string[] }) {
+  const toneClass =
+    tone === 'codex'
+      ? 'border-emerald-200 bg-emerald-50/60'
+      : tone === 'claude'
+        ? 'border-healthcare-200 bg-healthcare-50/60'
+        : 'border-gray-200 bg-white/70'
+  const labelClass =
+    tone === 'codex' ? 'text-emerald-800' : tone === 'claude' ? 'text-healthcare-800' : 'text-gray-700'
+
+  return (
+    <div className={`rounded-2xl border p-4 ${toneClass}`}>
+      <p className={`mb-3 text-xs font-bold ${labelClass}`}>{label}</p>
+      <pre className="overflow-x-auto rounded-xl bg-gray-900/95 px-4 py-3 text-xs leading-relaxed text-gray-100">
+        <code>{code.join('\n')}</code>
+      </pre>
+    </div>
+  )
+}
+
+function SkillStepCard({ step }: { step: SkillStep }) {
+  return (
+    <div className="rounded-3xl bg-white/60 p-5 md:p-6">
+      <div className="flex items-baseline gap-3">
+        <span className="font-mono text-sm font-bold text-healthcare-500">{step.no}</span>
+        <h4 className="text-lg font-extrabold text-gray-900">{step.title}</h4>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-gray-600">{step.lead}</p>
+      <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {step.blocks.map((block) => (
+          <CodeBlock key={block.label} label={block.label} tone={block.tone} code={block.code} />
+        ))}
+      </div>
+      {step.note && (
+        <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3 text-sm leading-relaxed text-amber-900">
+          {step.note}
+        </p>
+      )}
+    </div>
+  )
+}
 
 function ToolCard({ tool }: { tool: Tool }) {
   const isCodex = tool.key === 'codex'
@@ -723,7 +1059,7 @@ export default function CodingAgentsPage() {
           <p className="mt-6 max-w-3xl leading-relaxed text-gray-600">
             どちらもリポジトリを読み、コマンドを実行し、ファイルを変更する自律エージェントです。
             違いは機能の多寡ではなく、権限の与え方と拡張の考え方にあります。
-            このページは、そのまま社内講習の教材として使える粒度で、10章＋演習に整理したものです。
+            このページは、そのまま社内講習の教材として使える粒度で、10章＋演習に整理したものです。巻末に、両ツールで Skill を作る手順を付録として付けています。
             開発工程そのものの進め方は
             <Link
               to="/process"
@@ -796,6 +1132,15 @@ export default function CodingAgentsPage() {
                 </a>
               </li>
             ))}
+            <li>
+              <a
+                href="#skills"
+                className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-healthcare-50 hover:text-healthcare-700"
+              >
+                <span className="font-mono text-xs font-bold text-healthcare-500">付録</span>
+                <span className="font-medium">Skill の構築手順</span>
+              </a>
+            </li>
           </ol>
         </nav>
 
@@ -804,6 +1149,139 @@ export default function CodingAgentsPage() {
             <ChapterSection key={chapter.id} chapter={chapter} />
           ))}
         </div>
+
+        <section id="skills" className="mt-16 scroll-mt-24">
+          <div className="glass-card rounded-3xl p-6 md:p-10">
+            <p className="mb-2 text-sm font-bold tracking-widest text-healthcare-600">APPENDIX</p>
+            <h2 className="text-2xl font-extrabold text-gray-900">付録: Skill の構築手順</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-gray-600">
+              06 で触れた Skill を、実際に作るところまで具体化します。Codex と Claude Code はどちらも
+              <span className="mx-1 font-mono text-xs">SKILL.md</span>
+              という同じ形式を採用しており、覚えることは「置き場所」「前書きの書き方」「呼び出し方」の3つだけです。
+              以下は同じ「リリース前チェック」を両方のツールで作る例です。
+            </p>
+
+            <h3 className="mt-8 text-lg font-extrabold text-gray-900">置き場所と呼び出し方</h3>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[720px] border-collapse text-sm">
+                <thead>
+                  <tr>
+                    <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
+                      用途
+                    </th>
+                    <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-bold uppercase tracking-wider text-emerald-700">
+                      OpenAI Codex
+                    </th>
+                    <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-bold uppercase tracking-wider text-healthcare-700">
+                      Claude Code
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SKILL_LOCATIONS.map((row) => (
+                    <tr key={row.scope}>
+                      <td className="border-b border-gray-100 px-3 py-3 align-top font-medium text-gray-900">
+                        {row.scope}
+                      </td>
+                      <td className="border-b border-gray-100 px-3 py-3 align-top font-mono text-xs leading-relaxed text-gray-700">
+                        {row.codex}
+                      </td>
+                      <td className="border-b border-gray-100 px-3 py-3 align-top font-mono text-xs leading-relaxed text-gray-700">
+                        {row.claude}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <h3 className="mt-10 text-lg font-extrabold text-gray-900">手順</h3>
+            <div className="mt-4 space-y-5">
+              {SKILL_STEPS.map((step) => (
+                <SkillStepCard key={step.no} step={step} />
+              ))}
+            </div>
+
+            <h3 className="mt-10 text-lg font-extrabold text-gray-900">前書き（frontmatter）の対応</h3>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-gray-600">
+              名前と説明はどちらも同じです。差が出るのは、権限と実行の制御をどこで行うかです。
+              Codex は Skill の外（サンドボックスと承認ポリシー）で制御し、Claude Code は Skill の前書きでも指定できます。
+            </p>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[720px] border-collapse text-sm">
+                <thead>
+                  <tr>
+                    <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
+                      やりたいこと
+                    </th>
+                    <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-bold uppercase tracking-wider text-emerald-700">
+                      OpenAI Codex
+                    </th>
+                    <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-bold uppercase tracking-wider text-healthcare-700">
+                      Claude Code
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SKILL_FRONTMATTER.map((row) => (
+                    <tr key={row.purpose}>
+                      <td className="border-b border-gray-100 px-3 py-3 align-top font-medium text-gray-900">
+                        {row.purpose}
+                      </td>
+                      <td className="border-b border-gray-100 px-3 py-3 align-top font-mono text-xs leading-relaxed text-gray-700">
+                        {row.codex}
+                      </td>
+                      <td className="border-b border-gray-100 px-3 py-3 align-top font-mono text-xs leading-relaxed text-gray-700">
+                        {row.claude}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <h3 className="mt-10 text-lg font-extrabold text-gray-900">つまずきどころ</h3>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              {SKILL_PITFALLS.map((pitfall) => (
+                <div key={pitfall.title} className="rounded-2xl bg-white/60 px-5 py-4">
+                  <h4 className="mb-2 text-sm font-bold text-rose-800">{pitfall.title}</h4>
+                  <p className="text-sm leading-relaxed text-gray-700">{pitfall.body}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 rounded-2xl border border-healthcare-200 bg-healthcare-50/60 px-5 py-4">
+              <p className="text-sm font-bold text-healthcare-900">演習</p>
+              <p className="mt-2 text-sm leading-relaxed text-gray-700">
+                受講者それぞれのリポジトリで、いま一番よく打ち直している指示を1つ選び、両ツールで同じ Skill を作ります。
+                本文は同じ文章にし、置き場所と前書きだけを変えてください。仕上げに、Skill の名前を出さずに普通の言葉で依頼し、
+                自動で選ばれるかどうかを確認します。選ばれなければ description を直す、これを2回繰り返して終わりです。
+              </p>
+            </div>
+
+            <p className="mt-6 text-xs leading-relaxed text-gray-500">
+              参照:{' '}
+              <a
+                href="https://developers.openai.com/codex/skills"
+                target="_blank"
+                rel="noreferrer"
+                className="text-healthcare-600 underline underline-offset-2"
+              >
+                Codex — Build skills
+              </a>
+              {' / '}
+              <a
+                href="https://code.claude.com/docs/en/skills"
+                target="_blank"
+                rel="noreferrer"
+                className="text-healthcare-600 underline underline-offset-2"
+              >
+                Claude Code — Extend Claude with skills
+              </a>
+              （いずれも{FACT_CHECKED_ON}時点）
+            </p>
+          </div>
+        </section>
 
         <section className="mt-16">
           <div className="glass-card rounded-3xl p-6 md:p-10">

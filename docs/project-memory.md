@@ -674,7 +674,7 @@ erDiagram
 |---|---|---|
 | `/` | `healthcare_lp_react_tailwind_ui.jsx` | LP 本体 |
 | `/process` | `pages/ProcessPage.tsx` | 開発の進め方（要件整理〜デプロイの10工程 + レガシー移行 `#migration`） |
-| `/coding-agents` | `pages/CodingAgentsPage.tsx` | OpenAI Codex と Claude Code の実務講習（10章＋演習） |
+| `/coding-agents` | `pages/CodingAgentsPage.tsx` | OpenAI Codex と Claude Code の実務講習（10章＋演習、付録に Skill の構築手順 `#skills`） |
 | `/legal` | `pages/LegalPage.tsx` | 事業者情報 `#business` / プライバシーポリシー `#privacy` / 特商法 `#tokushoho` / 利用規約 `#terms` |
 | その他 | 同上 LP | 未知のパスは LP を返す |
 
@@ -688,6 +688,12 @@ erDiagram
 > ページ内に確認時点を表示しているので、内容を更新したら `FACT_CHECKED_ON` も必ず併せて更新すること。
 > Codex 側の記載は learn.chatgpt.com の公式ドキュメント、Claude 側のモデルIDと料金は
 > Anthropic の料金表に一致させています。推測で書き足さないこと。
+>
+> 付録の「Skill の構築手順」（`#skills`）は、両ツールの Skill 仕様を並べています。
+> 出典はソース冒頭のコメントに書いたとおり developers.openai.com/codex/skills と
+> code.claude.com/docs/en/skills です。パス（`.agents/skills` / `.claude/skills`）や
+> フィールド名（`allowed-tools`、`allow_implicit_invocation` など）を書き換えるときは、
+> 必ず公式ドキュメントで確認してから直すこと。
 
 ### LP のセクション
 
