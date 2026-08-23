@@ -46,7 +46,20 @@ COPY --chown=appuser:appuser app ./app
 COPY --chown=appuser:appuser migrations ./migrations
 COPY --chown=appuser:appuser alembic.ini pyproject.toml ./
 COPY --chown=appuser:appuser docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# 改行コードを LF に揃えてから実行権限を付ける。
+#
+# Windows の作業ツリーではこの .sh が CRLF になっていることがある
+# （.gitattributes で eol=lf を宣言していても、core.autocrlf=true で
+#  チェックアウト済みのファイルはそのまま CRLF で残る）。
+# GitHub 連携のビルドでは LF で取得されるため表面化しないが、
+# `railway up` のようにローカルの作業ツリーをそのまま送る経路では CRLF が届く。
+#
+# その状態だとシェバンが「bash + CR」という名前のコマンドとして解釈され、
+#   env: 'bash\r': No such file or directory
+# だけを残してコンテナが起動しない。ビルドは成功するのでログを見ないと分からない。
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 USER appuser
 

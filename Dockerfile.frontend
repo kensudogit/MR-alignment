@@ -50,9 +50,16 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Nginx設定ファイルをテンプレートとしてコピー
 COPY frontend/nginx.conf.template /etc/nginx/templates/default.conf.template
 
-# 起動スクリプトをコピーして実行権限を付与
+# 起動スクリプトをコピーし、改行コードを LF に揃えてから実行権限を付与
+#
+# Windows の作業ツリーではこの .sh が CRLF になっていることがある。
+# その状態だとシェバンが「sh + CR」というコマンド名として解釈され、
+#   env: 'sh\r': No such file or directory
+# だけを残してコンテナが起動しない（ビルドは成功するので気づきにくい）。
+# 詳細は backend/Dockerfile の同じ箇所に書いた。
 COPY frontend/docker-start.sh /docker-start.sh
-RUN chmod +x /docker-start.sh
+RUN sed -i 's/\r$//' /docker-start.sh \
+    && chmod +x /docker-start.sh
 
 # RailwayのPORT環境変数に対応（デフォルトは80）
 ENV PORT=80
