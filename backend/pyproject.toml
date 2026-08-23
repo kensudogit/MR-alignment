@@ -22,6 +22,8 @@ dependencies = [
     "bcrypt>=4.0,<5.0",
     "httpx>=0.27",
     "python-multipart>=0.0.9",
+    # レート制限の共有ストア。複数タスクで動かす本番では必須
+    "redis>=5.0",
 ]
 
 [project.optional-dependencies]
@@ -32,6 +34,9 @@ dev = [
     "httpx>=0.27",
     "ruff>=0.4",
     "mypy>=1.9",
+    # 型スタブ。無いと mypy が import-untyped で落ちる
+    "types-python-jose>=3.3",
+    "types-passlib>=1.7",
 ]
 
 [tool.setuptools.packages.find]
@@ -48,10 +53,20 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "S", "N"]
-ignore = ["S101"]  # テストでの assert を許可
+ignore = [
+    "S101",  # テストでの assert を許可
+    # str と Enum の併用は意図的。StrEnum にすると str() の結果が変わり、
+    # SQLAlchemy の Enum(values_callable=...) と pydantic の扱いが揃わなくなる
+    "UP042",
+    # 例外名に Error を付けない（OpenAIUnavailable / NotEnoughExamples）。
+    # 「何が起きたか」をそのまま名前にしており、呼び出し側の読みやすさを優先する
+    "N818",
+]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S105", "S106"]  # テスト内のダミーパスワードを許可
+# テスト名は日本語で「何を保証しているか」を書く方針のため、命名規則の対象外にする。
+# 英語に直すと、失敗時の一覧から意図が読み取れなくなる
+"tests/*" = ["S105", "S106", "N802"]
 
 [tool.mypy]
 python_version = "3.11"

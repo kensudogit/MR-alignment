@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -82,7 +82,7 @@ def create_access_token(
     Returns:
         (トークン文字列, jti, 有効期限)
     """
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     expire = now + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
     jti = secrets.token_urlsafe(24)
 
@@ -132,5 +132,5 @@ def decode_access_token(token: str) -> TokenPayload:
         user_id=user_id,
         jti=str(jti),
         token_version=int(raw.get("ver", 0)),
-        expires_at=datetime.fromtimestamp(int(exp), tz=timezone.utc),
+        expires_at=datetime.fromtimestamp(int(exp), tz=UTC),
     )

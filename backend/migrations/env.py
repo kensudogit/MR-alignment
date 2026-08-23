@@ -5,7 +5,7 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import pool
+from sqlalchemy import pool, text
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
@@ -40,6 +40,11 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+# 同時実行を防ぐためのアドバイザリロック用キー。
+# 値そのものに意味は無く、他のアプリと衝突しない任意の 64bit 整数であればよい。
+MIGRATION_LOCK_ID = 7710240823
+
+
 def do_run_migrations(connection: Connection) -> None:
     context.configure(
         connection=connection,
@@ -50,6 +55,17 @@ def do_run_migrations(connection: Connection) -> None:
     )
 
     with context.begin_transaction():
+        # ECS でタスクを複数立ち上げると、各コンテナが同時に
+        # `alembic upgrade head` を実行する。同じ CREATE TABLE が並走すると
+        # 片方が落ち、そのタスクだけ起動に失敗する（ALB から見ると不安定な再起動）。
+        # アドバイザリロックで直列化する。待たされた側は、
+        # ロックを取れた時点で既に head なので何もせず終わる。
+        if connection.dialect.name == "postgresql":
+            connection.execute(
+                text("SELECT pg_advisory_xact_lock(:lock_id)"),
+                {"lock_id": MIGRATION_LOCK_ID},
+            )
+
         context.run_migrations()
 
 

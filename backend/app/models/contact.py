@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import enum
 import secrets
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text
@@ -84,7 +84,7 @@ class Contact(Base, TimestampMixin):
 
     responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    user: Mapped["User | None"] = relationship(back_populates="contacts")
+    user: Mapped[User | None] = relationship(back_populates="contacts")
 
     @staticmethod
     def generate_reference() -> str:
@@ -93,7 +93,7 @@ class Contact(Base, TimestampMixin):
         旧実装は `'CT-' . time()` で、同一秒内に複数の問い合わせがあると衝突した。
         日付＋暗号論的乱数で一意性を確保する。
         """
-        today = datetime.now(tz=timezone.utc).strftime("%Y%m%d")
+        today = datetime.now(tz=UTC).strftime("%Y%m%d")
         return f"CT-{today}-{secrets.token_hex(4).upper()}"
 
     def __repr__(self) -> str:  # pragma: no cover - デバッグ用

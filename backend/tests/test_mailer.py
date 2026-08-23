@@ -19,9 +19,11 @@ from app.services import mailer
 class _FakeSMTP:
     """smtplib.SMTP / SMTP_SSL の代わり。呼ばれ方だけを記録する。"""
 
-    instances: list["_FakeSMTP"] = []
+    instances: list[_FakeSMTP] = []
 
-    def __init__(self, host: str, port: int, timeout: float | None = None, **kwargs: object) -> None:
+    def __init__(
+        self, host: str, port: int, timeout: float | None = None, **kwargs: object
+    ) -> None:
         self.host = host
         self.port = port
         self.timeout = timeout
@@ -40,7 +42,7 @@ class _FakeSMTP:
     def send_message(self, message: object) -> None:
         self.sent += 1
 
-    def __enter__(self) -> "_FakeSMTP":
+    def __enter__(self) -> _FakeSMTP:
         return self
 
     def __exit__(self, *exc: object) -> None:
@@ -188,7 +190,9 @@ def test_担当者への予約通知は件名で日時と会社が分かる(monk
     assert "090-1234-5678" in message.get_content()
 
 
-async def test_CONTACT_MAIL_TO未設定なら担当者通知は送らない(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_CONTACT_MAIL_TO未設定なら担当者通知は送らない(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _patch(monkeypatch, mail_host="smtp.example.com", contact_mail_to=None)
 
     assert await mailer.send_appointment_notification(_appointment()) is False

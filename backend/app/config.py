@@ -10,7 +10,7 @@ import secrets
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, PostgresDsn, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,6 +28,31 @@ class Settings(BaseSettings):
     app_debug: bool = False
     api_prefix: str = "/api"
     log_level: str = "INFO"
+    # 1行1JSONで出す。CloudWatch Logs Insights で絞り込むために必要。
+    # 既定は本番のみ。開発中は人が読める形のほうがよい。
+    log_json: bool | None = None
+
+    # ------------------------------------------------------------- プロキシ
+    # 自分の前段にいる信頼できるプロキシの段数。
+    # X-Forwarded-For の右から何個目を「本当のクライアント」とみなすかに使う。
+    # 詳細と、先頭を信じてはいけない理由は app/dependencies.py の client_ip に書いた。
+    #
+    #   0 → X-Forwarded-For を一切信用しない（既定）
+    #   1 → ALB や一般的なリバースプロキシが1段
+    #   2 → CloudFront → ALB の2段
+    #
+    # 既定を 0 にしているのは、間違えたときの向きを選んだため。
+    #   多すぎる側に間違える（実構成が1段なのに 0）
+    #     → 全員が同じ IP に見え、レート制限を全利用者で共有する。
+    #        不便だが、外部から破ることはできない。
+    #   少なすぎる側に間違える（実構成が2段なのに 1）
+    #     → クライアントが書いた値を信じてしまい、
+    #        ヘッダを付け替えるだけでレート制限を無制限に回避できる。
+    #
+    # 後者は攻撃者に主導権を渡す。設定漏れは前者へ倒す。
+    # 実際の段数はデプロイ後にアクセスログの client_ip で確認して設定すること
+    # （docs/railway-setup.md / infra/README.md に手順あり）。
+    trusted_proxy_hops: int = 0
 
     # ------------------------------------------------------------- DB
     # 例: postgresql+asyncpg://postgres:password@localhost:5432/mr_alignment
@@ -73,6 +98,10 @@ class Settings(BaseSettings):
     mail_from_address: str = "noreply@example.com"
     mail_from_name: str = "MR Alignment"
     contact_mail_to: str | None = None
+    # Amazon SES の設定セット名。指定すると各メールにヘッダを付け、
+    # 開封・バウンス・苦情を SES 側で集計できるようになる。
+    # SES 以外（JCOM 等）では未設定のままでよい。
+    mail_configuration_set: str | None = None
 
     # ------------------------------------------------------------- 管理者
     # 面談予約の管理画面（/admin/appointments）を開けるアカウント。
@@ -88,6 +117,15 @@ class Settings(BaseSettings):
     # ファインチューニングに着手してよい最小件数。
     # これを下回る状態で学習しても、文体は安定せず費用だけがかかる。
     finetune_minimum_examples: int = 100
+
+    # ------------------------------------------------------------- Redis
+    # レート制限の共有ストア。
+    # 未設定だとプロセス内メモリになり、ECS のタスクを増やした瞬間に
+    # 実効上限が「タスク数 × ワーカー数 × 設定値」まで緩む。
+    # 本番で複数タスクを動かすなら必ず設定すること。
+    # 例: redis://mr-alignment.xxxx.ng.0001.apne1.cache.amazonaws.com:6379/0
+    redis_url: str | None = None
+    redis_timeout: float = 1.0
 
     # ------------------------------------------------------------- レート制限
     rate_limit_auth: str = "5/minute"
@@ -114,6 +152,11 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"
+
+    @property
+    def log_json_effective(self) -> bool:
+        """JSON で出すか。明示指定が無ければ本番のみ。"""
+        return self.is_production if self.log_json is None else self.log_json
 
     @property
     def mail_ssl_required(self) -> bool:

@@ -17,12 +17,13 @@
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import session_scope
@@ -61,7 +62,7 @@ SLOT_TAKEN_MESSAGE = "ご希望の枠はすでに埋まっています。別の�
 SLOT_CONFLICT_MESSAGE = "この枠には別の予約が入っています。先にそちらを取り消してください。"
 
 
-async def _taken_slots(db, target: date) -> set[str]:
+async def _taken_slots(db: AsyncSession, target: date) -> set[str]:
     """指定日で埋まっている枠。キャンセル済み・実施済みは含めない。"""
     result = await db.scalars(
         select(Appointment.preferred_slot).where(
@@ -327,7 +328,7 @@ async def update_appointment(
         appointment.status = payload.status
 
         if payload.status is AppointmentStatus.CONFIRMED:
-            appointment.confirmed_at = datetime.now(tz=timezone.utc)
+            appointment.confirmed_at = datetime.now(tz=UTC)
         elif payload.status in (AppointmentStatus.PENDING, AppointmentStatus.CANCELLED):
             # 未確定に戻した／取り消した場合は確定日時を落とす。
             # completed のときは残す（実施したなら確定していたはずのため）。
@@ -356,7 +357,7 @@ async def update_appointment(
             sent = False
 
         if sent:
-            appointment.status_notice_sent_at = datetime.now(tz=timezone.utc)
+            appointment.status_notice_sent_at = datetime.now(tz=UTC)
             await db.commit()
 
     await db.refresh(appointment)

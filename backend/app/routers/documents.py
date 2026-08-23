@@ -12,7 +12,7 @@ LP の「ITサービス資料ダウンロード（無料）」フォームから
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
@@ -21,7 +21,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.config import settings
 from app.dependencies import CurrentUser, DbSession, client_ip
-from app.models import DocumentStatus
+from app.models import DocumentStatus, GeneratedDocument
 from app.rate_limit import rate_limit
 from app.schemas import DocumentRequest, DocumentResponse
 from app.schemas.document import (
@@ -107,7 +107,7 @@ async def request_document(
 
     sections = parse_proposal(raw)
     reference = generate_reference()
-    generated_at = datetime.now(tz=timezone.utc)
+    generated_at = datetime.now(tz=UTC)
 
     email_sent = await send_document_mail(payload, sections, reference, generated_at)
 
@@ -156,7 +156,7 @@ async def request_document(
 # 「AIが生成したもの」と「人が直したもの」の対だけが学習データになる。
 
 
-def _to_summary(document) -> DocumentSummary:  # noqa: ANN001 - ORM モデル
+def _to_summary(document: GeneratedDocument) -> DocumentSummary:
     return DocumentSummary(
         reference=document.reference,
         company_name=document.company_name,

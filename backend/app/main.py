@@ -13,13 +13,76 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import settings
 from app.database import engine
+from app.logging_config import configure_logging
+from app.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
+from app.rate_limit import RedisSlidingWindowLimiter, SlidingWindowLimiter, set_limiter
 from app.routers import ai, appointments, auth, contact, documents, health
 
-logging.basicConfig(
-    level=settings.log_level.upper(),
-    format="%(asctime)s %(levelname)-8s %(name)s %(message)s",
-)
+# ルーターより先に設定する。import 時にログを出すモジュールがあるため
+configure_logging()
 logger = logging.getLogger(__name__)
+
+
+def _warn_about_production_gaps() -> None:
+    """本番で「動くが穴がある」設定を起動ログに出す。
+
+    起動を止めるほどではないが、放置すると障害や情報漏れになるもの。
+    config.py の `_validate_production` は起動を止める（＝致命的な）設定を見る。
+    """
+    if not settings.is_production:
+        return
+
+    if not settings.redis_url:
+        logger.warning(
+            "REDIS_URL が未設定です。レート制限はプロセス内メモリになり、"
+            "タスクやワーカーを増やすと実効上限がその数だけ緩みます。"
+        )
+    if not settings.admin_emails:
+        logger.warning(
+            "ADMIN_EMAILS が未設定です。面談予約の管理画面は誰も開けません。"
+        )
+    if not settings.contact_mail_to:
+        logger.warning(
+            "CONTACT_MAIL_TO が未設定です。問い合わせ・予約の通知メールは送信されません。"
+        )
+    if settings.trusted_proxy_hops <= 0:
+        logger.warning(
+            "TRUSTED_PROXY_HOPS=0 です。ロードバランサ配下では、"
+            "レート制限とアクセスログの IP がすべて同一になります。"
+        )
+
+
+async def _setup_rate_limiter() -> object | None:
+    """レート制限の共有ストアを用意する。
+
+    Returns:
+        作成した Redis クライアント（終了時に閉じるため）。使わない場合は None。
+    """
+    if not settings.redis_url:
+        set_limiter(SlidingWindowLimiter())
+        return None
+
+    # redis は任意依存にしていない（本番で必須）が、未導入環境でも
+    # 起動だけはできるように import をここに置く
+    from redis.asyncio import Redis
+
+    client = Redis.from_url(
+        settings.redis_url,
+        socket_timeout=settings.redis_timeout,
+        socket_connect_timeout=settings.redis_timeout,
+        decode_responses=False,
+    )
+
+    try:
+        await client.ping()
+        logger.info("Redis に接続しました。レート制限を共有します")
+    except Exception as exc:  # noqa: BLE001 - Redis 障害で起動を止めない
+        # ここで落とすと、Redis の一時障害でサービス全体が起動不能になる。
+        # 制限はプロセス内へ落として動かし、警告を残す。
+        logger.error("Redis に接続できませんでした（プロセス内メモリで継続します）: %s", exc)
+
+    set_limiter(RedisSlidingWindowLimiter(client))
+    return client
 
 
 @asynccontextmanager
@@ -34,7 +97,13 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     if not settings.openai_api_key:
         logger.warning("OPENAI_API_KEY が未設定です。AI資料生成は 503 を返します。")
 
+    _warn_about_production_gaps()
+    redis_client = await _setup_rate_limiter()
+
     yield
+
+    if redis_client is not None:
+        await redis_client.aclose()  # type: ignore[attr-defined]
 
     # コネクションプールを明示的に閉じる
     await engine.dispose()
@@ -66,6 +135,12 @@ app.add_middleware(
     allow_headers=["Accept", "Authorization", "Content-Type", "X-Requested-With"],
     max_age=3600,
 )
+
+# --------------------------------------------------------------- ミドルウェア
+# add_middleware は「後に足したものが外側」になる。
+# リクエストIDを最も外側に置き、CORS の preflight を含む全応答に付ける。
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestContextMiddleware)
 
 
 # ---------------------------------------------------------------- 例外ハンドラ

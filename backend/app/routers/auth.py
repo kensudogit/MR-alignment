@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -37,7 +37,7 @@ INVALID_CREDENTIALS = "メールアドレスまたはパスワードが正しく
 
 def _issue_token(user: User) -> tuple[str, int]:
     token, _jti, expires_at = create_access_token(user.id, user.token_version)
-    expires_in = int((expires_at - datetime.now(tz=timezone.utc)).total_seconds())
+    expires_in = int((expires_at - datetime.now(tz=UTC)).total_seconds())
     return token, expires_in
 
 
@@ -109,7 +109,7 @@ async def login(payload: LoginRequest, request: Request, db: DbSession) -> AuthR
             detail=INVALID_CREDENTIALS,
         )
 
-    user.last_login_at = datetime.now(tz=timezone.utc)
+    user.last_login_at = datetime.now(tz=UTC)
     await db.commit()
     await db.refresh(user)
 

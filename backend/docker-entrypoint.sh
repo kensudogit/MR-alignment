@@ -55,9 +55,18 @@ asyncio.run(wait_for_db())
 PY
 
 # --------------------------------------------------------- マイグレーション
-echo "[3/3] マイグレーションを適用しています..."
-# 失敗したら起動を中止する。握り潰すとスキーマ不整合に気づけない。
-alembic upgrade head
+# ECS では「デプロイのたびに1回だけ流す専用タスク」に分ける運用もできる。
+# その場合はサービス側のタスクで RUN_MIGRATIONS=false を指定する。
+# 既定は true（Docker Compose / Railway と同じ挙動）。
+# 複数タスクが同時に流しても壊れないよう、migrations/env.py で
+# PostgreSQL のアドバイザリロックを取って直列化している。
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+    echo "[3/3] マイグレーションを適用しています..."
+    # 失敗したら起動を中止する。握り潰すとスキーマ不整合に気づけない。
+    alembic upgrade head
+else
+    echo "[3/3] RUN_MIGRATIONS=false のためマイグレーションは実行しません"
+fi
 
 # --------------------------------------------------------- 起動
 if [ "${APP_ENV}" = "production" ]; then

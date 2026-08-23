@@ -64,7 +64,7 @@ class StoredPromptSource:
         return self._full_name
 
     @classmethod
-    def from_document(cls, document: GeneratedDocument) -> "StoredPromptSource":
+    def from_document(cls, document: GeneratedDocument) -> StoredPromptSource:
         return cls(
             company_name=document.company_name,
             # 保存時に日本語ラベルへ変換済み。industry_label は未知の値を

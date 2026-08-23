@@ -12,7 +12,7 @@ from __future__ import annotations
 import html
 import json
 import secrets
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Protocol
 
 from app.schemas.document import DocumentRequest
@@ -64,7 +64,7 @@ def generate_reference() -> str:
     Math.random() は暗号論的に安全ではないため、Contact.generate_reference と
     同じく日付＋secrets で採番する。
     """
-    today = datetime.now(tz=timezone.utc).strftime("%Y%m%d")
+    today = datetime.now(tz=UTC).strftime("%Y%m%d")
     return f"DOC-{today}-{secrets.token_hex(4).upper()}"
 
 
@@ -81,11 +81,23 @@ class PromptSource(Protocol):
     学習しても効果が出ない。
     """
 
-    company_name: str
-    industry: str
-    department: str
-    role: str
-    additional_requirements: str
+    # 読み取り専用（プロパティ）として宣言する。
+    # 変数として書くと「代入もできること」まで要求してしまい、
+    # frozen dataclass である StoredPromptSource が満たせなくなる。
+    @property
+    def company_name(self) -> str: ...
+
+    @property
+    def industry(self) -> str: ...
+
+    @property
+    def department(self) -> str: ...
+
+    @property
+    def role(self) -> str: ...
+
+    @property
+    def additional_requirements(self) -> str: ...
 
     @property
     def full_name(self) -> str: ...

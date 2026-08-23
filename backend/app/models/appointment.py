@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import enum
 import secrets
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Index, String, Text, text
@@ -122,7 +122,7 @@ class Appointment(Base, TimestampMixin):
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
     user_agent: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
-    user: Mapped["User | None"] = relationship(back_populates="appointments")
+    user: Mapped[User | None] = relationship(back_populates="appointments")
 
     @property
     def consultation_label(self) -> str:
@@ -132,7 +132,7 @@ class Appointment(Base, TimestampMixin):
     @staticmethod
     def generate_reference() -> str:
         """受付番号を採番する。日付＋暗号論的乱数で一意性を確保する。"""
-        today = datetime.now(tz=timezone.utc).strftime("%Y%m%d")
+        today = datetime.now(tz=UTC).strftime("%Y%m%d")
         return f"AP-{today}-{secrets.token_hex(4).upper()}"
 
     def __repr__(self) -> str:  # pragma: no cover - デバッグ用

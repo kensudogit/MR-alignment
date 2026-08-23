@@ -91,6 +91,7 @@ railway variables set OPENAI_API_KEY="sk-..."
 | `RATE_LIMIT_AUTH` | `5/minute` | 認証エンドポイントの上限 |
 | `RATE_LIMIT_CONTACT` | `10/hour` | お問い合わせの上限 |
 | `RATE_LIMIT_APPOINTMENT` | `5/hour` | 面談予約（`/api/appointments`）の上限。枠を押さえる操作なので厳しめ |
+| `TRUSTED_PROXY_HOPS` | `0` | X-Forwarded-For の右から何個目を本当のクライアントとみなすか。**既定の 0 ではレート制限が全体で1枠になる**。実際の段数を確認して設定する（下記「2-0」） |
 | `RATE_LIMIT_OPENAI` | `10/minute` | AI生成の上限 |
 | `RATE_LIMIT_DOCUMENT` | `5/hour` | 資料請求（`/api/documents`）の上限。未認証で呼べるため厳しめ |
 | `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | — | SMTP 設定。JCOM なら `mailssl.zaq.ne.jp` / `465` |
@@ -102,6 +103,51 @@ railway variables set OPENAI_API_KEY="sk-..."
 | `WEB_CONCURRENCY` | `2` | uvicorn のワーカー数 |
 | `LOG_LEVEL` | `INFO` | |
 | `CORS_ALLOW_ORIGIN_REGEX` | — | Vercel プレビュー等を許可する場合 |
+
+---
+
+## 2-0. `TRUSTED_PROXY_HOPS` を確認して設定する
+
+レート制限は IP 単位です。その IP は `X-Forwarded-For` から取り出しますが、
+**先頭はクライアントが自称した値**で詐称できるため、
+「前段のプロキシが書いた分」＝右から `TRUSTED_PROXY_HOPS` 個目を採ります
+（`backend/app/dependencies.py` の `client_ip`）。
+
+**既定は 0（ヘッダを一切信用しない）です。** 安全側ですが、副作用があります。
+
+| 設定 | クライアント IP | レート制限 | 詐称への耐性 |
+|---|---|---|---|
+| `0`（既定） | プロキシの内部アドレス（全員同じ） | **全利用者で1枠**を共有 | 破られない |
+| `1`（実構成と一致する場合） | 本物のクライアント | IP 単位で正しく効く | 破られない |
+| `1`（実構成が2段なのに 1） | クライアントが書いた値 | **無制限に回避できる** | 破られる |
+
+`0` のままだと、面談予約の「5/hour」が事業所全体で5件になり、
+6人目以降は 429 で申し込めません。**確認して 1 に上げてください。**
+
+### 確認手順（初回デプロイ後に1回）
+
+アクセスログは1行1JSON で、`client_ip` が入っています。
+
+```bash
+railway logs | grep client_ip
+```
+
+`X-Forwarded-For` の中身を見たいときは、まず `TRUSTED_PROXY_HOPS=1` にして
+再デプロイし、同じログの `client_ip` を確認します。
+
+| `client_ip` の値 | 意味 | 設定 |
+|---|---|---|
+| `126.x.x.x` など**インターネット上のアドレス** | Railway は1段 | `TRUSTED_PROXY_HOPS=1` のままにする |
+| `10.x` / `100.64.x` など**内部アドレス** | 前段が2段以上ある | `2` を試して同じ確認を繰り返す |
+
+段数が合っていない場合は、起動後の最初のリクエストで警告も出ます。
+
+```
+TRUSTED_PROXY_HOPS=1 ですが、クライアント IP が '10.0.0.7' になりました。…
+```
+
+確認が済むまでは `0` のままにしてください。
+`0` は「不便だが破られない」状態で、`1` の誤設定は「破られる」状態です。
 
 ---
 

@@ -52,7 +52,7 @@ class RegisterRequest(BaseModel):
         return _validate_password_strength(v)
 
     @model_validator(mode="after")
-    def _check_confirmation(self) -> "RegisterRequest":
+    def _check_confirmation(self) -> RegisterRequest:
         if self.password != self.password_confirmation:
             raise ValueError("パスワードが一致しません")
         return self
@@ -68,7 +68,8 @@ class AuthResponse(BaseModel):
     message: str
     user: UserPublic
     token: str
-    token_type: str = "bearer"
+    # RFC 6750 のトークン種別。パスワードではない
+    token_type: str = "bearer"  # noqa: S105
     expires_in: int = Field(description="トークンの有効期間（秒）")
 
 
@@ -101,7 +102,7 @@ class ChangePasswordRequest(BaseModel):
         return _validate_password_strength(v)
 
     @model_validator(mode="after")
-    def _check(self) -> "ChangePasswordRequest":
+    def _check(self) -> ChangePasswordRequest:
         if self.password != self.password_confirmation:
             raise ValueError("新しいパスワードが一致しません")
         if self.password == self.current_password:

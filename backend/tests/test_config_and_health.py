@@ -7,7 +7,6 @@ from httpx import AsyncClient
 from app.config import Settings
 from app.rate_limit import Rate, SlidingWindowLimiter
 
-
 # --------------------------------------------------------------- 設定
 
 

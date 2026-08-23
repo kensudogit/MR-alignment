@@ -86,15 +86,19 @@ async def test_ログイン中はユーザーが紐づく(client: AsyncClient, d
 
 
 async def test_IPとUserAgentが記録される(client: AsyncClient, db_session) -> None:
+    """X-Forwarded-For の末尾（＝前段のプロキシが書いた値）を記録する。
+
+    先頭はクライアントが自称した値で詐称できる。詳細は tests/test_client_ip.py。
+    """
     await client.post(
         "/api/contact",
         json=VALID_PAYLOAD,
-        headers={"User-Agent": "TestAgent/1.0", "X-Forwarded-For": "203.0.113.10, 10.0.0.1"},
+        headers={"User-Agent": "TestAgent/1.0", "X-Forwarded-For": "203.0.113.10, 198.51.100.7"},
     )
 
     contact = await db_session.scalar(select(Contact))
     assert contact is not None
-    assert contact.ip_address == "203.0.113.10"  # 先頭の値が元のクライアント
+    assert contact.ip_address == "198.51.100.7"
     assert contact.user_agent == "TestAgent/1.0"
 
 

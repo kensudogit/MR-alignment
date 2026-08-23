@@ -41,12 +41,12 @@ class User(Base, TimestampMixin):
     # 発行済み JWT はすべて古い token_version を持つため、一括で無効化できる。
     token_version: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
-    contacts: Mapped[list["Contact"]] = relationship(
+    contacts: Mapped[list[Contact]] = relationship(
         back_populates="user",
         cascade="save-update, merge",
     )
 
-    appointments: Mapped[list["Appointment"]] = relationship(
+    appointments: Mapped[list[Appointment]] = relationship(
         back_populates="user",
         cascade="save-update, merge",
     )

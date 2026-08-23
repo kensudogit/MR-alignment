@@ -1,7 +1,7 @@
 """ヘルスチェックと疎通確認。"""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, status
 from sqlalchemy import text
@@ -22,7 +22,7 @@ async def health() -> dict[str, object]:
         "status": "healthy",
         "app": settings.app_name,
         "env": settings.app_env,
-        "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        "timestamp": datetime.now(tz=UTC).isoformat(),
     }
 
 
@@ -48,7 +48,7 @@ async def readiness(db: DbSession) -> dict[str, object]:
     return {
         "status": "ready" if healthy else "not_ready",
         "checks": checks,
-        "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        "timestamp": datetime.now(tz=UTC).isoformat(),
     }
 
 
@@ -60,5 +60,5 @@ async def api_test() -> dict[str, str]:
         "message": "API接続成功！",
         "backend": "Python 3.11 + FastAPI",
         "database": "PostgreSQL 15",
-        "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        "timestamp": datetime.now(tz=UTC).isoformat(),
     }

@@ -8,7 +8,7 @@
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -258,7 +258,7 @@ def test_節は定義順に並ぶ() -> None:
 def test_生成内容はHTMLエスケープされる() -> None:
     """モデル出力をそのまま差し込むと、受信者のブラウザでスクリプトが動く。"""
     sections = {"serviceOverview": "<script>alert(1)</script>"}
-    rendered = render_html(REQUEST, sections, "DOC-TEST", datetime.now(tz=timezone.utc))
+    rendered = render_html(REQUEST, sections, "DOC-TEST", datetime.now(tz=UTC))
 
     assert "<script>alert(1)</script>" not in rendered
     assert "&lt;script&gt;" in rendered
@@ -269,7 +269,7 @@ def test_入力値もHTMLエスケープされる() -> None:
         {**PAYLOAD, "companyName": '<img src=x onerror="alert(1)">'}
     )
     rendered = render_html(
-        injected, {"serviceOverview": "本文"}, "DOC-TEST", datetime.now(tz=timezone.utc)
+        injected, {"serviceOverview": "本文"}, "DOC-TEST", datetime.now(tz=UTC)
     )
 
     assert "<img src=x" not in rendered
@@ -278,7 +278,7 @@ def test_入力値もHTMLエスケープされる() -> None:
 
 def test_改行は資料内で改行として表示される() -> None:
     rendered = render_html(
-        REQUEST, {"serviceOverview": "1行目\n2行目"}, "DOC-TEST", datetime.now(tz=timezone.utc)
+        REQUEST, {"serviceOverview": "1行目\n2行目"}, "DOC-TEST", datetime.now(tz=UTC)
     )
     assert "1行目<br>2行目" in rendered
 
@@ -287,7 +287,7 @@ def test_資料メールはテキストとHTMLと添付を持つ(monkeypatch: py
     monkeypatch.setattr(settings, "contact_mail_to", "sales@example.com")
 
     message = _build_document_mail(
-        REQUEST, {"serviceOverview": "本文"}, "DOC-TEST", datetime.now(tz=timezone.utc)
+        REQUEST, {"serviceOverview": "本文"}, "DOC-TEST", datetime.now(tz=UTC)
     )
 
     assert message["To"] == "山田 太郎 <taro@example.com>"

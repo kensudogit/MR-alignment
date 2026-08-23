@@ -20,12 +20,20 @@ os.environ.setdefault("RATE_LIMIT_DOCUMENT", "1000/minute")
 os.environ.setdefault("RATE_LIMIT_APPOINTMENT", "1000/minute")
 # 管理APIのテスト用。ADMIN_EMAILS に載っているアドレスだけが管理者。
 os.environ.setdefault("ADMIN_EMAILS", "admin@example.com")
+# 既定は 0（X-Forwarded-For を信用しない）。
+# テストでは「プロキシ1段の配下」を模し、ヘッダを解釈する経路を通す。
+# 既定値そのものは tests/test_client_ip.py で検証する。
+os.environ.setdefault("TRUSTED_PROXY_HOPS", "1")
 os.environ.pop("OPENAI_API_KEY", None)
 
 import pytest  # noqa: E402
 import pytest_asyncio  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
+from sqlalchemy.ext.asyncio import (  # noqa: E402
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 from app import database  # noqa: E402

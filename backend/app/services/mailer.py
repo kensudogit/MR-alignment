@@ -106,6 +106,11 @@ def _send_sync(message: EmailMessage) -> None:
     if not settings.mail_host:  # pragma: no cover - 呼び出し側で確認済み
         return
 
+    # Amazon SES の設定セット。付けると開封・バウンス・苦情を SES 側で集計できる。
+    # ヘッダで指定するのは、SMTP インターフェース経由では API のパラメータを使えないため。
+    if settings.mail_configuration_set and "X-SES-CONFIGURATION-SET" not in message:
+        message["X-SES-CONFIGURATION-SET"] = settings.mail_configuration_set
+
     with _connect() as smtp:
         if settings.mail_username and settings.mail_password:
             smtp.login(settings.mail_username, settings.mail_password)

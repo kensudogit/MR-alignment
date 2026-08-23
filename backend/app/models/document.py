@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import enum
 import secrets
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import (
@@ -98,7 +98,7 @@ class GeneratedDocument(Base, TimestampMixin):
     # 不正利用調査のために保持する
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
 
-    revisions: Mapped[list["DocumentRevision"]] = relationship(
+    revisions: Mapped[list[DocumentRevision]] = relationship(
         back_populates="document",
         cascade="all, delete-orphan",
         order_by="DocumentRevision.id",
@@ -106,7 +106,7 @@ class GeneratedDocument(Base, TimestampMixin):
 
     @staticmethod
     def generate_reference() -> str:
-        today = datetime.now(tz=timezone.utc).strftime("%Y%m%d")
+        today = datetime.now(tz=UTC).strftime("%Y%m%d")
         return f"DOC-{today}-{secrets.token_hex(4).upper()}"
 
     @property
@@ -151,8 +151,8 @@ class DocumentRevision(Base, TimestampMixin):
         Integer, default=0, nullable=False
     )
 
-    document: Mapped["GeneratedDocument"] = relationship(back_populates="revisions")
-    editor: Mapped["User | None"] = relationship()
+    document: Mapped[GeneratedDocument] = relationship(back_populates="revisions")
+    editor: Mapped[User | None] = relationship()
 
     def __repr__(self) -> str:  # pragma: no cover - デバッグ用
         return (

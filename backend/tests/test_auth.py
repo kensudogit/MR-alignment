@@ -9,7 +9,6 @@ from app.models import User
 from app.security import verify_password
 from tests.conftest import VALID_PASSWORD, auth_headers, register_user
 
-
 # --------------------------------------------------------------- 登録
 
 
