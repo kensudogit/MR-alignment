@@ -8,6 +8,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.models import RevokedToken, User
 from app.security import TokenError, TokenPayload, decode_access_token
@@ -81,6 +82,26 @@ async def get_optional_user(
     return user
 
 
+async def get_admin_user(
+    user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """管理者であることを確認する。
+
+    管理者かどうかは ADMIN_EMAILS（環境変数）で決まる。
+    DB のフラグにしなかった理由は app/config.py に記載。
+
+    ADMIN_EMAILS が未設定なら誰も通さない。「設定漏れ＝全員管理者」に
+    倒れると、予約者の氏名・電話番号が誰にでも見えてしまう。
+    """
+    if user.email.lower() not in settings.admin_email_set:
+        # 管理APIの存在を推測させないよう、権限不足であることだけを伝える
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="この操作を行う権限がありません",
+        )
+    return user
+
+
 def client_ip(request: Request) -> str:
     """クライアント IP を取得する。
 
@@ -94,5 +115,6 @@ def client_ip(request: Request) -> str:
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+AdminUser = Annotated[User, Depends(get_admin_user)]
 OptionalUser = Annotated[User | None, Depends(get_optional_user)]
 DbSession = Annotated[AsyncSession, Depends(get_db)]

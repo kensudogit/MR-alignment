@@ -74,6 +74,16 @@ class Settings(BaseSettings):
     mail_from_name: str = "MR Alignment"
     contact_mail_to: str | None = None
 
+    # ------------------------------------------------------------- 管理者
+    # 面談予約の管理画面（/admin/appointments）を開けるアカウント。
+    # カンマ区切りのメールアドレスで指定する。
+    #
+    # DB に is_admin フラグを持たせなかったのは、最初の管理者を作る手段が
+    # 「本番DBへ直接 UPDATE を打つ」しかなくなるため。
+    # 環境変数なら Railway の設定画面だけで完結し、権限を外すのも同じ場所でできる。
+    # 未設定の場合、管理APIは誰も呼べない（＝安全側に倒す）。
+    admin_emails: str = ""
+
     # ------------------------------------------------------------- 学習データ
     # ファインチューニングに着手してよい最小件数。
     # これを下回る状態で学習しても、文体は安定せず費用だけがかかる。
@@ -82,6 +92,9 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------- レート制限
     rate_limit_auth: str = "5/minute"
     rate_limit_contact: str = "10/hour"
+    # 面談予約は枠を押さえる操作なので、問い合わせより厳しくする。
+    # 大量に投げられると空き枠を埋め尽くされる（枠の枯渇）ため。
+    rate_limit_appointment: str = "5/hour"
     rate_limit_openai: str = "10/minute"
     # 資料請求は未認証で呼べる（＝OpenAIの課金が発生する）ため、
     # 認証必須の /openai/generate よりも厳しくしておく。
@@ -90,6 +103,13 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [o.strip() for o in self.frontend_url.split(",") if o.strip()]
+
+    @property
+    def admin_email_set(self) -> frozenset[str]:
+        """管理者のメールアドレス。比較は小文字で行う。"""
+        return frozenset(
+            e.strip().lower() for e in self.admin_emails.split(",") if e.strip()
+        )
 
     @property
     def is_production(self) -> bool:

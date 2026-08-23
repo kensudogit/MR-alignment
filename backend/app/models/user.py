@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.appointment import Appointment
     from app.models.contact import Contact
 
 
@@ -41,6 +42,11 @@ class User(Base, TimestampMixin):
     token_version: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     contacts: Mapped[list["Contact"]] = relationship(
+        back_populates="user",
+        cascade="save-update, merge",
+    )
+
+    appointments: Mapped[list["Appointment"]] = relationship(
         back_populates="user",
         cascade="save-update, merge",
     )

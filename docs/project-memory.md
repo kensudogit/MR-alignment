@@ -26,7 +26,8 @@
 | AI 資料生成（OpenAI） | **サーバー経由・認証必須** | `backend/app/routers/ai.py` |
 | 資料ダウンロードフォーム（AI資料をメール送付） | **未認証で利用可・入力アドレスへ送信** | `backend/app/routers/documents.py` |
 | チャット相談 | フロント UI + バックエンド経由の AI 応答 | `frontend/src/components/ChatModal.tsx` |
-| 面談予約 | **`/api/contact` へ送信（DB保存＋担当者通知）** | `AppointmentModal.tsx` |
+| 面談予約 | **`/api/appointments` へ送信（構造化して保存＋申込者への自動返信＋担当者通知）** | `backend/app/routers/appointments.py` / `AppointmentModal.tsx` |
+| 面談予約の管理 | **管理者のみ（`ADMIN_EMAILS`）。一覧・詳細・状態変更** | `pages/AdminAppointmentsPage.tsx`（`/admin/appointments`） |
 | お問い合わせ | **`/api/contact` へ送信。ヘッダー・相談導線・機能詳細から開く** | `ContactModal.tsx` |
 | 法定表記・事業者情報 | 稼働（内容は `src/config/site.ts` から生成） | `pages/LegalPage.tsx`（`/legal`） |
 
@@ -55,6 +56,7 @@
 | 本番ビルドで `VITE_API_URL` を必須化（`vite.config.ts`） | 未設定だと `http://localhost:8000` が焼き込まれ、公開後は全フォームがサーバーへ届かない。公開中のバンドルは正しく API を指していたが、`Dockerfile.frontend` を通らない `npm run build`（Vercel など）では検査が効かないため、ビルド側でも止めるようにした |
 | 資料生成失敗時のデモ表示を廃止（LP `onSubmit`） | 「業務効率30%向上」「3年ROI 300%」など裏付けのない数字を成功画面として見せていた。生成に失敗しても利用者には成功に見え、事務所には何も残らなかった。現在は `/api/contact` へ資料請求として記録し、担当者が対応できるようにしている |
 | 面談予約を `/api/contact` へ接続（`AppointmentModal`） | `setTimeout` するだけの「模擬的な送信処理」で、送信先がないまま「2営業日以内にご連絡します」と表示していた |
+| 面談予約を専用エンドポイント `/api/appointments` へ移した（2026-08-23） | `/api/contact` の本文に予約内容をテキストで流し込んでいたため、希望日で検索できず、同じ枠が二重に埋まっても検知できなかった。申込者に控えのメールも届かず、担当者が確認する画面も無かった。予約を独立したテーブル（`appointments`）にし、①申込者への自動返信 ②構造化した保存＋枠の重複防止 ③管理画面 を追加した。あわせて、管理画面で「確定」「キャンセル」にすると申込者へ自動でメールが飛ぶようにした（`notify: false` で抑止できる。未確定・実施済みへの変更では送らない） |
 | 電話モーダルを削除し `tel:` リンクへ | ダミー番号（03-1234-5678）が既定値で、訪問者が自分の番号を入力して発信する逆向きのUIだった。番号は `config/site.ts` に実在の値がある場合のみ表示する |
 | `/legal` を新設し、フッタのリンクを接続 | 利用規約・プライバシーポリシー・特商法表記が、ハンドラのない `<button>` だった。個人情報を取得するフォームを公開しているのに、利用目的を示すページが存在しなかった |
 | `index.html` の抑止スクリプト（約300行）を削除 | `document.cookie` / `console` / `JSON.parse` / `fetch` / `XMLHttpRequest` を上書きしてエラーを握り潰しており、上記のような障害が誰にも見えなかった。`format-detection: telephone=no` は電話番号のタップ発信も無効化していた |
@@ -132,7 +134,7 @@ MR-alignment/
 │   │   ├── routers/            health / auth / contact / ai / documents
 │   │   └── services/           openai_client / mailer / document
 │   ├── migrations/versions/0001_initial_schema.py
-│   ├── tests/                  pytest（134 ケース）
+│   ├── tests/                  pytest（182 ケース）
 │   ├── alembic.ini / pyproject.toml
 │   ├── Dockerfile              マルチステージ・非rootユーザー
 │   ├── docker-entrypoint.sh    設定検証→DB待ち→migrate→起動
@@ -229,6 +231,11 @@ MR-alignment/
 | POST | `/api/contact` | 任意 | 10/時 | 受付（DB保存＋メール通知） |
 | GET | `/api/contact` | **要** | — | 自分の問い合わせ一覧 |
 | GET | `/api/contact/{reference}` | **要** | — | 詳細（他人のものは 404） |
+| POST | `/api/appointments` | 任意 | 5/時 | 面談予約の申し込み（構造化して保存＋控え／通知メール） |
+| GET | `/api/appointments/availability` | 不要 | — | 指定日の空き枠（`?date=YYYY-MM-DD`） |
+| GET | `/api/appointments` | **管理者** | — | 予約一覧（状態・今日以降で絞り込み可） |
+| GET | `/api/appointments/{reference}` | **管理者** | — | 予約の詳細 |
+| PATCH | `/api/appointments/{reference}` | **管理者** | — | 状態・担当者メモの更新。確定・取消にすると申込者へ自動でメールを送る（`notify: false` で抑止） |
 | POST | `/api/openai/generate` | **要** | 10/分 | AI 資料生成 |
 | POST | `/api/documents` | 不要 | 5/時 | AI 資料を生成し、入力されたメールアドレスへ送付。生成結果はDBへ記録 |
 | GET | `/api/documents/records` | **要** | — | 生成した資料の一覧（状態で絞り込み可） |
@@ -333,6 +340,41 @@ MR-alignment/
 | `created_at` / `updated_at` | timestamptz | NOT NULL |
 
 複合インデックス `ix_contacts_status_created_at (status, created_at)`。
+
+### `appointments`
+
+面談予約。以前は `contacts.message` に「【面談予約】ご希望日: …」というテキストとして
+入れていたため、希望日で検索できず、枠の重複も検知できなかった。
+
+| カラム | 型 | 制約 |
+|---|---|---|
+| `id` | integer | PK |
+| `reference` | varchar(32) | NOT NULL, UNIQUE, INDEX（`AP-YYYYMMDD-XXXXXXXX`） |
+| `user_id` | integer | FK→users, NULL, ON DELETE SET NULL |
+| `name` / `email` | varchar(255) | NOT NULL（email は INDEX） |
+| `phone` | varchar(50) | NOT NULL |
+| `company` | varchar(255) | NOT NULL |
+| `department` / `position` | varchar(255) | NULL |
+| `consultation_type` | varchar(50) | NOT NULL（表示名ではなくキーで保存） |
+| `preferred_date` | date | NOT NULL, INDEX |
+| `preferred_slot` | varchar(20) | NOT NULL（`10:00-11:00` 形式） |
+| `message` | text | NULL（最大 2000 文字） |
+| `status` | enum | pending / confirmed / cancelled / completed |
+| `staff_note` | text | NULL（申込者には見せない） |
+| `confirmed_at` | timestamptz | NULL |
+| `ack_sent` / `staff_notified` | boolean | NOT NULL（受付時のメールを送れたか） |
+| `status_notice_sent_at` | timestamptz | NULL（いまの状態を申込者へ知らせた日時。状態を変えるたびに NULL へ戻す） |
+| `ip_address` / `user_agent` | varchar | NULL |
+| `created_at` / `updated_at` | timestamptz | NOT NULL |
+
+- **部分ユニークインデックス** `uq_appointments_active_slot (preferred_date, preferred_slot)
+  WHERE status IN ('pending','confirmed')` で、同じ枠の二重予約を DB 側でも防ぐ。
+  キャンセル・実施済みは対象外なので、取り消した枠は再び予約できる。
+- 選択肢（時間帯・相談区分）の唯一の定義は `backend/app/services/appointment.py`。
+  画面の `<select>` だけを頼りにすると、API を直接叩かれたときに
+  存在しない枠の予約が入り、空き枠の計算が狂う。
+- 過去の予約（`contacts` に入っているもの）は移行していない。本文のテキストを
+  機械的に解釈すると、書式のゆらぎで希望日を取り違えるおそれがあるため。
 
 ### `generated_documents` / `document_revisions`
 
@@ -676,6 +718,7 @@ erDiagram
 | `/process` | `pages/ProcessPage.tsx` | 開発の進め方（要件整理〜デプロイの10工程 + レガシー移行 `#migration`） |
 | `/coding-agents` | `pages/CodingAgentsPage.tsx` | OpenAI Codex と Claude Code の実務講習（10章＋演習、付録に Skill の構築手順 `#skills`） |
 | `/legal` | `pages/LegalPage.tsx` | 事業者情報 `#business` / プライバシーポリシー `#privacy` / 特商法 `#tokushoho` / 利用規約 `#terms` |
+| `/admin/appointments` | `pages/AdminAppointmentsPage.tsx` | 面談予約の管理（一覧・詳細・状態変更）。**`ADMIN_EMAILS` のアカウントのみ**。権限の判定はサーバー側で行う |
 | その他 | 同上 LP | 未知のパスは LP を返す |
 
 > ホスティング側は Vercel の `rewrites` と nginx の `try_files` で
@@ -741,7 +784,7 @@ icon / tech / features / industry / duration / team` を持ちます。
 |---|---|---|
 | ログイン／新規登録 | `AuthModal.tsx` | `/api/auth/login`, `/api/auth/register` |
 | チャット | `ChatModal.tsx` | `/api/openai/generate`（未認証時は定型応答） |
-| 面談予約 | `AppointmentModal.tsx` | `/api/contact`（subject=「面談予約の申し込み」） |
+| 面談予約 | `AppointmentModal.tsx` | `/api/appointments`（`/api/appointments/availability` で空き枠を取得） |
 | お問い合わせ | `ContactModal.tsx` | `/api/contact` |
 | ブログ一覧／記事詳細／機能詳細 | `healthcare_lp` 内で定義 | なし（機能詳細の「このサービスを相談する」は ContactModal を開く） |
 
@@ -850,7 +893,7 @@ src/
 | ID | 内容 | 状況 |
 |---|---|---|
 | **T-24** | ~~`frontend/src/config/site.ts` に事業者情報を記入する~~ | ✅ 完了（2026-08-23）。代表者「須藤 憲一」／所在地「東京都三鷹市」／メール `kensudo@jcom.zaq.ne.jp`。**郵便番号・番地・電話番号は請求時開示の運用**（`discloseContactOnRequest: true`）。`/legal` には掲載せず「ご請求により遅滞なくメールで開示します」と表示する。**請求があったら必ず遅滞なく回答すること**。番号を載せられるようになったら false にして実値を入れる（電話の導線も自動で出る） |
-| **T-25** | **Railway に SMTP を設定する**（JCOM: `MAIL_HOST=mailssl.zaq.ne.jp` / `MAIL_PORT=465` / `MAIL_USE_SSL=true` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_FROM_ADDRESS`（USERNAME と同一）/ `CONTACT_MAIL_TO`） | ⚠️ **未完了**（コード側の SMTPS 対応は 2026-08-23 に実装済み。あとは Railway に値を入れるだけ）。`/api/health/ready` が `mail: not_configured` を返す。この状態では **問い合わせ・面談予約・資料請求の通知メールが誰にも届かず**、DB に溜まるだけになる（`GET /api/contact` は本人の分しか返さないため、管理画面もない）。資料メールも送られず `email_sent: false` になる。**リード獲得という目的に対して、現状ここが最大の穴** |
+| **T-25** | **Railway に SMTP を設定する**（JCOM: `MAIL_HOST=mailssl.zaq.ne.jp` / `MAIL_PORT=465` / `MAIL_USE_SSL=true` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_FROM_ADDRESS`（USERNAME と同一）/ `CONTACT_MAIL_TO`） | ⚠️ **未完了**（コード側の SMTPS 対応は 2026-08-23 に実装済み。あとは Railway に値を入れるだけ）。`/api/health/ready` が `mail: not_configured` を返す。この状態では **問い合わせ・面談予約・資料請求の通知メールが誰にも届かず**（面談予約は申込者への控えも届かない）、DB に溜まるだけになる（問い合わせは `GET /api/contact` が本人の分しか返さないため確認手段がない。面談予約は `/admin/appointments` で確認できる）。資料メールも送られず `email_sent: false` になる。**リード獲得という目的に対して、現状ここが最大の穴** |
 | **T-01** | **OpenAI API キーを再発行する** | 🟡 **一部完了**（2026-08-23）。新しいキーを Railway の Variables（バックエンドのサービス）へ登録済み。**旧キー 5 本の Revoke が未確認**。履歴からは除去済みだが、既存の clone・GitHub のキャッシュ・フォークから取り出せる可能性が残るため、OpenAI の管理画面で旧キーが無効になっているか必ず確認すること |
 | **T-02** | ~~git 履歴からシークレットを除去する~~ | ✅ 完了（2026-08-14）。`git filter-repo` で除去し、GitHub から再 clone して 0 件を確認。詳細は `docs/secret-removal.md` |
 
@@ -860,7 +903,7 @@ src/
 |---|---|
 | **T-03** | ~~`_old-laravel-backend/` と `temp-laravel/` を手動削除~~ ✅ 完了 |
 | **T-04** | ~~削除された PHP ファイル 157 本を git にコミット~~ ✅ 完了 |
-| **T-05** | ~~ローカルで `pytest` を実行~~ ✅ 完了（2026-08-23 に 134 ケース通過） |
+| **T-05** | ~~ローカルで `pytest` を実行~~ ✅ 完了（2026-08-23 に 182 ケース通過） |
 | **T-06** | ~~`docker compose up --build` で起動確認~~ ✅ 完了 |
 | **T-07** | Railway の Variables を `docs/railway-setup.md` に従って設定 🟡 **一部完了**（`OPENAI_API_KEY` 登録済み。`DATABASE_URL` / `JWT_SECRET_KEY` / `APP_ENV=production` / `APP_DEBUG=false` / `FRONTEND_URL` / SMTP 一式 / `CONTACT_MAIL_TO` が未確認。`CONTACT_MAIL_TO` を入れないと問い合わせ・資料請求の通知メールが届かない） |
 | **T-08** | ~~バックエンドサービスを Railway に作成し、フロントに `VITE_API_URL` を設定する~~ ✅ 完了（2026-08-23 に稼働を確認）。フロント `https://mr-alignment-production.up.railway.app` / API `https://mr-alignment-api-production.up.railway.app`。公開中のバンドルは API のドメインを指しており、`/api/health/ready` は `database: ok` / `openai: configured`、CORS も許可済み |

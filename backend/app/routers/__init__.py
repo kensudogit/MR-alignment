@@ -1,4 +1,4 @@
 """ルーター。"""
-from app.routers import ai, auth, contact, documents, health
+from app.routers import ai, appointments, auth, contact, documents, health
 
-__all__ = ["ai", "auth", "contact", "documents", "health"]
+__all__ = ["ai", "appointments", "auth", "contact", "documents", "health"]

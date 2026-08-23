@@ -1,5 +1,15 @@
 """リクエスト/レスポンススキーマ。"""
 from app.schemas.ai import GenerateRequest, GenerateResponse
+from app.schemas.appointment import (
+    AppointmentCreate,
+    AppointmentCreated,
+    AppointmentDetail,
+    AppointmentList,
+    AppointmentSummary,
+    AppointmentUpdate,
+    AvailabilityOut,
+    SlotAvailability,
+)
 from app.schemas.auth import (
     AuthResponse,
     ChangePasswordRequest,
@@ -24,6 +34,14 @@ __all__ = [
     "UpdateProfileRequest",
     "UserPublic",
     "UserResponse",
+    "AppointmentCreate",
+    "AppointmentCreated",
+    "AppointmentDetail",
+    "AppointmentList",
+    "AppointmentSummary",
+    "AppointmentUpdate",
+    "AvailabilityOut",
+    "SlotAvailability",
     "ContactCreate",
     "ContactCreated",
     "ContactDetail",

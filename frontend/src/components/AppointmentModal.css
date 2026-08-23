@@ -115,6 +115,8 @@
   border-radius: 8px;
   text-align: center;
   font-weight: 500;
+  /* 受付内容は改行して見せる（受付番号・日時・注意書きを分ける） */
+  white-space: pre-line;
 }
 
 .submit-message.success {
@@ -213,4 +215,19 @@
 
 .appointment-modal-content::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* 希望日の下に出す注意書き（土日・満席など、サーバーが返した理由） */
+.form-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: #b34700;
+  line-height: 1.5;
+}
+
+.form-note-inline {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #6c757d;
 }

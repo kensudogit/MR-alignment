@@ -17,6 +17,9 @@ os.environ.setdefault("RATE_LIMIT_AUTH", "1000/minute")
 os.environ.setdefault("RATE_LIMIT_CONTACT", "1000/minute")
 os.environ.setdefault("RATE_LIMIT_OPENAI", "1000/minute")
 os.environ.setdefault("RATE_LIMIT_DOCUMENT", "1000/minute")
+os.environ.setdefault("RATE_LIMIT_APPOINTMENT", "1000/minute")
+# 管理APIのテスト用。ADMIN_EMAILS に載っているアドレスだけが管理者。
+os.environ.setdefault("ADMIN_EMAILS", "admin@example.com")
 os.environ.pop("OPENAI_API_KEY", None)
 
 import pytest  # noqa: E402
@@ -25,6 +28,7 @@ from httpx import ASGITransport, AsyncClient  # noqa: E402
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
+from app import database  # noqa: E402
 from app.database import get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import Base  # noqa: E402
@@ -68,12 +72,20 @@ async def client(db_engine) -> AsyncGenerator[AsyncClient, None]:
             yield session
 
     app.dependency_overrides[get_db] = override_get_db
+
+    # バックグラウンドタスクは get_db ではなく database.SessionLocal を使う
+    # （リクエストのセッションはタスク実行前に閉じられるため）。
+    # ここを差し替えないと、テストが本物の PostgreSQL へ接続しにいく。
+    original_session_local = database.SessionLocal
+    database.SessionLocal = session_factory
+
     limiter.reset()
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
+    database.SessionLocal = original_session_local
     app.dependency_overrides.clear()
     limiter.reset()
 
@@ -108,6 +120,15 @@ async def auth_headers(
 ) -> dict[str, str]:
     data = await register_user(client, email=email, password=password)
     return {"Authorization": f"Bearer {data['token']}"}
+
+
+# ADMIN_EMAILS（conftest 冒頭で設定）に載っているアドレス
+ADMIN_EMAIL = "admin@example.com"
+
+
+async def admin_headers(client: AsyncClient) -> dict[str, str]:
+    """管理APIを呼べるトークン。"""
+    return await auth_headers(client, email=ADMIN_EMAIL)
 
 
 @pytest.fixture

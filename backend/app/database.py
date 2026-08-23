@@ -5,6 +5,7 @@ PostgreSQL への永続化を前提とする。テストのみ SQLite(aiosqlite)
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -59,3 +60,23 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
+
+
+@asynccontextmanager
+async def session_scope() -> AsyncGenerator[AsyncSession, None]:
+    """リクエストのライフサイクルの外で使うセッション。
+
+    バックグラウンドタスク用。`get_db` のセッションは、
+    レスポンス送出後・バックグラウンドタスク実行前に閉じられるため
+    （FastAPI 0.106 以降の yield 依存性の扱い）、そのまま持ち越すと
+    「閉じたセッションを使った」エラーになる。
+
+    `SessionLocal` はモジュール変数として参照する。
+    テストではここを差し替えて、インメモリDBへ向ける。
+    """
+    async with SessionLocal() as session:
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise

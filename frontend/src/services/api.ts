@@ -99,6 +99,8 @@ export interface ApiResult<T> {
   success: boolean;
   data?: T;
   error?: string;
+  /** HTTP ステータス。応答が無かった場合（通信エラー）は undefined */
+  status?: number;
   /** バリデーションエラー（422）のフィールド別メッセージ */
   errors?: Record<string, string[]>;
 }
@@ -114,6 +116,7 @@ export const toApiResult = (error: unknown): ApiResult<never> => {
     return {
       success: false,
       error: axiosError.response.data?.message ?? '通信エラーが発生しました',
+      status: axiosError.response.status,
       errors: axiosError.response.data?.errors,
     };
   }
@@ -182,6 +185,121 @@ export const contactAPI = {
       contact_id: string;
       submitted_at: string;
     }>('/contact', payload),
+};
+
+// --- 面談予約 ---------------------------------------------------------------
+
+/**
+ * 面談予約は /contact ではなく専用のエンドポイントを使う。
+ *
+ * 以前は予約内容を問い合わせ本文のテキストへ組み立てて /contact へ送っていた。
+ * 保存はされていたが、希望日時が本文の一部でしかないため
+ * 「明日の予約」を検索することも、枠の重複を検知することもできなかった。
+ */
+
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+
+export interface AppointmentPayload {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  department?: string;
+  position?: string;
+  /** サーバー側の CONSULTATION_TYPES のキー */
+  consultationType: string;
+  /** YYYY-MM-DD */
+  preferredDate: string;
+  /** '10:00-11:00' 形式 */
+  preferredTime: string;
+  message?: string;
+}
+
+export interface AppointmentCreatedResponse {
+  status: string;
+  message: string;
+  reference: string;
+  preferred_date: string;
+  preferred_slot: string;
+  appointment_status: AppointmentStatus;
+  submitted_at: string;
+}
+
+export interface SlotAvailability {
+  slot: string;
+  available: boolean;
+}
+
+export interface AvailabilityResponse {
+  status: string;
+  date: string;
+  /** その日自体が受付可能か（平日・期間内か） */
+  bookable: boolean;
+  /** 受付できない場合の理由 */
+  reason: string | null;
+  slots: SlotAvailability[];
+}
+
+export interface AppointmentSummary {
+  reference: string;
+  name: string;
+  email: string;
+  company: string;
+  consultation_type: string;
+  consultation_label: string;
+  preferred_date: string;
+  preferred_slot: string;
+  status: AppointmentStatus;
+  ack_sent: boolean;
+  staff_notified: boolean;
+  /** 確定・取消を申込者へ知らせた日時。null なら知らせていない */
+  status_notice_sent_at: string | null;
+  created_at: string;
+}
+
+export interface AppointmentDetail extends AppointmentSummary {
+  phone: string;
+  department: string | null;
+  position: string | null;
+  message: string | null;
+  staff_note: string | null;
+  confirmed_at: string | null;
+  user_id: number | null;
+}
+
+export interface AppointmentListResponse {
+  status: string;
+  total: number;
+  items: AppointmentSummary[];
+}
+
+export const appointmentAPI = {
+  /** 申し込み。未認証で呼べる */
+  create: (payload: AppointmentPayload) =>
+    api.post<AppointmentCreatedResponse>('/appointments', payload),
+
+  /** 指定日の空き枠。未認証で呼べる */
+  availability: (date: string) =>
+    api.get<AvailabilityResponse>('/appointments/availability', { params: { date } }),
+
+  // --- ここから管理者（ADMIN_EMAILS）専用。管理者以外は 403 が返る ---
+
+  list: (params: { status?: AppointmentStatus; upcoming?: boolean; limit?: number; offset?: number }) =>
+    api.get<AppointmentListResponse>('/appointments', { params }),
+
+  get: (reference: string) => api.get<AppointmentDetail>(`/appointments/${reference}`),
+
+  /**
+   * 状態・担当者メモの更新。
+   *
+   * 確定・取消にすると、申込者へその旨のメールが自動で送られる（notify の既定は true）。
+   * 電話などで既に伝えてある場合は notify: false を渡す。
+   * メールは同期送信のため、この呼び出しは数十秒かかることがある。
+   */
+  update: (
+    reference: string,
+    payload: { status?: AppointmentStatus; staff_note?: string; notify?: boolean },
+  ) => api.patch<AppointmentDetail>(`/appointments/${reference}`, payload, { timeout: 60_000 }),
 };
 
 // --- AI 資料生成 ------------------------------------------------------------

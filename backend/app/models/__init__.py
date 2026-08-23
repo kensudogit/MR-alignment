@@ -3,6 +3,7 @@
 Alembic がすべてのテーブルを検出できるよう、ここで必ず import しておく。
 import 漏れがあると autogenerate がテーブルを削除する差分を作ってしまう。
 """
+from app.models.appointment import ACTIVE_STATUSES, Appointment, AppointmentStatus
 from app.models.base import Base, TimestampMixin
 from app.models.contact import Contact, ContactMethod, ContactStatus, Urgency
 from app.models.document import DocumentRevision, DocumentStatus, GeneratedDocument
@@ -14,6 +15,9 @@ __all__ = [
     "TimestampMixin",
     "User",
     "Contact",
+    "Appointment",
+    "AppointmentStatus",
+    "ACTIVE_STATUSES",
     "ContactMethod",
     "ContactStatus",
     "Urgency",

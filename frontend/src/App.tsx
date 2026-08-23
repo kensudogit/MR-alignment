@@ -3,6 +3,7 @@ import HealthcareLP from './components/healthcare_lp_react_tailwind_ui.jsx'
 import ProcessPage from './pages/ProcessPage'
 import CodingAgentsPage from './pages/CodingAgentsPage'
 import LegalPage from './pages/LegalPage'
+import AdminAppointmentsPage from './pages/AdminAppointmentsPage'
 import ScrollToHash from './components/ScrollToHash'
 import { AuthProvider } from './contexts/AuthContext'
 import './App.css'
@@ -28,6 +29,8 @@ function App() {
             <Route path="/process" element={<ProcessPage />} />
             <Route path="/coding-agents" element={<CodingAgentsPage />} />
             <Route path="/legal" element={<LegalPage />} />
+            {/* 面談予約の管理。権限の判定はサーバー側（ADMIN_EMAILS）で行う */}
+            <Route path="/admin/appointments" element={<AdminAppointmentsPage />} />
             {/* 未知のパスは LP を返す（Vercel / nginx 側も index.html へ寄せている） */}
             <Route path="*" element={<HealthcareLP />} />
           </Routes>

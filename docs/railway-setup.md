@@ -90,13 +90,15 @@ railway variables set OPENAI_API_KEY="sk-..."
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `1440` | JWT の有効期間 |
 | `RATE_LIMIT_AUTH` | `5/minute` | 認証エンドポイントの上限 |
 | `RATE_LIMIT_CONTACT` | `10/hour` | お問い合わせの上限 |
+| `RATE_LIMIT_APPOINTMENT` | `5/hour` | 面談予約（`/api/appointments`）の上限。枠を押さえる操作なので厳しめ |
 | `RATE_LIMIT_OPENAI` | `10/minute` | AI生成の上限 |
 | `RATE_LIMIT_DOCUMENT` | `5/hour` | 資料請求（`/api/documents`）の上限。未認証で呼べるため厳しめ |
 | `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | — | SMTP 設定。JCOM なら `mailssl.zaq.ne.jp` / `465` |
 | `MAIL_USE_SSL` | `false` | ポート 465（SMTPS）で使う。465 のときは未設定でも SMTPS として扱う |
 | `MAIL_USE_TLS` | `false` | ポート 587（STARTTLS）で使う。`MAIL_USE_SSL` と併用しない |
 | `MAIL_FROM_ADDRESS` / `MAIL_FROM_NAME` | `noreply@example.com` / `MR Alignment` | 送信元。ISP のサーバーでは `MAIL_USERNAME` と同じアドレスにすること |
-| `CONTACT_MAIL_TO` | — | お問い合わせ・資料請求の通知先。未設定だと通知が飛ばず、DB に溜まるだけになる |
+| `CONTACT_MAIL_TO` | — | お問い合わせ・面談予約・資料請求の通知先。未設定だと通知が飛ばず、DB に溜まるだけになる |
+| `ADMIN_EMAILS` | — | 面談予約の管理画面（`/admin/appointments`）を使えるアカウント。カンマ区切り。**未設定だと誰も開けない** |
 | `WEB_CONCURRENCY` | `2` | uvicorn のワーカー数 |
 | `LOG_LEVEL` | `INFO` | |
 | `CORS_ALLOW_ORIGIN_REGEX` | — | Vercel プレビュー等を許可する場合 |
@@ -105,14 +107,25 @@ railway variables set OPENAI_API_KEY="sk-..."
 
 ## 2-1. メール送信（SMTP）を有効にする
 
-メールが送られる場面は3つあります。**`MAIL_HOST` が未設定だと、いずれも送信されません**
+メールが送られる場面は6つあります。**`MAIL_HOST` が未設定だと、いずれも送信されません**
 （エラーにはならず、静かに送られないだけです）。
 
 | 場面 | 宛先 | 未設定だとどうなるか |
 |---|---|---|
-| お問い合わせ・面談予約の通知 | `CONTACT_MAIL_TO` | DB には残るが**誰も気づけない**（管理画面はなく、`GET /api/contact` は本人の分しか返さない） |
-| 資料請求の通知 | `CONTACT_MAIL_TO` | 同上 |
+| お問い合わせの通知 | `CONTACT_MAIL_TO` | DB には残るが**誰も気づけない**（`GET /api/contact` は本人の分しか返さない） |
+| 面談予約の受付控え（自動返信） | 申込者のアドレス | 予約は入るが、申込者の手元に受付番号が残らない |
+| 面談予約の通知 | `CONTACT_MAIL_TO` | 管理画面（`/admin/appointments`）で確認できるが、予約が入ったことに気づけない |
+| **面談予約の確定／取消**（管理画面の操作で自動送信） | 申込者のアドレス | **確定したことが申込者に伝わらない**。管理画面に「未送信」と赤字で出るので、個別に連絡すること |
+| 資料請求の通知 | `CONTACT_MAIL_TO` | DB には残るが誰も気づけない |
 | AI資料の送付 | フォームに入力されたお客様のアドレス | 資料は画面に表示されるが届かない（`email_sent: false`） |
+
+面談予約のメールは、送れたかどうかを `appointments.ack_sent` /
+`appointments.staff_notified` / `appointments.status_notice_sent_at` に記録しています。
+管理画面の一覧に「未送信」と赤字で出るので、「送ったつもり」を後から見分けられます。
+
+確定・取消の連絡だけは**同期送信**です（担当者は1件ずつ操作しており、
+「確定にしたのにメールが飛んでいない」ことをその場で知れたほうがよいため）。
+SMTP の応答が遅いと、管理画面の操作に数十秒かかることがあります。
 
 ### JCOM（ZAQ）のメールサーバーを使う場合 ← 現在の構成
 
@@ -173,6 +186,33 @@ curl -s https://mr-alignment-api-production.up.railway.app/api/health/ready
 
 - 資料メールの `Reply-To` は `CONTACT_MAIL_TO`、担当者通知の `Reply-To` は
   お客様のアドレスになります。どちらから返信しても相手に届きます。
+
+---
+
+## 2-2. 面談予約の管理画面を有効にする（`ADMIN_EMAILS`）
+
+面談予約の一覧・詳細・状態変更は `/admin/appointments` で行います。
+このページを開けるのは `ADMIN_EMAILS` に載っているアカウントだけです。
+
+```bash
+railway variables set ADMIN_EMAILS="kensudo@jcom.zaq.ne.jp"
+```
+
+- カンマ区切りで複数指定できます（`a@example.com,b@example.com`）。
+- **未設定だと誰も開けません**（403）。設定漏れで全員が管理者になるより、
+  誰も入れないほうが安全なためこの向きにしています。
+- 予約には申込者の氏名・電話番号が含まれます。ログイン済みというだけでは通しません。
+- DB のフラグではなく環境変数にしているのは、最初の管理者を作るために
+  本番DBへ直接 SQL を打つ必要をなくすためです。権限を外すのも同じ画面でできます。
+
+手順:
+
+1. サイトの会員登録から、上で指定したアドレスのアカウントを作る
+2. `https://<フロントエンドのドメイン>/admin/appointments` を開く
+3. ログインすると一覧が表示される
+
+`ADMIN_EMAILS` に載っていないアカウントでログインすると、
+「このアカウントは管理者として登録されていません」と画面に出ます。
 
 ---
 
