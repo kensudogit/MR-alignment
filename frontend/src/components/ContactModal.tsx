@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { contactAPI, toApiResult, type ContactPayload } from '../services/api';
 import { siteInfo, hasEmail, hasPhone, telHref } from '../config/site';
+import { INDUSTRY_OPTIONS, ROLE_OPTIONS, industryLabel } from '../data/industries';
 import './ContactModal.css';
 
 interface ContactModalProps {
@@ -12,6 +13,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    industry: '',
     organization: '',
     role: '',
     subject: '',
@@ -38,7 +40,23 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
 
     try {
       // 共通APIクライアント経由で送信する（URLの組み立てはapi.tsに集約）
-      const { data } = await contactAPI.send(formData as ContactPayload);
+      // 業種には対応するカラムがないため、本文の先頭に載せて担当者へ伝える。
+      // organization は会社・組織名、role は職種で、それぞれ contacts のカラムに入る。
+      const payload: ContactPayload = {
+        name: formData.name,
+        email: formData.email,
+        organization: formData.organization || undefined,
+        role: formData.role || undefined,
+        subject: formData.subject,
+        message: (formData.industry
+          ? `【業種】${industryLabel(formData.industry)}\n\n${formData.message}`
+          : formData.message
+        ).slice(0, 2000),
+        contactMethod: formData.contactMethod as ContactPayload['contactMethod'],
+        urgency: formData.urgency as ContactPayload['urgency'],
+      };
+
+      const { data } = await contactAPI.send(payload);
 
       setMessage(`${data.message}（受付番号: ${data.contact_id}）`);
       setTimeout(() => {
@@ -47,6 +65,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
         setFormData({
           name: '',
           email: '',
+          industry: '',
           organization: '',
           role: '',
           subject: '',
@@ -110,20 +129,19 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="organization">所属機関</label>
+              <label htmlFor="industry">業種</label>
               <select
-                id="organization"
-                name="organization"
-                value={formData.organization}
+                id="industry"
+                name="industry"
+                value={formData.industry}
                 onChange={handleInputChange}
               >
                 <option value="">選択してください</option>
-                <option value="hospital">病院</option>
-                <option value="clinic">クリニック</option>
-                <option value="pharmacy">薬局</option>
-                <option value="university">大学・研究機関</option>
-                <option value="company">企業</option>
-                <option value="other">その他</option>
+                {INDUSTRY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -136,15 +154,25 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
                 onChange={handleInputChange}
               >
                 <option value="">選択してください</option>
-                <option value="doctor">医師</option>
-                <option value="nurse">看護師</option>
-                <option value="pharmacist">薬剤師</option>
-                <option value="technician">技師</option>
-                <option value="researcher">研究者</option>
-                <option value="admin">管理職</option>
-                <option value="other">その他</option>
+                {ROLE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="organization">会社・組織名</label>
+            <input
+              type="text"
+              id="organization"
+              name="organization"
+              value={formData.organization}
+              onChange={handleInputChange}
+              placeholder="例）株式会社〇〇"
+            />
           </div>
 
           <div className="form-group">

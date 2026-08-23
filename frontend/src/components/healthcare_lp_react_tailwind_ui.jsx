@@ -10,6 +10,7 @@ import { requestDocument } from '../services/aiContent';
 import { contactAPI } from '../services/api';
 import { siteInfo, hasPhone, hasEmail, telHref } from '../config/site';
 import { blogData, BLOG_CATEGORY_ORDER, BLOG_IMAGE_MAP } from '../data/blogData';
+import { INDUSTRY_OPTIONS } from '../data/industries';
 
 // --- Inline Icon Components (no external deps) ---
 const IconPhone = (props) => (
@@ -1164,15 +1165,9 @@ export default function HealthcareLP() {
                 <div className="text-xl font-bold text-gray-900">ITサービス資料ダウンロード（無料）</div>
               </div>
               <form onSubmit={onSubmit} className="space-y-6">
-                <Select label="業界" name="industry" required options={[
-                  { value: "manufacturing", label: "製造業" },
-                  { value: "finance", label: "金融業" },
-                  { value: "retail", label: "小売業" },
-                  { value: "healthcare", label: "医療・ヘルスケア" },
-                  { value: "education", label: "教育" },
-                  { value: "government", label: "官公庁" },
-                  { value: "other", label: "その他" },
-                ]} />
+                {/* 選択肢は data/industries.ts に集約している。
+                    バックエンドの INDUSTRY_LABELS とキーを揃えること。 */}
+                <Select label="業種" name="industry" required options={INDUSTRY_OPTIONS} />
                 <Input label="会社名" name="companyName" placeholder="例）株式会社〇〇" required />
                 <div className="grid grid-cols-2 gap-4">
                   <Input label="部署" name="dept" placeholder="例）IT部" />

@@ -18,13 +18,22 @@ from typing import Protocol
 from app.schemas.document import DocumentRequest
 
 # フォームの select は英語の value を送ってくるため、資料内では日本語へ戻す
+# 業種のキーと表記。
+# フロントエンドの `frontend/src/data/industries.ts` と**必ず一致させること**。
+# 一致していないと `industry_label` がキーをそのまま返し、
+# 生成された資料に "energy" のような英語が載る。
 INDUSTRY_LABELS = {
     "manufacturing": "製造業",
-    "finance": "金融業",
-    "retail": "小売業",
+    "finance": "金融・保険",
+    "retail": "小売・EC・D2C",
+    "energy": "エネルギー・インフラ",
+    "construction": "建設・不動産",
+    "logistics": "運輸・物流",
+    "it": "IT・情報通信",
+    "media": "メディア・広告",
     "healthcare": "医療・ヘルスケア",
-    "education": "教育",
-    "government": "官公庁",
+    "education": "教育・研究機関",
+    "government": "官公庁・自治体",
     "other": "その他",
 }
 
