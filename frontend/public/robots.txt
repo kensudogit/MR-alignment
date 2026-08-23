@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mr-alignment-production.up.railway.app/sitemap.xml

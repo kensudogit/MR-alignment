@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { contactAPI, toApiResult, type ContactPayload } from '../services/api';
+import { siteInfo, hasEmail } from '../config/site';
 import './AppointmentModal.css';
 
 interface AppointmentModalProps {
@@ -22,6 +24,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose }) 
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
+  // 文言で成否を判定していたため、送信失敗が success 表示になり得た。状態で持つ。
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -31,17 +35,60 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose }) 
     }));
   };
 
+  /** select の value をそのまま送ると通知メールが英語キーになるため、表示名に戻す */
+  const CONSULTATION_LABELS: Record<string, string> = {
+    'system-development': 'システム開発',
+    'digital-transformation': 'デジタル変革',
+    'cloud-migration': 'クラウド移行',
+    security: 'セキュリティ対策',
+    'data-analysis': 'データ分析',
+    'it-strategy': 'IT戦略',
+    other: 'その他',
+  };
+
+  /** 予約内容を問い合わせ本文へ組み立てる（/api/contact は message 2000文字まで） */
+  const buildMessage = (): string =>
+    [
+      `【面談予約】`,
+      `ご希望日: ${formData.preferredDate || '指定なし'}`,
+      `ご希望時間帯: ${formData.preferredTime || '指定なし'}`,
+      `相談区分: ${CONSULTATION_LABELS[formData.consultationType] || formData.consultationType || '指定なし'}`,
+      `電話番号: ${formData.phone || '未記入'}`,
+      `部署: ${formData.department || '未記入'}`,
+      '',
+      formData.message || '（ご要望の記載なし）',
+    ]
+      .join('\n')
+      .slice(0, 2000);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitMessage('');
+    setIsSuccess(false);
 
     try {
-      // 模擬的な送信処理
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setSubmitMessage('面談予約の申し込みを受け付けました。担当者より2営業日以内にご連絡いたします。');
-      
+      // 以前はここで setTimeout するだけの「模擬的な送信処理」を行い、
+      // 送信先がないまま「2営業日以内にご連絡します」と表示していた。
+      // 予約は届かず、利用者だけが連絡を待つ状態になっていたため、
+      // 完成済みの /api/contact（DB保存＋担当者へメール通知）へ接続する。
+      const { data } = await contactAPI.send({
+        name: formData.name,
+        email: formData.email,
+        organization: formData.company || undefined,
+        role: formData.position || undefined,
+        subject: '面談予約の申し込み',
+        message: buildMessage(),
+        // 電話番号が入力されていれば、電話でも連絡できる旨を伝える
+        contactMethod: formData.phone.trim() !== '' ? 'both' : 'email',
+        urgency: 'normal',
+      } satisfies ContactPayload);
+
+      setIsSuccess(true);
+      setSubmitMessage(
+        `面談予約の申し込みを受け付けました（受付番号: ${data.contact_id}）。担当者より2営業日以内にご連絡いたします。`
+      );
+
       // フォームをリセット
       setFormData({
         name: '',
@@ -55,9 +102,16 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose }) 
         consultationType: '',
         message: ''
       });
-      
+
     } catch (error) {
-      setSubmitMessage('申し訳ございません。エラーが発生しました。しばらく時間をおいてから再度お試しください。');
+      // 送信できていないのに成功を装わない。連絡先を添えて、別手段を案内する。
+      const result = toApiResult(error);
+      const fieldMessage = result.errors ? Object.values(result.errors).flat()[0] : undefined;
+      setSubmitMessage(
+        `${fieldMessage || result.error || '送信できませんでした。'}${
+          hasEmail() ? ` お急ぎの場合は ${siteInfo.email} まで直接ご連絡ください。` : ''
+        }`
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -232,7 +286,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose }) 
             </div>
             
             {submitMessage && (
-              <div className={`submit-message ${submitMessage.includes('受け付けました') ? 'success' : 'error'}`}>
+              <div className={`submit-message ${isSuccess ? 'success' : 'error'}`}>
                 {submitMessage}
               </div>
             )}

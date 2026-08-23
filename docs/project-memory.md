@@ -20,13 +20,15 @@
 |---|---|---|
 | サービス紹介 LP（1ページ完結・アンカー遷移） | 稼働 | `frontend/src/components/healthcare_lp_react_tailwind_ui.jsx` |
 | 開発実績（8件・Railway 公開アプリへのリンク） | 稼働 | 同上 `#portfolio` セクション |
-| ブログ／記事閲覧（モーダル） | 稼働（データはソース内ハードコード） | 同上 `blogData` |
+| ブログ／記事閲覧（モーダル） | 稼働 | データは `frontend/src/data/blogData.js` に分離済み |
 | 会員登録・ログイン | **バックエンド認証（JWT）** | `backend/app/routers/auth.py` |
 | お問い合わせ | **PostgreSQL 永続化 + メール通知** | `backend/app/routers/contact.py` |
 | AI 資料生成（OpenAI） | **サーバー経由・認証必須** | `backend/app/routers/ai.py` |
 | 資料ダウンロードフォーム（AI資料をメール送付） | **未認証で利用可・入力アドレスへ送信** | `backend/app/routers/documents.py` |
 | チャット相談 | フロント UI + バックエンド経由の AI 応答 | `frontend/src/components/ChatModal.tsx` |
-| 面談予約 / 電話発信 | フロント内で完結 | `AppointmentModal.tsx` / `PhoneCallModal.tsx` |
+| 面談予約 | **`/api/contact` へ送信（DB保存＋担当者通知）** | `AppointmentModal.tsx` |
+| お問い合わせ | **`/api/contact` へ送信。ヘッダー・相談導線・機能詳細から開く** | `ContactModal.tsx` |
+| 法定表記・事業者情報 | 稼働（内容は `src/config/site.ts` から生成） | `pages/LegalPage.tsx`（`/legal`） |
 
 ### 旧 Laravel 版からの変更点
 
@@ -43,6 +45,27 @@
 | DB 初期化 | init.sql と migration が矛盾 | Alembic に一本化 |
 | 起動時 migration 失敗 | 握り潰して起動 | 失敗したら起動中止 |
 
+### 2026-08-23 の見直し（有用性の回復）
+
+公開しても問い合わせが届かない状態だったため、次を修正しました。
+**同じ作りに戻さないこと**が重要なので、理由も残します。
+
+| 直したもの | 何が問題だったか |
+|---|---|
+| 本番ビルドで `VITE_API_URL` を必須化（`vite.config.ts`） | 未設定だと `http://localhost:8000` が焼き込まれ、公開後は全フォームがサーバーへ届かない。公開中のバンドルは正しく API を指していたが、`Dockerfile.frontend` を通らない `npm run build`（Vercel など）では検査が効かないため、ビルド側でも止めるようにした |
+| 資料生成失敗時のデモ表示を廃止（LP `onSubmit`） | 「業務効率30%向上」「3年ROI 300%」など裏付けのない数字を成功画面として見せていた。生成に失敗しても利用者には成功に見え、事務所には何も残らなかった。現在は `/api/contact` へ資料請求として記録し、担当者が対応できるようにしている |
+| 面談予約を `/api/contact` へ接続（`AppointmentModal`） | `setTimeout` するだけの「模擬的な送信処理」で、送信先がないまま「2営業日以内にご連絡します」と表示していた |
+| 電話モーダルを削除し `tel:` リンクへ | ダミー番号（03-1234-5678）が既定値で、訪問者が自分の番号を入力して発信する逆向きのUIだった。番号は `config/site.ts` に実在の値がある場合のみ表示する |
+| `/legal` を新設し、フッタのリンクを接続 | 利用規約・プライバシーポリシー・特商法表記が、ハンドラのない `<button>` だった。個人情報を取得するフォームを公開しているのに、利用目的を示すページが存在しなかった |
+| `index.html` の抑止スクリプト（約300行）を削除 | `document.cookie` / `console` / `JSON.parse` / `fetch` / `XMLHttpRequest` を上書きしてエラーを握り潰しており、上記のような障害が誰にも見えなかった。`format-detection: telephone=no` は電話番号のタップ発信も無効化していた |
+| タイトル・OGP・構造化データ・`robots.txt` / `sitemap.xml` を整備 | `<title>` が屋号と一致せず（"MR-alignment テクノロジーコンサルティング"）、共有時のカードも出なかった |
+| Cookie 同意バナーを削除 | 広告・解析 Cookie を使っておらず、「拒否」を押しても挙動が変わらなかった |
+| ブログ記事を `src/data/blogData.js` へ分離し整理 | 事業と噛み合わない NFT / DAO / メタバース系の記事が中心で、RAG 記事は2箇所に重複していた |
+| 「主要機能」を「提供サービス」に改訂 | 実際には使っていない技術名（JavaSE-21 / Spring Boot 3.x）を根拠に一般論を並べていた。現在は開発実績・`/process`・`/coding-agents` で裏付けを示せるものだけを載せている |
+| 「24時間サポート」バッジを削除 | 裏付けがなく、削除済みの導入効果・料金セクションと同種の記載だった |
+
+---
+
 ---
 
 ## アーキテクチャ
@@ -53,7 +76,7 @@
 │  React 18 + Vite 4 + TypeScript + Tailwind CSS 3             │
 │  └─ App.tsx → AuthProvider(JWT) → HealthcareLP                │
 │      ├─ AuthModal / ChatModal                                │
-│      ├─ AppointmentModal / PhoneCallModal                    │
+│      ├─ AppointmentModal / ContactModal                     │
 │      └─ BlogModal / ArticleModal / FeatureModal              │
 │                                                              │
 │  services/api.ts       … 唯一の API クライアント（axios）      │
@@ -109,7 +132,7 @@ MR-alignment/
 │   │   ├── routers/            health / auth / contact / ai / documents
 │   │   └── services/           openai_client / mailer / document
 │   ├── migrations/versions/0001_initial_schema.py
-│   ├── tests/                  pytest（59 ケース）
+│   ├── tests/                  pytest（101 ケース）
 │   ├── alembic.ini / pyproject.toml
 │   ├── Dockerfile              マルチステージ・非rootユーザー
 │   ├── docker-entrypoint.sh    設定検証→DB待ち→migrate→起動
@@ -120,13 +143,14 @@ MR-alignment/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── healthcare_lp_react_tailwind_ui.jsx  ★LP本体
-│   │   │   ├── AuthModal / ChatModal / AppointmentModal
-│   │   │   ├── PhoneCallModal / CookieConsent       ※以上 使用中
-│   │   │   ├── ScrollToHash.tsx      ルート遷移後のアンカー移動
-│   │   │   └── ContactModal                        ※未使用（T-10で導線追加予定）
+│   │   │   ├── AuthModal / ChatModal / AppointmentModal / ContactModal
+│   │   │   └── ScrollToHash.tsx      ルート遷移後のアンカー移動
+│   │   ├── config/site.ts             ★事業者情報（公開前に記入。未記入だと /legal が警告）
+│   │   ├── data/blogData.js           ブログ記事データ（LP本体から分離）
 │   │   ├── pages/
 │   │   │   ├── ProcessPage.tsx        開発の進め方（/process）
-│   │   │   └── CodingAgentsPage.tsx   コーディングエージェント講習（/coding-agents）
+│   │   │   ├── CodingAgentsPage.tsx   コーディングエージェント講習（/coding-agents）
+│   │   │   └── LegalPage.tsx          事業者情報・プライバシーポリシー・特商法・利用規約（/legal）
 │   │   ├── contexts/AuthContext.tsx   JWT 認証
 │   │   ├── services/api.ts            唯一の API クライアント
 │   │   ├── services/aiContent.ts      プロンプト組み立て
@@ -642,6 +666,7 @@ erDiagram
 | `/` | `healthcare_lp_react_tailwind_ui.jsx` | LP 本体 |
 | `/process` | `pages/ProcessPage.tsx` | 開発の進め方（要件整理〜デプロイの10工程 + レガシー移行 `#migration`） |
 | `/coding-agents` | `pages/CodingAgentsPage.tsx` | OpenAI Codex と Claude Code の実務講習（10章＋演習） |
+| `/legal` | `pages/LegalPage.tsx` | 事業者情報 `#business` / プライバシーポリシー `#privacy` / 特商法 `#tokushoho` / 利用規約 `#terms` |
 | その他 | 同上 LP | 未知のパスは LP を返す |
 
 > ホスティング側は Vercel の `rewrites` と nginx の `try_files` で
@@ -659,16 +684,20 @@ erDiagram
 
 | # | アンカー | 名称 |
 |---|---|---|
-| 1 | （先頭） | ヒーロー（キャッチコピー・CTA・統計） |
-| 2 | `#features` | 機能（サービス紹介カード） |
-| 3 | `#portfolio` | 開発実績（8件） |
-| 4 | `#blog` | ブログ・ニュース |
-| 5 | `#faq` | よくある質問 |
-| 6 | （フッタ） | リンク集 |
+| 1 | （先頭） | ヒーロー（キャッチコピー・資料ダウンロードフォーム） |
+| 2 | `#features` | 提供サービス（6件のカード → 詳細モーダル） |
+| 3 | `#portfolio` | 開発実績（Railway 公開アプリへのリンク） |
+| 4 | `#contact` | ご相談導線（お問い合わせ／面談予約／AIチャット／電話） |
+| 5 | `#blog` | ブログ・ニュース |
+| 6 | （フッタ） | リンク集・事業者情報・法定表記 |
 
-> 導入効果（`#cases`）と料金（`#pricing`）のセクションは削除済みです。
-> 実在しない企業の数値と月額料金を載せていたため、ヘッダー／フッターの
-> 導線ごと外しました。
+> 削除済みのセクション:
+> - 導入効果（`#cases`）と料金（`#pricing`）… 実在しない企業の数値と月額料金を載せていたため
+> - よくある質問（`#faq`）… 2026-08-23 に削除。ヘッダー／フッターの導線ごと外した
+>
+> `#features` は「このサイト上で裏付けを示せるサービス」だけを載せています
+> （開発実績・`/process`・`/coding-agents` のいずれかで内容を公開しているもの）。
+> 実際には使っていない技術名（旧版の JavaSE-21 / Spring Boot 等）を書かないこと。
 
 ### 開発実績（`#portfolio`）
 
@@ -697,16 +726,17 @@ icon / tech / features / industry / duration / team` を持ちます。
 |---|---|---|
 | ログイン／新規登録 | `AuthModal.tsx` | `/api/auth/login`, `/api/auth/register` |
 | チャット | `ChatModal.tsx` | `/api/openai/generate`（未認証時は定型応答） |
-| 面談予約 | `AppointmentModal.tsx` | なし |
-| 電話発信 | `PhoneCallModal.tsx` | なし |
-| ブログ一覧／記事詳細／機能詳細 | `healthcare_lp` 内で定義 | なし |
-| Cookie 同意 | `CookieConsent.tsx` | なし |
+| 面談予約 | `AppointmentModal.tsx` | `/api/contact`（subject=「面談予約の申し込み」） |
+| お問い合わせ | `ContactModal.tsx` | `/api/contact` |
+| ブログ一覧／記事詳細／機能詳細 | `healthcare_lp` 内で定義 | なし（機能詳細の「このサービスを相談する」は ContactModal を開く） |
 
-### モーダル（実装済みだが未使用）
-
-| モーダル | 状況 |
-|---|---|
-| `ContactModal.tsx` | `/api/contact` に接続済み。**導線を追加すれば使える**（T-10） |
+> `PhoneCallModal.tsx` は削除しました。訪問者が自分で番号を入力して発信する
+> 汎用ダイヤラーで、既定値がダミー番号（03-1234-5678）でした。
+> 電話は `config/site.ts` に実在の番号を入れたときだけ `tel:` リンクとして出ます。
+>
+> `CookieConsent.tsx` も削除しました。広告・解析 Cookie を使っておらず、
+> 「拒否」を押しても挙動が変わらない同意バナーだったためです。
+> 取得する情報の扱いは `/legal` のプライバシーポリシーに記載しています。
 
 > 旧 `AIImageModal.tsx` / `ReportModal.tsx` は存在しないエンドポイントを呼ぶ
 > 別ドメインの残骸だったため削除済み。
@@ -770,8 +800,9 @@ src/
 └── data/{blogData,featureData,portfolioData}.ts   ★ソースから分離
 ```
 
-**I-02. `ContactModal` に導線を追加する** — バックエンドの `/api/contact` は
-完成していますが、呼び出す `ContactModal` がどこからも開かれていません。
+**I-02. `ContactModal` に導線を追加する** — ✅ 完了（2026-08-23）。
+ヘッダーの常設ボタン、`#contact` セクション、機能詳細モーダルの
+「このサービスを相談する」から開きます。
 
 **I-03. レート制限を共有ストアへ移す** — 現在はプロセス内メモリのため、
 `WEB_CONCURRENCY` を増やすと実効上限が「ワーカー数 × 設定値」に緩みます。
@@ -802,7 +833,9 @@ src/
 
 | ID | 内容 | 状況 |
 |---|---|---|
-| **T-01** | **OpenAI API キーを再発行する** | ⚠️ **未完了**。履歴からは除去済みだが、既存の clone・GitHub のキャッシュ・フォークから取り出せる可能性が残る。**漏洩したものとして扱い、必ず Revoke → 再発行すること**（履歴に 5 本の実キーが含まれていた） |
+| **T-24** | ~~`frontend/src/config/site.ts` に事業者情報を記入する~~ | ✅ 完了（2026-08-23）。代表者「須藤 憲一」／所在地「東京都三鷹市」／メール `kensudo@jcom.zaq.ne.jp`。**郵便番号・番地・電話番号は請求時開示の運用**（`discloseContactOnRequest: true`）。`/legal` には掲載せず「ご請求により遅滞なくメールで開示します」と表示する。**請求があったら必ず遅滞なく回答すること**。番号を載せられるようになったら false にして実値を入れる（電話の導線も自動で出る） |
+| **T-25** | **Railway に SMTP を設定する（`MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_FROM_ADDRESS` / `CONTACT_MAIL_TO`）** | ⚠️ **未完了**。`/api/health/ready` が `mail: not_configured` を返す。この状態では **問い合わせ・面談予約・資料請求の通知メールが誰にも届かず**、DB に溜まるだけになる（`GET /api/contact` は本人の分しか返さないため、管理画面もない）。資料メールも送られず `email_sent: false` になる。**リード獲得という目的に対して、現状ここが最大の穴** |
+| **T-01** | **OpenAI API キーを再発行する** | 🟡 **一部完了**（2026-08-23）。新しいキーを Railway の Variables（バックエンドのサービス）へ登録済み。**旧キー 5 本の Revoke が未確認**。履歴からは除去済みだが、既存の clone・GitHub のキャッシュ・フォークから取り出せる可能性が残るため、OpenAI の管理画面で旧キーが無効になっているか必ず確認すること |
 | **T-02** | ~~git 履歴からシークレットを除去する~~ | ✅ 完了（2026-08-14）。`git filter-repo` で除去し、GitHub から再 clone して 0 件を確認。詳細は `docs/secret-removal.md` |
 
 ### 🟠 移行の残作業
@@ -813,15 +846,15 @@ src/
 | **T-04** | ~~削除された PHP ファイル 157 本を git にコミット~~ ✅ 完了 |
 | **T-05** | ~~ローカルで `pytest` を実行~~ ✅ 完了（101 ケース通過） |
 | **T-06** | ~~`docker compose up --build` で起動確認~~ ✅ 完了 |
-| **T-07** | Railway の Variables を `docs/railway-setup.md` に従って設定 ⚠️ **未完了** |
-| **T-08** | **バックエンドサービスを Railway に作成し、フロントに `VITE_API_URL` を設定する** ⚠️ **未完了**。現状フロントエンドしか動いておらず API は到達不能。`VITE_API_URL` 未設定のため現行バンドルには `http://localhost:8000` が焼き込まれている |
+| **T-07** | Railway の Variables を `docs/railway-setup.md` に従って設定 🟡 **一部完了**（`OPENAI_API_KEY` 登録済み。`DATABASE_URL` / `JWT_SECRET_KEY` / `APP_ENV=production` / `APP_DEBUG=false` / `FRONTEND_URL` / SMTP 一式 / `CONTACT_MAIL_TO` が未確認。`CONTACT_MAIL_TO` を入れないと問い合わせ・資料請求の通知メールが届かない） |
+| **T-08** | ~~バックエンドサービスを Railway に作成し、フロントに `VITE_API_URL` を設定する~~ ✅ 完了（2026-08-23 に稼働を確認）。フロント `https://mr-alignment-production.up.railway.app` / API `https://mr-alignment-api-production.up.railway.app`。公開中のバンドルは API のドメインを指しており、`/api/health/ready` は `database: ok` / `openai: configured`、CORS も許可済み |
 | **T-09** | 開発実績の `duration` / `team` を実績値へ更新 |
 
 ### 🟡 機能追加
 
 | ID | 内容 |
 |---|---|
-| T-10 | `ContactModal` の導線を LP に追加 |
+| ~~T-10~~ | ~~`ContactModal` の導線を LP に追加~~ ✅ 完了（2026-08-23） |
 | T-11 | 管理者ロールと問い合わせ管理画面 |
 | T-12 | パスワードリセット（メール送信）フロー |
 | T-13 | メールアドレス確認フロー（`email_verified_at` は用意済み） |
@@ -831,10 +864,10 @@ src/
 | ID | 内容 |
 |---|---|
 | T-14 | `healthcare_lp_react_tailwind_ui.jsx` を分割 |
-| T-15 | `blogData` / `featureData` / 開発実績をソースから分離（将来的には DB 化） |
+| T-15 | `featureData` / 開発実績をソースから分離（`blogData` は `src/data/blogData.js` へ分離済み。`featureData` は JSX のアイコンを持つため、先にアイコンを別ファイルへ出す必要がある） |
 | T-16 | ~~未使用コンポーネントと依存の削除~~ ✅ 完了 |
 | T-17 | ~~画像の重複解消~~ ✅ 完了（`src/assets/images` と `src/components/*.png` 計 46 枚・約 80MB を削除。LP は `public/` から絶対パスで読む） |
-| T-18 | `console.log` の削除 |
+| T-18 | `console.log` の削除（`index.html` の抑止スクリプトごと削除済み。残りは LP 内の数箇所） |
 
 ### 🔵 品質・運用
 

@@ -1,9 +1,36 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+/**
+ * 本番ビルドでは VITE_API_URL を必須にする。
+ *
+ * 未設定のままビルドすると services/api.ts の既定値 http://localhost:8000 が
+ * バンドルに焼き込まれ、公開後は資料請求も問い合わせも一切サーバーへ届かない
+ * （画面上はエラーも出ないため、気づかないまま見込み客を取りこぼす）。
+ * Dockerfile.frontend は同じ検査をしているが、Vercel の npm run build は
+ * それを通らないため、ここでも止める。
+ */
+const requireApiUrlInProduction = (mode: string) => {
+  if (mode !== 'production') return
+  const env = loadEnv(mode, process.cwd(), 'VITE_')
+  if (!env.VITE_API_URL) {
+    throw new Error(
+      [
+        'VITE_API_URL が未設定のため本番ビルドを中止しました。',
+        '  Vercel  : Project Settings > Environment Variables に VITE_API_URL を追加',
+        '  ローカル: VITE_API_URL=https://api.example.com npm run build',
+        'バックエンドの URL（オリジンのみ。/api は付けない）を指定してください。',
+      ].join('\n')
+    )
+  }
+}
+
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  requireApiUrlInProduction(mode)
+
+  return {
   plugins: [react()],
   resolve: {
     alias: {
@@ -59,4 +86,5 @@ export default defineConfig({
   },
   envPrefix: 'VITE_',
   envDir: '.'
+  }
 })

@@ -17,6 +17,17 @@ const LEGACY_KEYS = [
   'logoutHistory',
   'registrationHistory',
   'profileUpdateHistory',
+  // 旧 index.html の Cookie 抑止スクリプトと Cookie 同意バナーが書いていたもの。
+  // どちらも削除済みで、参照するコードはもう無い。
+  'privacy-mode',
+  'third-party-cookies',
+  'edge-compatibility',
+  'cookie-preference',
+  'edge-privacy-experience',
+  'no-third-party-cookies',
+  'edge-browser',
+  'third-party-cookie-blocking',
+  'cookie-consent',
 ];
 
 export const cleanupLegacyAuthStorage = (): void => {
