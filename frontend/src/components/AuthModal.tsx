@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { ROLE_OPTIONS } from '../data/industries';
 import './AuthModal.css';
 
 interface AuthModalProps {
@@ -107,25 +108,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
                 />
               </div>
 
+              {/* 会社・組織名は自由入力にする。以前は「病院／クリニック／薬局」から
+                  選ばせる作りで、別テンプレートの名残だった。 */}
               <div className="form-group">
-                <label htmlFor="organization">所属機関</label>
-                <select
+                <label htmlFor="organization">会社・組織名</label>
+                <input
+                  type="text"
                   id="organization"
                   name="organization"
                   value={formData.organization}
                   onChange={handleInputChange}
-                  required
-                >
-                  <option value="">選択してください</option>
-                  <option value="hospital">病院</option>
-                  <option value="clinic">クリニック</option>
-                  <option value="pharmacy">薬局</option>
-                  <option value="other">その他</option>
-                </select>
+                  placeholder="例）株式会社〇〇"
+                />
               </div>
 
               <div className="form-group">
-                <label htmlFor="role">職位</label>
+                <label htmlFor="role">職種</label>
                 <select
                   id="role"
                   name="role"
@@ -134,12 +132,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode }) => {
                   required
                 >
                   <option value="">選択してください</option>
-                  <option value="doctor">医師</option>
-                  <option value="nurse">看護師</option>
-                  <option value="pharmacist">薬剤師</option>
-                  <option value="technician">技師</option>
-                  <option value="admin">管理職</option>
-                  <option value="other">その他</option>
+                  {ROLE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </>
