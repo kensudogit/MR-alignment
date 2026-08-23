@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.config import settings
 from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
@@ -50,6 +51,15 @@ class User(Base, TimestampMixin):
         back_populates="user",
         cascade="save-update, merge",
     )
+
+    @property
+    def is_admin(self) -> bool:
+        """管理者か（ADMIN_EMAILS に載っているか）。
+
+        画面の出し分けに使う値であって、これ自体は権限ではない。
+        管理APIの可否は毎回サーバー側で判定する（get_admin_user）。
+        """
+        return settings.is_admin(self.email)
 
     def __repr__(self) -> str:  # pragma: no cover - デバッグ用
         return f"<User id={self.id} email={self.email!r}>"

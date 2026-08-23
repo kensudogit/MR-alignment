@@ -97,7 +97,7 @@ async def get_admin_user(
     ADMIN_EMAILS が未設定なら誰も通さない。「設定漏れ＝全員管理者」に
     倒れると、予約者の氏名・電話番号が誰にでも見えてしまう。
     """
-    if user.email.lower() not in settings.admin_email_set:
+    if not settings.is_admin(user.email):
         # 管理APIの存在を推測させないよう、権限不足であることだけを伝える
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

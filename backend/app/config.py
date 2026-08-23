@@ -149,6 +149,15 @@ class Settings(BaseSettings):
             e.strip().lower() for e in self.admin_emails.split(",") if e.strip()
         )
 
+    def is_admin(self, email: str) -> bool:
+        """管理者か。
+
+        判定はここ1か所に置く。認可（app/dependencies.py の get_admin_user）と
+        画面の出し分けの2か所で別々に書くと、片方だけ直したときに
+        「画面には出ないが API は通る」状態になりうる。
+        """
+        return email.lower() in self.admin_email_set
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"

@@ -36,6 +36,8 @@ class UserPublic(BaseModel):
     email: EmailStr
     organization: str | None = None
     role: str | None = None
+    # 画面の出し分け用。権限そのものではない（管理APIは毎回サーバーで判定する）
+    is_admin: bool = False
 
 
 class RegisterRequest(BaseModel):

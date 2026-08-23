@@ -321,3 +321,45 @@ async def test_同じパスワードへの変更は拒否される(client: Async
         },
     )
     assert response.status_code == 422
+
+
+# --------------------------------------------------------------- 管理者判定
+
+
+async def test_管理者かどうかを応答に含める(client: AsyncClient) -> None:
+    """画面の出し分けに使う。判定はサーバーが持つ（ADMIN_EMAILS）。"""
+    from tests.conftest import ADMIN_EMAIL
+
+    data = await register_user(client, email=ADMIN_EMAIL)
+    assert data["user"]["is_admin"] is True
+
+
+async def test_一般ユーザーは管理者ではない(client: AsyncClient) -> None:
+    data = await register_user(client, email="member@example.com")
+    assert data["user"]["is_admin"] is False
+
+
+async def test_meでも管理者かどうかが分かる(client: AsyncClient) -> None:
+    """再訪時はトークンから復元するため、こちらにも載っている必要がある。"""
+    from tests.conftest import ADMIN_EMAIL
+
+    headers = await auth_headers(client, email=ADMIN_EMAIL)
+    response = await client.get("/api/auth/me", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["user"]["is_admin"] is True
+
+
+async def test_画面の出し分けと認可は同じ判定を使う(client: AsyncClient) -> None:
+    """is_admin が true なら管理APIも通る、が両方で崩れないことを確かめる。
+
+    別々に書くと「画面には出ないが API は通る」状態になりうる。
+    """
+    from tests.conftest import ADMIN_EMAIL
+
+    headers = await auth_headers(client, email=ADMIN_EMAIL)
+    me = (await client.get("/api/auth/me", headers=headers)).json()
+    admin_api = await client.get("/api/appointments", headers=headers)
+
+    assert me["user"]["is_admin"] is True
+    assert admin_api.status_code == 200

@@ -5,6 +5,7 @@ import AuthModal from './AuthModal';
 import ChatModal from './ChatModal';
 import AppointmentModal from './AppointmentModal';
 import ContactModal from './ContactModal';
+import UsageGuideModal from './UsageGuideModal';
 import { useAuth } from '../contexts/AuthContext';
 import { requestDocument } from '../services/aiContent';
 import { contactAPI } from '../services/api';
@@ -690,6 +691,7 @@ export default function HealthcareLP() {
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [usageGuideOpen, setUsageGuideOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 認証モードの状態
 
   useEffect(() => {
@@ -1090,6 +1092,13 @@ export default function HealthcareLP() {
             <a href="#contact" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">お問い合わせ</a>
             <Link to="/process" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発の進め方</Link>
             <Link to="/coding-agents" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">AI開発講習</Link>
+            <button
+              type="button"
+              onClick={() => setUsageGuideOpen(true)}
+              className="hover:text-healthcare-600 transition-colors duration-200 hover-lift"
+            >
+              利用手順
+            </button>
           </nav>
           <div className="flex items-center gap-3">
             {false ? (
@@ -1785,6 +1794,15 @@ export default function HealthcareLP() {
               <h3 className="font-semibold mb-4">サポート</h3>
               <ul className="space-y-2 text-gray-300">
                 <li><a href="#contact" className="hover:text-white transition-colors">お問い合わせ</a></li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setUsageGuideOpen(true)}
+                    className="hover:text-white transition-colors"
+                  >
+                    利用手順
+                  </button>
+                </li>
                 <li><a href="#portfolio" className="hover:text-white transition-colors">開発実績</a></li>
                 <li><Link to="/process" className="hover:text-white transition-colors">開発の進め方</Link></li>
                 <li><Link to="/coding-agents" className="hover:text-white transition-colors">AI開発講習</Link></li>
@@ -1872,6 +1890,12 @@ export default function HealthcareLP() {
           <ContactModal
             isOpen={contactModalOpen}
             onClose={() => setContactModalOpen(false)}
+          />
+
+          {/* 利用手順（送信後に何が起きるかをまとめたもの） */}
+          <UsageGuideModal
+            isOpen={usageGuideOpen}
+            onClose={() => setUsageGuideOpen(false)}
           />
     </div>
   );

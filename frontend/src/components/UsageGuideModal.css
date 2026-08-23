@@ -1,0 +1,443 @@
+/**
+ * 利用手順モーダル。
+ *
+ * 他のモーダル（Appointment / Contact / Auth）は青系だが、
+ * ここだけ紫を使う。「操作の説明」であって申し込み導線ではないため、
+ * 送信ボタンのある画面と色で区別する。
+ */
+
+.guide-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(17, 15, 40, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.guide-panel {
+  background: #ffffff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(23, 18, 60, 0.35);
+}
+
+/* ------------------------------------------------------------------ ヘッダー */
+
+/* 開いたときにパネルへフォーカスを移す（Esc とスクロールを効かせるため）。
+   ただしダイアログ自体は操作対象ではないので、既定の枠線は消す。
+   中のボタンやリンクのフォーカス表示はそのまま残る。 */
+.guide-panel:focus {
+  outline: none;
+}
+
+.guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.5rem;
+  border-bottom: 1px solid #ece9fa;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.guide-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.guide-menu-mark {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.guide-menu-mark span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: #2f2a4a;
+}
+
+/* タイトル左の縦線。見出しの起点を示すだけの飾り */
+.guide-title-block {
+  border-left: 3px solid #6c5ce7;
+  padding-left: 0.85rem;
+  min-width: 0;
+}
+
+.guide-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1b1735;
+  line-height: 1.3;
+}
+
+.guide-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #9a94b8;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+.guide-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.guide-scroll-hint {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6c5ce7;
+  white-space: nowrap;
+}
+
+.guide-close {
+  background: none;
+  border: none;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: #4b4570;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.guide-close:hover {
+  background-color: #f1eefc;
+}
+
+/* -------------------------------------------------------------------- 本文 */
+
+.guide-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  background: #f8f7fe;
+}
+
+.guide-card {
+  background: #ffffff;
+  border: 1px solid #e8e4fa;
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* 先頭のカードだけ、薄い紫で塗って主役だと分かるようにする */
+.guide-card--hero {
+  background: linear-gradient(180deg, #f6f4ff 0%, #f2effe 100%);
+  border-color: #ded7fb;
+}
+
+.guide-eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #7c6df2;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+.guide-card h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1b1735;
+  line-height: 1.35;
+}
+
+.guide-card h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1b1735;
+}
+
+.guide-lead {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: #4a4468;
+}
+
+/* タグ */
+
+.guide-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1rem;
+}
+
+.guide-tag {
+  background: #ffffff;
+  border: 1px solid #ded7fb;
+  color: #5b4fd6;
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 見出しバッジ（ARCHITECTURE） */
+
+.guide-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.7rem;
+}
+
+.guide-badge {
+  background: #6c5ce7;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+/* 箇条書き */
+
+.guide-list {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+}
+
+.guide-list li {
+  position: relative;
+  padding-left: 1.1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.84rem;
+  line-height: 1.7;
+  color: #4a4468;
+}
+
+.guide-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b3a8f5;
+}
+
+.guide-list li strong {
+  color: #2b2650;
+  font-weight: 700;
+}
+
+/* 節の見出し */
+
+.guide-section-label {
+  margin: 1.6rem 0 0.75rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #8f88ae;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+/* 手順 */
+
+.guide-step {
+  display: flex;
+  gap: 0.9rem;
+  background: #ffffff;
+  border: 1px solid #e8e4fa;
+  border-radius: 16px;
+  padding: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.guide-step-no {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #6c5ce7;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+.guide-step-body {
+  min-width: 0;
+}
+
+.guide-step-body p {
+  margin: 0.35rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.75;
+  color: #4a4468;
+}
+
+/* 補足。手順そのものではないが、知らないと詰まるもの */
+.guide-note {
+  margin-top: 0.7rem;
+  padding: 0.6rem 0.85rem;
+  border-left: 3px solid #b3a8f5;
+  background: #f7f5ff;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.79rem;
+  line-height: 1.7;
+  color: #514a75;
+}
+
+.guide-note strong {
+  color: #4034a8;
+}
+
+/* 注意を促す補足は色を変える（送信されない・届かない、など） */
+.guide-note--warn {
+  border-left-color: #e8a33d;
+  background: #fff8ec;
+  color: #6b4c14;
+}
+
+.guide-note--warn strong {
+  color: #92610f;
+}
+
+/* 実際に打つコマンド。行をそのまま写せるようにする */
+.guide-code {
+  margin: 0.7rem 0 0;
+  padding: 0.7rem 0.85rem;
+  background: #221d3f;
+  color: #ddd6ff;
+  border-radius: 10px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+  line-height: 1.75;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.guide-code .guide-code-comment {
+  color: #8d84c4;
+}
+
+.guide-inline-code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  background: #efecfd;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  color: #4034a8;
+}
+
+/* ------------------------------------------------------------------ フッター */
+
+.guide-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.5rem;
+  border-top: 1px solid #ece9fa;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.guide-footer p {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #6f6890;
+}
+
+.guide-footer a {
+  color: #6c5ce7;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.guide-footer-close {
+  background: #6c5ce7;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem 1.25rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.guide-footer-close:hover {
+  background: #5b4cd6;
+}
+
+/* ------------------------------------------------------------------ 画面幅 */
+
+@media (max-width: 640px) {
+  .guide-overlay {
+    padding: 0.5rem;
+  }
+
+  .guide-panel {
+    max-height: 94vh;
+    border-radius: 18px;
+  }
+
+  .guide-header {
+    padding: 1rem 1.1rem;
+  }
+
+  /* 狭い画面では「スクロールして確認」を隠す。
+     タイトルが折り返して2行になるほうが読みにくい */
+  .guide-scroll-hint {
+    display: none;
+  }
+
+  .guide-body {
+    padding: 1rem 0.85rem;
+  }
+
+  .guide-card,
+  .guide-step {
+    padding: 1rem;
+  }
+
+  .guide-card h2 {
+    font-size: 1.15rem;
+  }
+
+  .guide-footer {
+    padding: 0.8rem 1.1rem;
+  }
+}

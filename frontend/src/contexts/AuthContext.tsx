@@ -30,6 +30,8 @@ export interface User {
   email: string;
   organization: string | null;
   role: string | null;
+  /** 管理者向けの表示を出してよいか。権限の判定はサーバーが行う */
+  isAdmin: boolean;
 }
 
 export interface AuthResult {
@@ -80,6 +82,7 @@ const toUser = (apiUser: ApiUser): User => ({
   email: apiUser.email,
   organization: apiUser.organization,
   role: apiUser.role,
+  isAdmin: apiUser.is_admin === true,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

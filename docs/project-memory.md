@@ -858,6 +858,7 @@ icon / tech / features / industry / duration / team` を持ちます。
 | チャット | `ChatModal.tsx` | `/api/openai/generate`（未認証時は定型応答） |
 | 面談予約 | `AppointmentModal.tsx` | `/api/appointments`（`/api/appointments/availability` で空き枠を取得） |
 | お問い合わせ | `ContactModal.tsx` | `/api/contact` |
+| 利用手順 | `UsageGuideModal.tsx` | なし（説明のみ）。ヘッダーとフッタの「利用手順」から開く。来訪者の流れ（01–05）は全員に、担当者の運用（06–08）と AWS への導入手順（09–15）は**管理者でログイン中のみ**表示する（`/api/auth/me` が返す `is_admin`）。ただしこれは表示の出し分けであって権限ではなく、**文言自体は JS バンドルに含まれる**。秘密にすべき情報はここに書かないこと。**内容は実装と一致させること**（受付枠・送信するメール・管理画面の権限を変えたらここも直す） |
 | ブログ一覧／記事詳細／機能詳細 | `healthcare_lp` 内で定義 | なし（機能詳細の「このサービスを相談する」は ContactModal を開く） |
 
 > `PhoneCallModal.tsx` は削除しました。訪問者が自分で番号を入力して発信する

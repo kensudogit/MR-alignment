@@ -93,6 +93,14 @@ export interface ApiUser {
   email: string;
   organization: string | null;
   role: string | null;
+  /**
+   * 管理者か（サーバーの ADMIN_EMAILS で判定される）。
+   *
+   * 画面の出し分けにだけ使う。**権限そのものではない**。
+   * 管理APIの可否はリクエストごとにサーバーが判定するため、
+   * ここを書き換えても管理データは取得できない。
+   */
+  is_admin: boolean;
 }
 
 export interface ApiResult<T> {
