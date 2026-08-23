@@ -64,7 +64,12 @@ class Settings(BaseSettings):
     mail_port: int = 1025
     mail_username: str | None = None
     mail_password: str | None = None
+    # STARTTLS（平文で接続してから TLS へ切り替える。ポート 587 の方式）
     mail_use_tls: bool = False
+    # 最初から TLS で接続する方式（SMTPS。ポート 465 の方式）。
+    # JCOM の mailssl.zaq.ne.jp:465 のような ISP のメールサーバーはこちら。
+    # 未設定でもポートが 465 なら SMTPS として扱う（`mail_ssl_required` を参照）。
+    mail_use_ssl: bool = False
     mail_from_address: str = "noreply@example.com"
     mail_from_name: str = "MR Alignment"
     contact_mail_to: str | None = None
@@ -89,6 +94,17 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"
+
+    @property
+    def mail_ssl_required(self) -> bool:
+        """接続の最初から TLS を張る必要があるか（SMTPS）。
+
+        ポート 465 は仕様上ずっと TLS のため、平文で接続すると
+        `smtplib` がサーバーの応答を読めずタイムアウトする。
+        MAIL_USE_SSL の設定漏れでメールが飛ばなくなるのを避けるため、
+        465 のときは設定に関わらず SMTPS として扱う。
+        """
+        return self.mail_use_ssl or self.mail_port == 465
 
     @field_validator("database_url")
     @classmethod

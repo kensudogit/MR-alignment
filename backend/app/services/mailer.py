@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import smtplib
+import ssl
 from datetime import datetime
 from email.message import EmailMessage
 from email.utils import formataddr
@@ -33,6 +34,9 @@ from app.services.document import (
 )
 
 logger = logging.getLogger(__name__)
+
+# ISP のメールサーバーは応答が遅いことがある。10秒だと本文の送信中に切れうる。
+SMTP_TIMEOUT_SECONDS = 30
 
 
 def _build_contact_mail(contact: Contact, recipient: str) -> EmailMessage:
@@ -68,14 +72,38 @@ def _build_contact_mail(contact: Contact, recipient: str) -> EmailMessage:
     return message
 
 
-def _send_sync(message: EmailMessage) -> None:
+def _connect() -> smtplib.SMTP:
+    """SMTP 接続を張る。
+
+    接続方式は2種類あり、混同するとメールが飛ばない。
+      - SMTPS（ポート 465）: 最初から TLS。`SMTP_SSL` を使う
+      - STARTTLS（ポート 587）: 平文で接続してから TLS へ切り替える
+
+    ISP のメールサーバー（例: JCOM の mailssl.zaq.ne.jp:465）は前者。
+    平文の `SMTP` で 465 につなぐと応答を読めずタイムアウトする。
+    """
     host = settings.mail_host
-    if not host:  # pragma: no cover - 呼び出し側で確認済み
+    assert host is not None  # 呼び出し側で確認済み
+
+    if settings.mail_ssl_required:
+        return smtplib.SMTP_SSL(
+            host,
+            settings.mail_port,
+            timeout=SMTP_TIMEOUT_SECONDS,
+            context=ssl.create_default_context(),
+        )
+
+    smtp = smtplib.SMTP(host, settings.mail_port, timeout=SMTP_TIMEOUT_SECONDS)
+    if settings.mail_use_tls:
+        smtp.starttls(context=ssl.create_default_context())
+    return smtp
+
+
+def _send_sync(message: EmailMessage) -> None:
+    if not settings.mail_host:  # pragma: no cover - 呼び出し側で確認済み
         return
 
-    with smtplib.SMTP(host, settings.mail_port, timeout=10) as smtp:
-        if settings.mail_use_tls:
-            smtp.starttls()
+    with _connect() as smtp:
         if settings.mail_username and settings.mail_password:
             smtp.login(settings.mail_username, settings.mail_password)
         smtp.send_message(message)
@@ -221,8 +249,8 @@ def _build_document_notification(request: DocumentRequest, reference: str) -> Em
 async def send_document_notification(request: DocumentRequest, reference: str) -> bool:
     """資料請求があったことを担当者へ知らせる。
 
-    このフォームは DB へ保存していないため、通知を送らないとリードが残らない。
-    CONTACT_MAIL_TO 未設定なら何もしない。
+    生成物は generated_documents へ保存しているが、担当者が気づく手段は
+    この通知メールしかない（管理画面はない）。CONTACT_MAIL_TO 未設定なら何もしない。
     """
     if not settings.contact_mail_to or not settings.mail_host:
         return False

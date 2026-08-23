@@ -10,9 +10,10 @@
 >
 > `/api/health/ready` の結果: `database: ok` / `openai: configured` / **`mail: not_configured`**
 >
-> **残作業: SMTP が未設定のため、AI資料のメール送信だけが行われません**
-> （資料の生成と画面表示は動作し、`email_sent: false` が返ります）。
-> 設定方法は「2-1」を参照してください。
+> **残作業: SMTP が未設定です。** この状態では、AI資料が届かないだけでなく、
+> **お問い合わせ・面談予約・資料請求の通知メールも誰にも届きません**
+> （データは DB に保存されますが、管理画面がないため気づけません）。
+> 設定方法は「2-1」を参照してください（JCOM の `mailssl.zaq.ne.jp:465` を使う想定）。
 >
 > ### バックエンドの再デプロイ
 >
@@ -91,41 +92,85 @@ railway variables set OPENAI_API_KEY="sk-..."
 | `RATE_LIMIT_CONTACT` | `10/hour` | お問い合わせの上限 |
 | `RATE_LIMIT_OPENAI` | `10/minute` | AI生成の上限 |
 | `RATE_LIMIT_DOCUMENT` | `5/hour` | 資料請求（`/api/documents`）の上限。未認証で呼べるため厳しめ |
-| `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_USE_TLS` | — | SMTP 設定 |
-| `MAIL_FROM_ADDRESS` / `MAIL_FROM_NAME` | `noreply@example.com` / `MR Alignment` | 送信元。SPF/DKIM を設定済みのドメインにすること |
-| `CONTACT_MAIL_TO` | — | お問い合わせ通知先。未設定でも DB には保存される |
+| `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | — | SMTP 設定。JCOM なら `mailssl.zaq.ne.jp` / `465` |
+| `MAIL_USE_SSL` | `false` | ポート 465（SMTPS）で使う。465 のときは未設定でも SMTPS として扱う |
+| `MAIL_USE_TLS` | `false` | ポート 587（STARTTLS）で使う。`MAIL_USE_SSL` と併用しない |
+| `MAIL_FROM_ADDRESS` / `MAIL_FROM_NAME` | `noreply@example.com` / `MR Alignment` | 送信元。ISP のサーバーでは `MAIL_USERNAME` と同じアドレスにすること |
+| `CONTACT_MAIL_TO` | — | お問い合わせ・資料請求の通知先。未設定だと通知が飛ばず、DB に溜まるだけになる |
 | `WEB_CONCURRENCY` | `2` | uvicorn のワーカー数 |
 | `LOG_LEVEL` | `INFO` | |
 | `CORS_ALLOW_ORIGIN_REGEX` | — | Vercel プレビュー等を許可する場合 |
 
 ---
 
-## 2-1. AI資料のメール送付を有効にする
+## 2-1. メール送信（SMTP）を有効にする
 
-LP の「ITサービス資料ダウンロード（無料）」フォームは、生成した資料を
-**入力されたメールアドレス宛に送信**します（`POST /api/documents`）。
-これには SMTP の設定が必要です。**`MAIL_HOST` が未設定だとメールは送信されず、
-資料は画面に表示されるだけになります**（エラーにはなりません）。
+メールが送られる場面は3つあります。**`MAIL_HOST` が未設定だと、いずれも送信されません**
+（エラーにはならず、静かに送られないだけです）。
 
-SendGrid を使う場合の例:
+| 場面 | 宛先 | 未設定だとどうなるか |
+|---|---|---|
+| お問い合わせ・面談予約の通知 | `CONTACT_MAIL_TO` | DB には残るが**誰も気づけない**（管理画面はなく、`GET /api/contact` は本人の分しか返さない） |
+| 資料請求の通知 | `CONTACT_MAIL_TO` | 同上 |
+| AI資料の送付 | フォームに入力されたお客様のアドレス | 資料は画面に表示されるが届かない（`email_sent: false`） |
+
+### JCOM（ZAQ）のメールサーバーを使う場合 ← 現在の構成
+
+```bash
+railway variables set MAIL_HOST=mailssl.zaq.ne.jp
+railway variables set MAIL_PORT=465
+railway variables set MAIL_USE_SSL=true
+railway variables set MAIL_USERNAME="kensudo@jcom.zaq.ne.jp"
+railway variables set MAIL_PASSWORD="（JCOMのメールパスワード）"
+railway variables set MAIL_FROM_ADDRESS="kensudo@jcom.zaq.ne.jp"
+railway variables set MAIL_FROM_NAME="須藤技術士事務所"
+railway variables set CONTACT_MAIL_TO="kensudo@jcom.zaq.ne.jp"
+```
+
+> **`MAIL_USE_SSL` と `MAIL_USE_TLS` は別物です。**
+> - `MAIL_USE_SSL`（ポート 465）: 接続の最初から TLS。**JCOM はこちら**
+> - `MAIL_USE_TLS`（ポート 587）: 平文で接続してから TLS へ切り替える（STARTTLS）
+>
+> 465 に平文の SMTP で接続すると、サーバーの応答を読めずタイムアウトします。
+> 取り違えを防ぐため、**ポートが 465 なら `MAIL_USE_SSL` が未設定でも SMTPS として扱います**
+> （`backend/app/config.py` の `mail_ssl_required`）。
+
+JCOM を使ううえでの注意:
+
+- **`MAIL_FROM_ADDRESS` は必ず `MAIL_USERNAME` と同じアドレスにすること。**
+  ISP のメールサーバーは、認証したアカウント以外の差出人を拒否します。
+- ISP のメールには**1日あたりの送信通数の上限**があります。資料請求が増えてきたら、
+  独自ドメイン＋送信専用サービス（SendGrid / Amazon SES 等）へ移すこと。
+- 受信側で迷惑メール扱いされる場合は、`CONTACT_MAIL_TO` 側で受信許可に入れてください。
+  自社ドメインへ移す場合は SPF / DKIM を設定します。
+- パスワードは Railway の Variables にだけ置き、リポジトリには絶対に書かないこと
+  （`.githooks` のフックが検知しますが、そもそも書かない）。
+
+### 送信専用サービス（SendGrid）を使う場合
 
 ```bash
 railway variables set MAIL_HOST=smtp.sendgrid.net
 railway variables set MAIL_PORT=587
-railway variables set MAIL_USERNAME=apikey          # 文字列 "apikey" 固定
-railway variables set MAIL_PASSWORD="SG.xxxxx"      # SendGrid の APIキー
-railway variables set MAIL_USE_TLS=true
-railway variables set MAIL_FROM_ADDRESS="noreply@kensudo.jp"
+railway variables set MAIL_USE_TLS=true               # 587 は STARTTLS
+railway variables set MAIL_USERNAME=apikey            # 文字列 "apikey" 固定
+railway variables set MAIL_PASSWORD="SG.xxxxx"        # SendGrid の APIキー
+railway variables set MAIL_FROM_ADDRESS="noreply@example.jp"
 railway variables set MAIL_FROM_NAME="須藤技術士事務所"
-railway variables set CONTACT_MAIL_TO="info@kensudo.jp"
+railway variables set CONTACT_MAIL_TO="kensudo@jcom.zaq.ne.jp"
 ```
 
-注意点:
+### 設定後の確認
 
-- **`MAIL_FROM_ADDRESS` は SPF / DKIM を設定済みの自社ドメインにすること。**
-  お客様のアドレスを From にすると、受信側で詐称と判定され届きません。
-- `CONTACT_MAIL_TO` を設定すると、資料請求があったことが担当者にも通知されます。
-  このフォームは DB に保存していないため、**未設定だとリード情報が残りません。**
+```bash
+curl -s https://mr-alignment-api-production.up.railway.app/api/health/ready
+```
+
+`"mail"` が `configured` になれば設定は読めています（送信の成否までは見ていません）。
+実際に届くかは、サイトのお問い合わせフォームから1件送って確認してください。
+失敗している場合は `railway logs` に `お問い合わせ通知メールの送信に失敗しました` が出ます。
+
+補足:
+
 - 資料メールの `Reply-To` は `CONTACT_MAIL_TO`、担当者通知の `Reply-To` は
   お客様のアドレスになります。どちらから返信しても相手に届きます。
 
@@ -255,6 +300,8 @@ curl https://<your-app>.up.railway.app/api/health/ready
 | フロントから CORS エラー | `FRONTEND_URL` が実際のドメインと不一致 | Vercel のドメインを正確に設定 |
 | AI資料生成が 503 | `OPENAI_API_KEY` 未設定 | Variables に設定して再デプロイ |
 | AI資料生成が 401 | 未ログイン | `/api/openai/generate` は認証必須（課金の暴走を防ぐため）。LP のフォームは認証不要の `/api/documents` を使う |
+| 465 を指定したのに送信がタイムアウトする | 平文 SMTP で接続している | `MAIL_USE_SSL=true` を設定（または `MAIL_PORT=465` にする。465 なら自動で SMTPS になる） |
+| `535` や `Sender address rejected` で失敗する | `MAIL_FROM_ADDRESS` が `MAIL_USERNAME` と違う | ISP のサーバーは認証したアカウント以外の差出人を拒否する。両者を同じアドレスにする |
 | 資料は表示されるがメールが届かない | `MAIL_HOST` 未設定 | 「2-1. AI資料のメール送付を有効にする」を設定。レスポンスの `email_sent` が `false` になっている |
 | メールが迷惑メール扱いされる | `MAIL_FROM_ADDRESS` のドメインに SPF/DKIM が未設定 | 送信ドメインの DNS を設定する |
 | 資料請求が 429 | `RATE_LIMIT_DOCUMENT`（既定 5/hour・IP単位）に到達 | 正当な利用で足りなければ値を緩める |

@@ -625,9 +625,18 @@ erDiagram
 |---|---|
 | `MAIL_HOST` / `MAIL_PORT` | なし / `1025` |
 | `MAIL_USERNAME` / `MAIL_PASSWORD` | なし |
-| `MAIL_USE_TLS` | `false` |
+| `MAIL_USE_SSL` | `false`（ポート 465 の SMTPS。**465 なら未設定でも SMTPS 扱い**） |
+| `MAIL_USE_TLS` | `false`（ポート 587 の STARTTLS。`MAIL_USE_SSL` と併用しない） |
 | `MAIL_FROM_ADDRESS` / `MAIL_FROM_NAME` | `noreply@example.com` / `MR Alignment` |
-| `CONTACT_MAIL_TO` | なし（未設定でも DB には保存される） |
+| `CONTACT_MAIL_TO` | なし（未設定でも DB には保存されるが、誰も気づけない） |
+
+> **SMTP の接続方式は2種類あり、取り違えると例外も出ないまま送信されません。**
+> ポート 465（JCOM の `mailssl.zaq.ne.jp` など ISP のサーバー）は接続の最初から TLS を張る
+> SMTPS で、`smtplib.SMTP_SSL` を使う必要があります。平文の `SMTP` でつなぐと
+> サーバーの応答を読めずタイムアウトします。設定漏れを防ぐため、
+> `config.py` の `mail_ssl_required` がポート 465 を自動で SMTPS 扱いにします。
+> ISP のサーバーでは `MAIL_FROM_ADDRESS` を `MAIL_USERNAME` と同じアドレスにすること
+> （違うと差出人詐称として拒否されます）。設定手順は `docs/railway-setup.md` の 2-1。
 
 **レート制限**
 
@@ -834,7 +843,7 @@ src/
 | ID | 内容 | 状況 |
 |---|---|---|
 | **T-24** | ~~`frontend/src/config/site.ts` に事業者情報を記入する~~ | ✅ 完了（2026-08-23）。代表者「須藤 憲一」／所在地「東京都三鷹市」／メール `kensudo@jcom.zaq.ne.jp`。**郵便番号・番地・電話番号は請求時開示の運用**（`discloseContactOnRequest: true`）。`/legal` には掲載せず「ご請求により遅滞なくメールで開示します」と表示する。**請求があったら必ず遅滞なく回答すること**。番号を載せられるようになったら false にして実値を入れる（電話の導線も自動で出る） |
-| **T-25** | **Railway に SMTP を設定する（`MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_FROM_ADDRESS` / `CONTACT_MAIL_TO`）** | ⚠️ **未完了**。`/api/health/ready` が `mail: not_configured` を返す。この状態では **問い合わせ・面談予約・資料請求の通知メールが誰にも届かず**、DB に溜まるだけになる（`GET /api/contact` は本人の分しか返さないため、管理画面もない）。資料メールも送られず `email_sent: false` になる。**リード獲得という目的に対して、現状ここが最大の穴** |
+| **T-25** | **Railway に SMTP を設定する**（JCOM: `MAIL_HOST=mailssl.zaq.ne.jp` / `MAIL_PORT=465` / `MAIL_USE_SSL=true` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_FROM_ADDRESS`（USERNAME と同一）/ `CONTACT_MAIL_TO`） | ⚠️ **未完了**（コード側の SMTPS 対応は 2026-08-23 に実装済み。あとは Railway に値を入れるだけ）。`/api/health/ready` が `mail: not_configured` を返す。この状態では **問い合わせ・面談予約・資料請求の通知メールが誰にも届かず**、DB に溜まるだけになる（`GET /api/contact` は本人の分しか返さないため、管理画面もない）。資料メールも送られず `email_sent: false` になる。**リード獲得という目的に対して、現状ここが最大の穴** |
 | **T-01** | **OpenAI API キーを再発行する** | 🟡 **一部完了**（2026-08-23）。新しいキーを Railway の Variables（バックエンドのサービス）へ登録済み。**旧キー 5 本の Revoke が未確認**。履歴からは除去済みだが、既存の clone・GitHub のキャッシュ・フォークから取り出せる可能性が残るため、OpenAI の管理画面で旧キーが無効になっているか必ず確認すること |
 | **T-02** | ~~git 履歴からシークレットを除去する~~ | ✅ 完了（2026-08-14）。`git filter-repo` で除去し、GitHub から再 clone して 0 件を確認。詳細は `docs/secret-removal.md` |
 
