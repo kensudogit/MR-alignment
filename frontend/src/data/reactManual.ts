@@ -1967,4 +1967,803 @@ export const CHAPTERS: Chapter[] = [
       },
     ],
   },
+  {
+    id: 'python',
+    no: '16',
+    title: 'Python 講習',
+    subtitle: 'Python / AWS Lambda',
+    summary:
+      'フロントの隣にいるバックエンドを読めるようにするための章。教材は公開している AWS Lambda 関数 1 本で、' +
+      '型ヒント・データクラス・デコレータ・async をすべて実際に動いているコードから拾う。',
+    sections: [
+      {
+        id: 'py-material',
+        title: '教材と読む順番',
+        lead:
+          '教材は kensudogit/lambda の lambda_function.py（約 2,600 行）。API Gateway + Lambda + DynamoDB の' +
+          '検索 API に、クローラーと Google Sheets 連携が乗っている。上から通読すると必ず途中で止まるので、' +
+          '下の対応表で必要な節に飛ぶこと。',
+        blocks: [
+          {
+            kind: 'text',
+            body:
+              '教材コードは https://github.com/kensudogit/lambda/blob/main/lambda_function.py にある。' +
+              'ファイル自身が「セクション1〜11」に区切られ、各セクションの冒頭に学習ポイントが書いてある。' +
+              'この章はその区切りに沿って、実務で判断が要る箇所だけを抜き出したもの。',
+          },
+          {
+            kind: 'code',
+            label: 'ターミナル — 手元に落として読む',
+            code: [
+              'git clone https://github.com/kensudogit/lambda.git',
+              'cd lambda',
+              '',
+              'python -m venv .venv',
+              'source .venv/bin/activate        # Windows は .venv\\Scripts\\activate',
+              '',
+              'python -m pip install -U pip',
+              'pip install boto3 aws-lambda-powertools aiohttp beautifulsoup4 cachetools backoff',
+              '',
+              'python -m py_compile lambda_function.py   # 構文だけ確認する',
+              '# import まで通すには AWS の資格情報が要る。読むだけなら通らなくてよい',
+            ],
+          },
+          {
+            kind: 'table',
+            head: ['教材のセクション', '扱う題材', 'この章の節'],
+            rows: [
+              ['1〜2', 'import の並べ方、環境変数と定数', '#py-env'],
+              ['6, 8', '型ヒント、safe_cast による安全な変換', '#py-typing'],
+              ['7', '@dataclass とファクトリメソッド', '#py-dataclass'],
+              ['6', 'RateLimiter クラスと状態の持ち方', '#py-class'],
+              ['9', 'デコレータ、@wraps、共通処理の外出し', '#py-decorator'],
+              ['—', '例外クラスの階層とエラーレスポンス', '#py-error'],
+              ['10, 11', 'async / await、gather、Semaphore', '#py-async'],
+              ['3〜5', 'Lambda ハンドラ、CORS、コールドスタート', '#py-lambda'],
+            ],
+          },
+          {
+            kind: 'note',
+            tone: 'tip',
+            title: '動かすことは目的ではない',
+            body:
+              'この教材は boto3 と aws_lambda_powertools が前提で、実行には AWS の資格情報と DynamoDB のテーブルが要る。' +
+              '講習の目的は読解と写経なので、動かせなくても構わない。手を動かすのは #py-exercise の課題の側でやる。',
+          },
+        ],
+      },
+      {
+        id: 'py-env',
+        title: '環境と道具立て',
+        lead:
+          'Python はインタプリタが緩いぶん、道具で締める。仮想環境・フォーマッタ・型チェック・テストの 4 点を' +
+          '最初に置く。TypeScript でいえば tsconfig を決める作業に当たる。',
+        blocks: [
+          {
+            kind: 'code',
+            label: 'pyproject.toml — 最小構成',
+            code: [
+              '[project]',
+              'name = "lambda-training"',
+              'requires-python = ">=3.12"',
+              '',
+              '[tool.ruff]',
+              'line-length = 120',
+              'target-version = "py312"',
+              '',
+              '[tool.ruff.lint]',
+              '# E,F=基本の指摘 I=import順 UP=新しい書き方へ B=バグになりやすい書き方',
+              'select = ["E", "F", "I", "UP", "B"]',
+              '',
+              '[tool.mypy]',
+              'python_version = "3.12"',
+              'strict = true                   # TypeScript の strict に相当。新規コードは必ず有効に',
+              'ignore_missing_imports = true   # 型定義の無い外部ライブラリを許す',
+            ],
+          },
+          {
+            kind: 'code',
+            label: 'ターミナル — 常用する 4 つ',
+            code: [
+              'ruff format .          # 整形。black 相当',
+              'ruff check . --fix     # 静的解析。import 順や未使用変数もここで直る',
+              'mypy lambda_function.py',
+              'pytest -q',
+            ],
+          },
+          {
+            kind: 'list',
+            title: 'import の並べ方（教材のセクション1がそのまま手本）',
+            items: [
+              '標準ライブラリ → サードパーティ → 自作モジュール の順に、空行で 3 ブロックに分ける',
+              'import X と from X import Y はブロック内で混ぜてよい。ruff の I ルールが自動で並べ替える',
+              '任意依存は try / except ImportError で包み、GOOGLE_SHEETS_AVAILABLE のようなフラグに落とす。教材の gspread がこの形',
+              'ワイルドカード import（from x import *）は使わない。どこから来た名前か追えなくなる',
+            ],
+          },
+          {
+            kind: 'note',
+            tone: 'warn',
+            title: '環境変数をコードから書き換えない',
+            body:
+              '教材の冒頭には os.environ["POSTS_TABLE_NAME"] = "wp_posts" という行がある。学習用に既定値を埋めるための書き方で、' +
+              '実務では逆になる。Lambda の設定やコンテナの環境変数を正とし、コード側は os.getenv("POSTS_TABLE_NAME") で' +
+              '読むだけにすること。コードが上書きすると、環境ごとの切り替えが効かなくなる。',
+          },
+        ],
+      },
+      {
+        id: 'py-typing',
+        title: '型ヒントと安全な変換',
+        lead:
+          'Python の型ヒントは実行時に何も検査しない。書いた型を守らせるのは mypy とテストであって、処理系ではない。' +
+          'だから外から来た値は、型ヒントとは別に必ず変換の関門を通す。',
+        blocks: [
+          {
+            kind: 'table',
+            head: ['書き方', '意味', '備考'],
+            rows: [
+              ['str | None', '値が無い場合がある', '3.10 以降。教材の Optional[str] と同じ意味'],
+              ['list[str]', '文字列のリスト', '3.9 以降は typing.List でなく組み込みの list を使う'],
+              ['dict[str, Any]', 'JSON 由来の辞書', 'Any は「まだ決めていない」印。境界の内側では剥がす'],
+              ['tuple[bool, dict]', '2 つの値を返す', '教材の check_rate_limit がこの形'],
+              ['-> None', '返り値なし', '書き忘れると mypy が関数全体の検査を諦める'],
+            ],
+          },
+          {
+            kind: 'compare',
+            bad: {
+              label: '危ない — 外から来た値を直接変換する',
+              code: [
+                '# DynamoDB から取った item をそのまま int にする',
+                'post_id = int(item.get("ID"))',
+                'count = int(item.get("comment_count"))',
+                '',
+                '# 項目が無ければ int(None) で TypeError',
+                '# "12,3" のような値が混ざれば ValueError',
+                '# どちらも API 全体が 500 になる',
+              ],
+            },
+            good: {
+              label: '安全 — 変換の関門を 1 つ作る（教材 safe_cast）',
+              code: [
+                'def safe_cast(value: Any, to_type: type, default: Any = None) -> Any:',
+                '    """変換できなければ default を返す"""',
+                '    try:',
+                '        return to_type(value)',
+                '    except (ValueError, TypeError):',
+                '        return default',
+                '',
+                'post_id = safe_cast(item.get("ID"), int, 0)',
+                'count = safe_cast(item.get("comment_count"), int, 0)',
+              ],
+            },
+          },
+          {
+            kind: 'note',
+            tone: 'warn',
+            title: 'except は捕まえる例外を書く',
+            body:
+              'safe_cast が except (ValueError, TypeError) と限定しているのが要点。裸の except: と書くと ' +
+              'KeyboardInterrupt や SystemExit まで飲み込み、止めたいときに止まらないプロセスができる。' +
+              '広く捕まえたい場合でも except Exception までにとどめること。',
+          },
+          {
+            kind: 'text',
+            body:
+              'TypeScript でいえば safe_cast は zod の safeParse に当たる。「境界で 1 度だけ検証し、内側では信じる」' +
+              'という考え方は #ts-boundary と同じで、言語が変わっても変わらない。',
+          },
+        ],
+      },
+      {
+        id: 'py-dataclass',
+        title: 'データクラスでデータの形を決める',
+        lead:
+          '辞書を持ち回すと、キーの綴り間違いが実行するまで分からない。@dataclass で形を決めて、' +
+          '外部データからの変換はクラスメソッドに 1 か所へ集める。',
+        blocks: [
+          {
+            kind: 'code',
+            label: '教材 WpPost — 抜粋',
+            code: [
+              'from dataclasses import dataclass',
+              '',
+              '@dataclass',
+              'class WpPost:',
+              '    """WordPress 投稿のデータモデル"""',
+              '    site_code: str',
+              '    ID: int',
+              '    post_title: str',
+              '    post_content: str',
+              '    post_status: str',
+              '    comment_count: int',
+              '',
+              '    @classmethod',
+              '    def from_dynamodb_item(cls, item: dict) -> "WpPost":',
+              '        """DynamoDB のアイテムから作るファクトリメソッド"""',
+              '        return cls(',
+              '            site_code=item.get("site_code", ""),',
+              '            ID=safe_cast(item.get("ID"), int, 0),',
+              '            post_title=item.get("post_title", ""),',
+              '            post_content=item.get("post_content", ""),',
+              '            post_status=item.get("post_status", ""),',
+              '            comment_count=safe_cast(item.get("comment_count"), int, 0),',
+              '        )',
+            ],
+          },
+          {
+            kind: 'list',
+            title: 'この 20 行で効いていること',
+            items: [
+              '@dataclass が __init__ / __repr__ / __eq__ を自動で作る。手書きの定型コードが消える',
+              'item.get("post_title", "") と既定値を書いているので、項目が欠けても落ちない',
+              'from_dynamodb_item が DynamoDB を知る唯一の場所。テーブルの項目が変わってもここだけ直せばよい',
+              '返り値の型を "WpPost" と文字列で書いているのは、クラス定義の途中で自分自身を参照するため',
+            ],
+          },
+          {
+            kind: 'compare',
+            bad: {
+              label: '起動時に落ちる — 可変オブジェクトを既定値にする',
+              code: [
+                '@dataclass',
+                'class ScrapedContent:',
+                '    url: str',
+                '    links: list[str] = []',
+                '',
+                '# ValueError: mutable default <class list> for field links',
+                '# 仮に通っても全インスタンスが同じリストを共有してしまう',
+              ],
+            },
+            good: {
+              label: 'field(default_factory=...) を使う',
+              code: [
+                'from dataclasses import dataclass, field',
+                '',
+                '@dataclass',
+                'class ScrapedContent:',
+                '    url: str',
+                '    title: str',
+                '    depth: int',
+                '    links: list[str] = field(default_factory=list)',
+                '    metadata: dict[str, Any] = field(default_factory=dict)',
+              ],
+            },
+          },
+          {
+            kind: 'note',
+            tone: 'tip',
+            title: '書き換えないなら frozen=True',
+            body:
+              '@dataclass(frozen=True) にすると代入が禁止され、ハッシュ可能になって set や dict のキーに使える。' +
+              '入力データを表すクラスは基本これでよい。教材の ScrapedContent のように、作ったあと触らないものが該当する。',
+          },
+        ],
+      },
+      {
+        id: 'py-class',
+        title: 'クラスに状態を持たせる',
+        lead:
+          '教材の RateLimiter は「状態をインスタンスに閉じ込める」見本。どこからでも触れるグローバル変数ではなく、' +
+          'クラスの中に置き、外へは判定結果だけを返す。',
+        blocks: [
+          {
+            kind: 'code',
+            label: '教材 RateLimiter — 抜粋',
+            code: [
+              'from cachetools import TTLCache',
+              '',
+              'class RateLimiter:',
+              '    """リクエストのレート制限を管理するクラス"""',
+              '',
+              '    def __init__(self, max_requests: int = 100, time_window: int = 3600):',
+              '        self.max_requests = max_requests',
+              '        self.time_window = time_window',
+              '        # TTL 付きキャッシュ。time_window を過ぎた記録は自動で消える',
+              '        self.cache = TTLCache(maxsize=1000, ttl=time_window)',
+              '',
+              '    def check_rate_limit(self, client_ip: str) -> tuple[bool, dict[str, Any]]:',
+              '        current_time = int(time.time())',
+              '',
+              '        if client_ip not in self.cache:',
+              '            self.cache[client_ip] = {"count": 0, "first_request": current_time}',
+              '',
+              '        client_data = self.cache[client_ip]',
+              '        client_data["count"] += 1',
+              '',
+              '        rate_limit_info = {',
+              '            "limit": self.max_requests,',
+              '            "remaining": max(0, self.max_requests - client_data["count"]),',
+              '            "reset": client_data["first_request"] + self.time_window,',
+              '        }',
+              '        return client_data["count"] <= self.max_requests, rate_limit_info',
+            ],
+          },
+          {
+            kind: 'list',
+            title: '読みどころ',
+            items: [
+              'self は「そのインスタンス自身」。メソッドの第 1 引数に必ず書く。TypeScript の this と違い、明示するのが Python の流儀',
+              '__init__ に既定値（max_requests=100）を置くと、呼び出し側は RateLimiter() だけで済む。変えたいときだけ渡す',
+              '返り値が tuple[bool, dict] なので、呼び出し側は allowed, info = limiter.check_rate_limit(ip) と一度に受け取れる',
+              '期限切れの掃除を自分で書かず TTLCache に任せている。時間で消える状態は、消し忘れが必ずバグになるので道具に任せる',
+            ],
+          },
+          {
+            kind: 'note',
+            tone: 'warn',
+            title: 'モジュール直下で作ったインスタンスは呼び出しをまたいで生き残る',
+            body:
+              '教材は rate_limiter = RateLimiter() をモジュール直下に置いている。Lambda は一度起動したコンテナを使い回すため、' +
+              'この状態は次の呼び出しにも残る。接続やキャッシュを持たせるにはこれが正解だが、' +
+              '「1 リクエストごとに初期化されるはず」と思って書くと事故になる。コンテナが増えれば各コンテナが別々に数える点にも注意。',
+          },
+        ],
+      },
+      {
+        id: 'py-decorator',
+        title: 'デコレータで共通処理を外に出す',
+        lead:
+          'デコレータは「関数を受け取って関数を返す関数」でしかない。教材の error_handler を読めば、' +
+          'ログと例外処理を全ハンドラから消せる理由が分かる。',
+        blocks: [
+          {
+            kind: 'code',
+            label: '教材 error_handler — 骨格',
+            code: [
+              'from functools import wraps',
+              '',
+              'def error_handler(func):',
+              '    """例外を捕まえて 500 レスポンスに変換するデコレータ"""',
+              '',
+              '    @wraps(func)                      # 元の関数の名前と docstring を引き継ぐ',
+              '    def wrapper(*args, **kwargs):',
+              '        try:',
+              '            logger.debug(f"=== Starting {func.__name__} ===")',
+              '            return func(*args, **kwargs)',
+              '        except Exception as e:',
+              '            logger.error(f"Error Type: {type(e).__name__}")',
+              '            logger.error(traceback.format_exc())',
+              '            return {',
+              '                "statusCode": 500,',
+              '                "headers": {"Content-Type": APPLICATION_JSON},',
+              '                "body": json.dumps({"error": INTERNAL_SERVER_ERROR_MESSAGE}),',
+              '            }',
+              '',
+              '    return wrapper',
+              '',
+              '',
+              '@app.post("/search")',
+              '@error_handler',
+              '@tracer.capture_method',
+              'def search_handler():',
+              '    ...',
+            ],
+          },
+          {
+            kind: 'list',
+            title: '順序と引数の規則',
+            items: [
+              'デコレータは下から順に適用される。上の例では tracer が最も内側、error_handler がその外、ルート登録が最後',
+              'だから @app.post は必ず一番上に置く。登録されるのは「全部の加工が済んだ関数」でなければならない',
+              '*args, **kwargs で受けているのは、どんな引数の関数にも付けられるようにするため',
+              '@wraps を忘れると func.__name__ がすべて wrapper になり、ログもトレースも判別できなくなる',
+            ],
+          },
+          {
+            kind: 'compare',
+            bad: {
+              label: '同期のまま async 関数に付ける',
+              code: [
+                'def record_metrics(func):',
+                '    @wraps(func)',
+                '    def wrapper(*args, **kwargs):',
+                '        return func(*args, **kwargs)   # コルーチンをそのまま返す',
+                '    return wrapper',
+                '',
+                '# 中身は走らないまま返る。計測もできず、警告だけが出る',
+              ],
+            },
+            good: {
+              label: '教材 record_metrics — async には async のラッパを書く',
+              code: [
+                'def record_metrics(func):',
+                '    @wraps(func)',
+                '    async def wrapper(*args, **kwargs):',
+                '        start_time = time.time()',
+                '        try:',
+                '            result = await func(*args, **kwargs)',
+                '            logger.info({',
+                '                "metric_name": func.__name__,',
+                '                "duration": time.time() - start_time,',
+                '                "status": "success",',
+                '            })',
+                '            return result',
+                '        except Exception as e:',
+                '            logger.error({"metric_name": func.__name__, "error": str(e), "status": "error"})',
+                '            raise',
+                '    return wrapper',
+              ],
+            },
+          },
+          {
+            kind: 'note',
+            tone: 'tip',
+            title: 'ログは辞書で渡す',
+            body:
+              'record_metrics は logger.info に辞書を渡している。Powertools の Logger はこれを構造化 JSON として出すので、' +
+              'CloudWatch Logs Insights で duration の平均やエラー率をそのまま集計できる。' +
+              'f-string で 1 行の文にしてしまうと、あとから正規表現で切り出す羽目になる。',
+          },
+        ],
+      },
+      {
+        id: 'py-error',
+        title: '例外を設計する',
+        lead:
+          '例外は「異常」ではなく「呼び出し側に伝える型」。ステータスコードを持たせた階層を作ると、' +
+          'ハンドラ側の分岐が 1 か所で済む。',
+        blocks: [
+          {
+            kind: 'code',
+            label: '教材の例外階層',
+            code: [
+              'class CustomError(Exception):',
+              '    """カスタムエラーの基底クラス"""',
+              '    def __init__(self, message: str, status_code: int = 500, details: dict | None = None):',
+              '        super().__init__(message)',
+              '        self.status_code = status_code',
+              '        self.message = message',
+              '        self.details = details or {}',
+              '',
+              '',
+              'class ServiceError(CustomError):        # 500 系',
+              '    def __init__(self, message: str, details: dict | None = None):',
+              '        super().__init__(message, status_code=500, details=details)',
+              '',
+              '',
+              'class InitializationError(ServiceError):',
+              '    pass',
+              '',
+              '',
+              'class ValidationError(CustomError):     # 400',
+              '    def __init__(self, message: str):',
+              '        super().__init__(message, 400)',
+              '',
+              '',
+              'class RateLimitError(CustomError):      # 429',
+              '    def __init__(self, message: str, rate_limit_info: dict):',
+              '        super().__init__(message, 429)',
+              '        self.rate_limit_info = rate_limit_info',
+            ],
+          },
+          {
+            kind: 'table',
+            head: ['例外', 'ステータス', '出す場面'],
+            rows: [
+              ['ValidationError', '400', 'キーワードが空、page が数値でないなど入力の不備'],
+              ['RateLimitError', '429', '同一 IP からの呼び出しが上限を超えた'],
+              ['InitializationError', '500', 'テーブルの取得に失敗したなど起動時の失敗'],
+              ['ServiceError', '500', '外部サービス呼び出しの失敗全般'],
+            ],
+          },
+          {
+            kind: 'compare',
+            bad: {
+              label: '握りつぶす',
+              code: [
+                'try:',
+                '    result = table.query(KeyConditionExpression=Key("ID").eq(post_id))',
+                'except Exception:',
+                '    return []          # 空を返す',
+                '',
+                '# 検索結果 0 件と、DB に繋がらない障害が区別できない',
+                '# 監視にも何も出ないので、誰も気づかないまま壊れ続ける',
+              ],
+            },
+            good: {
+              label: '型を付けて上へ投げる',
+              code: [
+                'try:',
+                '    result = table.query(KeyConditionExpression=Key("ID").eq(post_id))',
+                'except botocore.exceptions.ClientError as e:',
+                '    logger.error({"op": "query", "post_id": post_id, "error": str(e)})',
+                '    raise ServiceError("投稿の取得に失敗しました", details={"post_id": post_id}) from e',
+                '',
+                '# from e を付けると元の例外が __cause__ に残り、traceback に両方出る',
+              ],
+            },
+          },
+          {
+            kind: 'note',
+            tone: 'warn',
+            title: '例外の中身をそのままクライアントへ返さない',
+            body:
+              '教材は details を os.getenv("DEBUG") == "true" のときだけ載せている。' +
+              '例外メッセージにはテーブル名・キー・内部パスが混じるので、既定では出さないこと。' +
+              '調査に必要な情報はログ側へ、クライアントへは決まった文言とリクエスト ID だけを返す。',
+          },
+        ],
+      },
+      {
+        id: 'py-async',
+        title: 'async / await',
+        lead:
+          'async は待ち時間を重ねるための仕組みで、計算を速くするものではない。' +
+          '効くのは HTTP や DB の応答待ちが並ぶところだけ。教材のクローラーがちょうどその形をしている。',
+        blocks: [
+          {
+            kind: 'compare',
+            bad: {
+              label: '逐次 — 100 URL で 100 回分待つ',
+              code: [
+                'results = []',
+                'async with aiohttp.ClientSession() as session:',
+                '    for url in urls:',
+                '        results.append(await fetch_url(session, url))',
+                '',
+                '# await をループで回すと、結局 1 件ずつ待っている',
+              ],
+            },
+            good: {
+              label: '教材 fetch_multiple_urls — まとめて待つ',
+              code: [
+                'async def fetch_url(session: aiohttp.ClientSession, url: str) -> dict:',
+                '    try:',
+                '        async with session.get(url) as response:',
+                '            return {"url": url, "status": response.status, "content": await response.text()}',
+                '    except Exception as e:',
+                '        return {"url": url, "error": str(e)}',
+                '',
+                '',
+                'async def fetch_multiple_urls(urls: list[str]) -> list[dict]:',
+                '    async with aiohttp.ClientSession() as session:',
+                '        tasks = [fetch_url(session, url) for url in urls]',
+                '        return await asyncio.gather(*tasks)',
+              ],
+            },
+          },
+          {
+            kind: 'text',
+            body:
+              'ただし gather はタスクを全部同時に走らせる。相手のサーバに 100 本同時に投げるのは迷惑であり、' +
+              '自分側も接続が枯れる。教材のクローラーは Semaphore で同時実行数に蓋をしている。',
+          },
+          {
+            kind: 'code',
+            label: '教材 WebCrawlerScraper — 同時実行数を絞る',
+            code: [
+              'connector = aiohttp.TCPConnector(limit=self.max_concurrent)',
+              'timeout = aiohttp.ClientTimeout(total=30)',
+              '',
+              'async with aiohttp.ClientSession(connector=connector, timeout=timeout,',
+              '                                 headers={"User-Agent": USER_AGENT}) as session:',
+              '',
+              '    semaphore = asyncio.Semaphore(self.max_concurrent)',
+              '',
+              '    async def process_url(url: str, depth: int):',
+              '        async with semaphore:            # 同時に入れるのは max_concurrent 本まで',
+              '            if not self._should_crawl_url(url, domain, depth):',
+              '                return',
+              '            await asyncio.sleep(self.crawl_delay)   # 相手側への間隔を空ける',
+              '            result = await self._scrape_url(session, url, depth)',
+              '            ...',
+            ],
+          },
+          {
+            kind: 'list',
+            title: '間違えやすいところ',
+            items: [
+              'time.sleep はイベントループごと止める。async の中では必ず await asyncio.sleep を使う',
+              'boto3 は同期ライブラリ。async 関数から呼ぶなら await asyncio.to_thread(table.scan, Limit=1) のように別スレッドへ逃がす',
+              'gather に return_exceptions=True を渡すと、1 本の失敗で全体が落ちなくなる。教材の fetch_url のように各タスク側で捕まえてもよい',
+              'ClientSession は毎回作らず、1 つ作って使い回す。作り捨てると接続を張り直し続けることになる',
+              'Lambda のハンドラは同期関数。教材は asyncio.new_event_loop() と run_until_complete で async の初期化処理を呼び出している',
+            ],
+          },
+          {
+            kind: 'code',
+            label: '教材 synchronous_init — 同期の世界から async を呼ぶ',
+            code: [
+              '@backoff.on_exception(backoff.expo, Exception, max_tries=3)',
+              'async def init() -> bool:',
+              '    """指数バックオフ付きで初期化する。失敗しても 3 回まで試す"""',
+              '    ...',
+              '',
+              '',
+              'def synchronous_init() -> bool:',
+              '    loop = asyncio.new_event_loop()',
+              '    asyncio.set_event_loop(loop)',
+              '    return loop.run_until_complete(init())',
+              '',
+              '',
+              '# モジュール読み込み時に 1 度だけ走る = コールドスタート時のみ',
+              'synchronous_init()',
+            ],
+          },
+          {
+            kind: 'note',
+            tone: 'warn',
+            title: 'クローラーには守るべき決まりがある',
+            body:
+              '教材の RobotsChecker は robots.txt を読んで許可を確認し、CRAWL_DELAY_SECONDS で間隔を空け、' +
+              'ドメインごとの取得数にも上限を置いている。技術的に取得できることと、取得してよいことは別。' +
+              '対象サイトの利用規約と robots.txt を必ず確認し、既定値を緩める前に相手側の負荷を考えること。',
+          },
+        ],
+      },
+      {
+        id: 'py-lambda',
+        title: 'Lambda ハンドラの組み立て',
+        lead:
+          'Lambda は「関数を 1 つ公開する」だけの仕組みだが、コールドスタートとレスポンス形式の 2 点で' +
+          '通常の Web アプリと勝手が違う。',
+        blocks: [
+          {
+            kind: 'code',
+            label: '教材 — 入口の 3 層',
+            code: [
+              '# 1. モジュール直下：コンテナが起きたときに 1 度だけ走る',
+              'logger = Logger(service="content_query_service", level="DEBUG")',
+              'tracer = Tracer(service="content_query_service")',
+              'app = APIGatewayRestResolver(cors=CORSConfig(allow_origin="*", max_age=300))',
+              'dynamodb = boto3.resource("dynamodb", region_name="ap-northeast-1")',
+              '',
+              '# 2. ルーティング：Powertools が httpMethod と path を見て振り分ける',
+              '@app.post("/search")',
+              '@error_handler',
+              'def search_handler():',
+              '    body = app.current_event.json_body',
+              '    ...',
+              '',
+              '# 3. ハンドラ：Lambda から最初に呼ばれる関数',
+              'def lambda_handler(event: dict, context: LambdaContext) -> dict:',
+              '    if not is_initialized and not synchronous_init():',
+              '        return create_response(500, {"error": "Service initialization failed",',
+              '                                     "request_id": context.aws_request_id})',
+              '    if "httpMethod" in event:',
+              '        return app.resolve(event, context)',
+              '    return create_response(400, {"error": "Invalid action"})',
+            ],
+          },
+          {
+            kind: 'list',
+            title: '3 層に分ける効き目',
+            items: [
+              '接続やクライアントをモジュール直下に置くと、温まったコンテナでは初期化を飛ばせる。1 リクエストあたり数百 ms 変わる',
+              'ハンドラ本体は「初期化の確認」と「振り分け」だけにする。業務ロジックを書かないので、入口の異常だけをここで見られる',
+              'API Gateway 経由と直接呼び出しの両方が来るので、httpMethod の有無で分けている。ヘルスチェックが後者',
+              'context.aws_request_id をレスポンスに載せておくと、問い合わせを受けたときログを一発で引ける',
+            ],
+          },
+          {
+            kind: 'code',
+            label: '教材 create_response — 返し方を 1 か所に固定する',
+            code: [
+              'def create_response(status_code: int, body: dict) -> dict:',
+              '    return {',
+              '        "statusCode": status_code,',
+              '        "headers": {',
+              '            "Content-Type": APPLICATION_JSON,',
+              '            "Access-Control-Allow-Origin": "*",',
+              '            "Access-Control-Allow-Methods": ALLOWED_METHODS,',
+              '            "Access-Control-Allow-Headers": ALLOWED_HEADERS,',
+              '        },',
+              '        "body": body,',
+              '    }',
+            ],
+          },
+          {
+            kind: 'note',
+            tone: 'warn',
+            title: 'allow_origin="*" のまま本番へ出さない',
+            body:
+              '教材の CORS 設定は allow_origin="*" で、コメントにも「本番環境では具体的なドメインを指定」とある。' +
+              'Cookie や Authorization ヘッダを伴う呼び出しでは * は使えず、ブラウザ側で弾かれる。' +
+              'フロントの配信ドメインを環境変数で渡し、環境ごとに切り替えること。',
+          },
+          {
+            kind: 'code',
+            label: 'DynamoDB の数値は Decimal で返る',
+            code: [
+              'from decimal import Decimal',
+              '',
+              'class DecimalEncoder(json.JSONEncoder):',
+              '    """Decimal を JSON にできるようにするエンコーダ"""',
+              '    def default(self, obj):',
+              '        if isinstance(obj, Decimal):',
+              '            return float(obj)',
+              '        return super().default(obj)',
+              '',
+              '',
+              '# これを付けないと TypeError: Object of type Decimal is not JSON serializable',
+              'json.dumps(items, cls=DecimalEncoder, ensure_ascii=False)',
+            ],
+          },
+          {
+            kind: 'note',
+            tone: 'tip',
+            title: 'フロント側とつなぐとき',
+            body:
+              'この API を React から叩く場合、レスポンスの型は #ts-boundary の要領で境界に 1 度だけ書く。' +
+              'Python 側の dataclass と TypeScript 側の型は自動では同期しないので、' +
+              '項目を増やしたときは両方直したか必ず確認すること。',
+          },
+        ],
+      },
+      {
+        id: 'py-exercise',
+        title: '演習と確認',
+        lead:
+          '読むだけでは身につかないので、教材のコードを部分的に書き直す形で手を動かす。' +
+          '5 問すべて lambda_function.py の中に手本がある。',
+        blocks: [
+          {
+            kind: 'list',
+            title: '課題',
+            items: [
+              '1. safe_cast を型変数で書き直す。TypeVar を使い、safe_cast("12", int, 0) の結果が int と推論されるようにして mypy を通す（#py-typing）',
+              '2. WpPostMeta に from_dynamodb_item を書く。WpPost を手本に、項目が欠けても落ちないようにする（#py-dataclass）',
+              '3. RateLimiter に reset(client_ip) を足し、上限に達したクライアントの記録だけを消せるようにする。テストも書く（#py-class）',
+              '4. error_handler の async 版 async_error_handler を書き、await が要る関数にも同じ例外処理を掛けられるようにする（#py-decorator）',
+              '5. fetch_multiple_urls を Semaphore 付きに直し、同時実行数を引数で受け取れるようにする（#py-async）',
+            ],
+          },
+          {
+            kind: 'code',
+            label: 'pytest — 3 の答え合わせに使うテスト',
+            code: [
+              'import pytest',
+              '',
+              'from lambda_function import RateLimiter',
+              '',
+              '',
+              'def test_上限を超えると拒否される():',
+              '    limiter = RateLimiter(max_requests=2, time_window=60)',
+              '',
+              '    assert limiter.check_rate_limit("1.2.3.4")[0] is True',
+              '    assert limiter.check_rate_limit("1.2.3.4")[0] is True',
+              '    assert limiter.check_rate_limit("1.2.3.4")[0] is False',
+              '',
+              '',
+              'def test_クライアントごとに独立して数える():',
+              '    limiter = RateLimiter(max_requests=1, time_window=60)',
+              '',
+              '    assert limiter.check_rate_limit("1.1.1.1")[0] is True',
+              '    assert limiter.check_rate_limit("2.2.2.2")[0] is True   # 別 IP は影響を受けない',
+              '',
+              '',
+              'def test_残り回数が返る():',
+              '    limiter = RateLimiter(max_requests=3, time_window=60)',
+              '',
+              '    _, info = limiter.check_rate_limit("1.2.3.4")',
+              '    assert info["remaining"] == 2',
+            ],
+          },
+          {
+            kind: 'list',
+            title: '提出前の確認',
+            items: [
+              'ruff check . と ruff format --check . が通るか',
+              'mypy が新しく書いた関数で警告を出していないか',
+              'except に捕まえる例外を書いたか。裸の except: を残していないか',
+              '外から来た値を変換する箇所すべてに既定値があるか',
+              'ログに個人情報・認証情報を出していないか',
+              'async 関数の中で time.sleep や同期の boto3 呼び出しをしていないか',
+            ],
+          },
+          {
+            kind: 'note',
+            tone: 'tip',
+            title: '次に読むもの',
+            body:
+              '教材のセクション 11（GoogleSheetsReader と WebCrawlerScraper）は、ここまでの型・データクラス・' +
+              'デコレータ・async が全部同時に出てくる総合問題になっている。5 問を終えてから読むと、' +
+              '設計の意図が見えるようになるはず。',
+          },
+        ],
+      },
+    ],
+  },
 ]

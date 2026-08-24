@@ -331,6 +331,14 @@ export default function ReactManualPage() {
               開発の進め方
             </Link>
             にあります。
+            バックエンド側の Python は
+            <a
+              href="#python"
+              className="mx-1 font-medium text-healthcare-600 underline decoration-healthcare-300 underline-offset-2"
+            >
+              Python 講習
+            </a>
+            の章にまとめています。
           </p>
 
           <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -353,7 +361,7 @@ export default function ReactManualPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={'useEffect / "use client" / revalidate / hydration など'}
+            placeholder={'useEffect / "use client" / revalidate / dataclass / asyncio など'}
             className="w-full rounded-xl border border-gray-200 bg-white/80 px-4 py-3 text-sm text-gray-800 outline-none transition-colors focus:border-healthcare-400 focus:ring-2 focus:ring-healthcare-100"
           />
           <p className="mt-2 text-xs text-gray-500" aria-live="polite">
