@@ -1081,65 +1081,73 @@ export default function HealthcareLP() {
       {/* Header */}
       <header className="glass-card sticky top-0 z-50 border-b border-white/20 shadow-glass">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="metallic-container flex h-24 w-24 items-center justify-center rounded-full text-white font-bold text-xl shadow-lg">
-              <img src="/PC.png" alt="須藤技術士事務所" className="w-30 h-30 object-contain logo-float relative z-10" />
+          {/* ロゴは 96px あると横幅を圧迫してナビが折り返すため、下層ページと同じ 64px に揃えている */}
+          <div className="flex shrink-0 items-center gap-3">
+            <div className="metallic-container flex h-16 w-16 items-center justify-center rounded-full text-white font-bold text-xl shadow-lg">
+              <img src="/PC.png" alt="須藤技術士事務所" className="h-12 w-12 object-contain logo-float relative z-10" />
             </div>
-            <span className="text-sm font-bold gradient-text">須藤技術士事務所</span>
+            <span className="whitespace-nowrap text-sm font-bold gradient-text">須藤技術士事務所</span>
           </div>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-gray-700">
-            <a href="#features" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">サービス</a>
-            <a href="#blog" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">ブログ・ニュース</a>
-            <a href="#contact" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">お問い合わせ</a>
-            <Link to="/process" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発の進め方</Link>
-            <Link to="/coding-agents" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">AI開発講習</Link>
+          {/*
+            項目名は途中で折り返さない（whitespace-nowrap）。
+            7 項目すべてが並ぶのは lg 以上。md では入りきらないので、
+            スクロールでたどれるページ内アンカー（サービス / ブログ / お問い合わせ）を先に落とし、
+            別ページへの導線だけを残す。
+          */}
+          <nav className="hidden md:flex items-center gap-4 2xl:gap-6 text-sm text-gray-700">
+            <a href="#features" className="hidden whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift lg:inline">サービス</a>
+            <a href="#blog" className="hidden whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift lg:inline">ブログ・ニュース</a>
+            <a href="#contact" className="hidden whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift lg:inline">お問い合わせ</a>
+            <Link to="/process" className="whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発の進め方</Link>
+            <Link to="/coding-agents" className="whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift">AI開発講習</Link>
             {/* 実装中に引く資料。開発者が常時たどれるようヘッダに出す */}
-            <Link to="/react-manual" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発マニュアル</Link>
+            <Link to="/react-manual" className="whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発マニュアル</Link>
             <button
               type="button"
               onClick={() => setUsageGuideOpen(true)}
-              className="hover:text-healthcare-600 transition-colors duration-200 hover-lift"
+              className="whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift"
             >
               利用手順
             </button>
           </nav>
-          <div className="flex items-center gap-3">
+          {/* ログイン・新規登録はナビが入りきる xl 以上でのみ並べる。狭い幅では問い合わせを優先する */}
+          <div className="flex shrink-0 items-center gap-3">
             {false ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-700 hidden md:inline-flex">
+                <span className="whitespace-nowrap text-sm text-gray-700 hidden md:inline-flex">
                   こんにちは、ユーザーさん
                 </span>
-                <button 
+                <button
                   onClick={() => {}}
-                  className="btn-secondary"
+                  className="btn-secondary whitespace-nowrap"
                 >
                   ログアウト
                 </button>
               </div>
             ) : (
               <>
-                <button 
+                <button
                   onClick={() => {
                     setAuthMode('login');
                     setLoginModalOpen(true);
                   }}
-                  className="btn-secondary hidden md:inline-flex"
+                  className="btn-secondary whitespace-nowrap hidden xl:inline-flex"
                 >
                   ログイン
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     setAuthMode('register');
                     setRegisterModalOpen(true);
                   }}
-                  className="btn-secondary hidden md:inline-flex"
+                  className="btn-secondary whitespace-nowrap hidden xl:inline-flex"
                 >
                   新規登録
                 </button>
               </>
             )}
             {/* サイトの主目的は問い合わせ獲得なので、常時表示の主ボタンにする */}
-            <button onClick={handleContact} className="btn-gradient">
+            <button onClick={handleContact} className="btn-gradient whitespace-nowrap">
               お問い合わせ
             </button>
           </div>
