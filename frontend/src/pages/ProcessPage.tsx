@@ -639,6 +639,9 @@ export default function ProcessPage() {
             <Link to="/coding-agents" className="hidden text-sm text-gray-700 hover:text-healthcare-600 md:inline">
               AI開発講習
             </Link>
+            <Link to="/react-manual" className="hidden text-sm text-gray-700 hover:text-healthcare-600 md:inline">
+              開発マニュアル
+            </Link>
             <Link to="/" className="btn-secondary">
               トップへ戻る
             </Link>

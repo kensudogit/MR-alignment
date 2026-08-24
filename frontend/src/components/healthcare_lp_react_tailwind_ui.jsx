@@ -55,6 +55,7 @@ const IconX = (props) => (
 //   - 開発実績（#portfolio）に公開中のアプリがある
 //   - 開発の進め方（/process）で工程を説明している
 //   - コーディングエージェント講習（/coding-agents）で内容を公開している
+//   - 開発マニュアル（/react-manual）で実装の規約を公開している
 // 裏付けのない一般論（旧版の「JavaSE-21 LTS」「Spring Boot 3.x」など、
 // 実際には使っていない技術名）を並べないこと。
 const featureData = {
@@ -1092,6 +1093,8 @@ export default function HealthcareLP() {
             <a href="#contact" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">お問い合わせ</a>
             <Link to="/process" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発の進め方</Link>
             <Link to="/coding-agents" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">AI開発講習</Link>
+            {/* 実装中に引く資料。開発者が常時たどれるようヘッダに出す */}
+            <Link to="/react-manual" className="hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発マニュアル</Link>
             <button
               type="button"
               onClick={() => setUsageGuideOpen(true)}
@@ -1806,6 +1809,7 @@ export default function HealthcareLP() {
                 <li><a href="#portfolio" className="hover:text-white transition-colors">開発実績</a></li>
                 <li><Link to="/process" className="hover:text-white transition-colors">開発の進め方</Link></li>
                 <li><Link to="/coding-agents" className="hover:text-white transition-colors">AI開発講習</Link></li>
+                <li><Link to="/react-manual" className="hover:text-white transition-colors">開発マニュアル</Link></li>
                 <li><a href="#blog" className="hover:text-white transition-colors">ブログ・ニュース</a></li>
               </ul>
             </div>

@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import HealthcareLP from './components/healthcare_lp_react_tailwind_ui.jsx'
 import ProcessPage from './pages/ProcessPage'
 import CodingAgentsPage from './pages/CodingAgentsPage'
+import ReactManualPage from './pages/ReactManualPage'
 import LegalPage from './pages/LegalPage'
 import AdminAppointmentsPage from './pages/AdminAppointmentsPage'
 import ScrollToHash from './components/ScrollToHash'
@@ -28,6 +29,8 @@ function App() {
             <Route path="/" element={<HealthcareLP />} />
             <Route path="/process" element={<ProcessPage />} />
             <Route path="/coding-agents" element={<CodingAgentsPage />} />
+            {/* 実装中に引く開発マニュアル。節ごとに id があるので #hooks-deps のように直接指せる */}
+            <Route path="/react-manual" element={<ReactManualPage />} />
             <Route path="/legal" element={<LegalPage />} />
             {/* 面談予約の管理。権限の判定はサーバー側（ADMIN_EMAILS）で行う */}
             <Route path="/admin/appointments" element={<AdminAppointmentsPage />} />

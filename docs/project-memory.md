@@ -151,9 +151,11 @@ MR-alignment/
 │   │   │   └── ScrollToHash.tsx      ルート遷移後のアンカー移動
 │   │   ├── config/site.ts             ★事業者情報（公開前に記入。未記入だと /legal が警告）
 │   │   ├── data/blogData.js           ブログ記事データ（LP本体から分離）
+│   │   ├── data/reactManual.ts        開発マニュアル本文（章・節・コード。画面から分離）
 │   │   ├── pages/
 │   │   │   ├── ProcessPage.tsx        開発の進め方（/process）
 │   │   │   ├── CodingAgentsPage.tsx   コーディングエージェント講習（/coding-agents）
+│   │   │   ├── ReactManualPage.tsx    React/Next.js/TS 開発マニュアル（/react-manual。本文は data/reactManual.ts）
 │   │   │   └── LegalPage.tsx          事業者情報・プライバシーポリシー・特商法・利用規約（/legal）
 │   │   ├── contexts/AuthContext.tsx   JWT 認証
 │   │   ├── services/api.ts            唯一の API クライアント
@@ -789,6 +791,7 @@ Terraform で作る。
 | `/` | `healthcare_lp_react_tailwind_ui.jsx` | LP 本体 |
 | `/process` | `pages/ProcessPage.tsx` | 開発の進め方（要件整理〜デプロイの10工程 + レガシー移行 `#migration`） |
 | `/coding-agents` | `pages/CodingAgentsPage.tsx` | OpenAI Codex と Claude Code の実務講習（10章＋演習、付録に Skill の構築手順 `#skills`） |
+| `/react-manual` | `pages/ReactManualPage.tsx` | React / Next.js / TypeScript 開発マニュアル（15章43節）。本文は `data/reactManual.ts`。節ごとに id があり `#hooks-deps` のように直接指せる。ページ内に全文検索あり |
 | `/legal` | `pages/LegalPage.tsx` | 事業者情報 `#business` / プライバシーポリシー `#privacy` / 特商法 `#tokushoho` / 利用規約 `#terms` |
 | `/admin/appointments` | `pages/AdminAppointmentsPage.tsx` | 面談予約の管理（一覧・詳細・状態変更）。**`ADMIN_EMAILS` のアカウントのみ**。権限の判定はサーバー側で行う |
 | その他 | 同上 LP | 未知のパスは LP を返す |

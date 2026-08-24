@@ -1041,6 +1041,9 @@ export default function CodingAgentsPage() {
             <Link to="/process" className="hidden text-sm text-gray-700 hover:text-healthcare-600 md:inline">
               開発の進め方
             </Link>
+            <Link to="/react-manual" className="hidden text-sm text-gray-700 hover:text-healthcare-600 md:inline">
+              開発マニュアル
+            </Link>
             <Link to="/" className="btn-secondary">
               トップへ戻る
             </Link>
