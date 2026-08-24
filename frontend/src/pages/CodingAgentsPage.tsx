@@ -1030,21 +1030,21 @@ export default function CodingAgentsPage() {
   return (
     <div className="min-h-screen bg-gradient-healthcare">
       <header className="glass-card sticky top-0 z-50 border-b border-white/20 shadow-glass">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <Link to="/" className="flex items-center gap-3">
             <div className="metallic-container flex h-16 w-16 items-center justify-center rounded-full shadow-lg">
               <img src="/PC.png" alt="須藤技術士事務所" className="relative z-10 h-12 w-12 object-contain" />
             </div>
             <span className="text-sm font-bold gradient-text">須藤技術士事務所</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/process" className="hidden text-sm text-gray-700 hover:text-healthcare-600 md:inline">
+          <div className="flex items-center gap-2">
+            <Link to="/process" className="hidden text-[13px] text-gray-700 hover:text-healthcare-600 md:inline">
               開発の進め方
             </Link>
-            <Link to="/react-manual" className="hidden text-sm text-gray-700 hover:text-healthcare-600 md:inline">
+            <Link to="/react-manual" className="hidden text-[13px] text-gray-700 hover:text-healthcare-600 md:inline">
               開発マニュアル
             </Link>
-            <Link to="/" className="btn-secondary">
+            <Link to="/" className="btn-secondary btn-compact">
               トップへ戻る
             </Link>
           </div>

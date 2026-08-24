@@ -580,3 +580,30 @@ body {
   color: #1e40af;
   border: 1px solid rgba(59, 130, 246, 0.2);
 }
+
+/*
+  ヘッダ用の小さいボタン。
+
+  .btn-secondary（index.css）と .btn-gradient（このファイルの上の方）は
+  ヒーローや CTA でも使う主役サイズなので、そちらは触らない。
+  ヘッダだけは項目数が多く、主役サイズのままだとナビと詰まって窮屈になるため、
+  余白と文字を一段落とすこのクラスを重ねる。
+
+  セレクタを 2 クラスの組み合わせにしてあるのは詳細度を上げるため。
+  .btn-compact 単独（詳細度 0,1,0）だと元の定義と同点になり、
+  どちらが勝つかが CSS の読み込み順しだいになる。実際 .btn-secondary は
+  Tailwind 側があとに来るため、単独クラスでは負けてしまう。
+*/
+.btn-secondary.btn-compact,
+.btn-gradient.btn-compact {
+  padding: 6px 14px;
+  font-size: 13px;
+  line-height: 20px;
+  border-radius: 10px;
+}
+
+/* .btn-secondary には枠線があるぶん背が高くなる。並べたとき 2px ずれるので、
+   枠を持たない .btn-gradient 側に透明の枠を置いて高さを揃える */
+.btn-gradient.btn-compact {
+  border: 1px solid transparent;
+}
