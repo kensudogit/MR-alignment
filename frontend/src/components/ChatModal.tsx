@@ -95,10 +95,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="chat-modal-overlay" onClick={onClose}>
-      <div className="chat-modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="chat-modal-overlay mr-modal-root" onClick={onClose} role="presentation">
+      <div className="chat-modal-content" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title" onClick={(e) => e.stopPropagation()}>
         <div className="chat-modal-header">
-          <h3 className="chat-modal-title">サポートチャット</h3>
+          <h3 id="chat-modal-title" className="chat-modal-title">サポートチャット</h3>
           <button className="chat-modal-close" onClick={onClose}>
             ×
           </button>

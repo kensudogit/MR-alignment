@@ -181,10 +181,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose }) 
   if (!isOpen) return null;
 
   return (
-    <div className="appointment-modal-overlay" onClick={onClose}>
-      <div className="appointment-modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="appointment-modal-overlay mr-modal-root" onClick={onClose} role="presentation">
+      <div className="appointment-modal-content" role="dialog" aria-modal="true" aria-labelledby="appointment-modal-title" onClick={(e) => e.stopPropagation()}>
         <div className="appointment-modal-header">
-          <h2 className="appointment-modal-title">面談予約</h2>
+          <h2 id="appointment-modal-title" className="appointment-modal-title">面談予約</h2>
           <button className="appointment-modal-close" onClick={onClose}>
             ×
           </button>

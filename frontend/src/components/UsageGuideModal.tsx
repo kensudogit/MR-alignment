@@ -361,7 +361,7 @@ const UsageGuideModal: React.FC<UsageGuideModalProps> = ({ isOpen, onClose }) =>
   if (!isOpen) return null;
 
   return (
-    <div className="guide-overlay" onClick={onClose}>
+    <div className="guide-overlay mr-modal-root" onClick={onClose} role="presentation">
       <div
         className="guide-panel"
         role="dialog"

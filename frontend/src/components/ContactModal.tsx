@@ -89,12 +89,12 @@ const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="contact-modal-overlay" onClick={onClose}>
-      <div className="contact-modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="contact-modal-overlay mr-modal-root" onClick={onClose} role="presentation">
+      <div className="contact-modal-content" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title" onClick={(e) => e.stopPropagation()}>
         <button className="contact-modal-close" onClick={onClose}>×</button>
         
         <div className="contact-modal-header">
-          <h2>お問い合わせ</h2>
+          <h2 id="contact-modal-title">お問い合わせ</h2>
           <p>システムに関するご質問やサポートが必要な場合は、お気軽にお問い合わせください。</p>
         </div>
 

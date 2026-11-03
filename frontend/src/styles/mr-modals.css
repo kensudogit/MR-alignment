@@ -11,13 +11,16 @@
 .guide-overlay {
   background: rgba(0, 0, 0, 0.78) !important;
   backdrop-filter: blur(10px);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .mr-modal-panel,
 .modal-content,
 .contact-modal-content,
-.chat-modal-content,
 .appointment-modal-content,
+.chat-modal-content,
 .guide-panel {
   background: #12141c !important;
   color: #eef0f6;
@@ -25,6 +28,17 @@
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
     0 32px 80px rgba(0, 0, 0, 0.65) !important;
+}
+
+.mr-modal-root .modal-content,
+.mr-modal-root .contact-modal-content,
+.mr-modal-root .appointment-modal-content,
+.mr-modal-root .chat-modal-content,
+.mr-modal-root .guide-panel,
+.mr-modal-root .mr-modal-panel {
+  position: relative;
+  z-index: 1;
+  max-height: min(90vh, 900px);
 }
 
 .mr-modal-panel {

@@ -238,6 +238,42 @@
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
 }
 
+.mr-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.mr-cta-actions .btn-gradient,
+.mr-cta-actions .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* CTA 内の shimmer が外側に光るように見えるのを抑える */
+.mr-cta-inner .btn-gradient::before {
+  display: none;
+}
+
+.mr-cta-inner .btn-gradient {
+  box-shadow: 0 4px 18px rgba(45, 212, 191, 0.22);
+}
+
+.mr-cta-inner .btn-gradient:hover {
+  box-shadow: 0 6px 22px rgba(99, 102, 241, 0.28);
+  transform: translateY(-1px);
+}
+
 /* Footer */
 .mr-footer {
   background: #030304;

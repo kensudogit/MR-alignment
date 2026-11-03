@@ -731,34 +731,81 @@ export default function HealthcareLP() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // モーダルが開いているときのESCキー処理
+  const anyModalOpen =
+    !!selectedFeature ||
+    !!selectedBlog ||
+    !!selectedArticle ||
+    loginModalOpen ||
+    registerModalOpen ||
+    chatModalOpen ||
+    appointmentModalOpen ||
+    contactModalOpen ||
+    usageGuideOpen;
+
+  // モーダル共通: Esc で閉じる・背後スクロール停止（最前面だけ閉じる）
   useEffect(() => {
+    if (!anyModalOpen) return;
+
     const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        if (selectedFeature) {
-          setSelectedFeature(null);
-        }
-        if (selectedBlog) {
-          setSelectedBlog(null);
-        }
-        if (selectedArticle) {
-          setSelectedArticle(null);
-          setSelectedArticleCategory(null);
-        }
+      if (e.key !== 'Escape') return;
+      if (selectedArticle) {
+        setSelectedArticle(null);
+        setSelectedArticleCategory(null);
+        return;
+      }
+      if (selectedBlog) {
+        setSelectedBlog(null);
+        return;
+      }
+      if (selectedFeature) {
+        setSelectedFeature(null);
+        return;
+      }
+      if (contactModalOpen) {
+        setContactModalOpen(false);
+        return;
+      }
+      if (appointmentModalOpen) {
+        setAppointmentModalOpen(false);
+        return;
+      }
+      if (chatModalOpen) {
+        setChatModalOpen(false);
+        return;
+      }
+      if (usageGuideOpen) {
+        setUsageGuideOpen(false);
+        return;
+      }
+      if (registerModalOpen) {
+        setRegisterModalOpen(false);
+        return;
+      }
+      if (loginModalOpen) {
+        setLoginModalOpen(false);
       }
     };
 
-    if (selectedFeature || selectedBlog || selectedArticle) {
-      document.addEventListener('keydown', handleEscape);
-      // モーダルが開いているときはスクロールを無効化
-      document.body.style.overflow = 'hidden';
-    }
+    document.addEventListener('keydown', handleEscape);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = previousOverflow;
     };
-  }, [selectedFeature, selectedBlog, selectedArticle]);
+  }, [
+    anyModalOpen,
+    selectedFeature,
+    selectedBlog,
+    selectedArticle,
+    loginModalOpen,
+    registerModalOpen,
+    chatModalOpen,
+    appointmentModalOpen,
+    contactModalOpen,
+    usageGuideOpen,
+  ]);
 
   const handleImageLoad = (projectIndex) => {
     setImageLoadStates(prev => ({
@@ -1508,11 +1555,11 @@ export default function HealthcareLP() {
               {siteInfo.businessHours ? `受付時間: ${siteInfo.businessHours}` : ''}
             </p>
 
-            <div className="flex flex-col md:flex-row flex-wrap gap-4 justify-center items-center">
+            <div className="mr-cta-actions">
               <button
                 type="button"
                 onClick={handleContact}
-                className="btn-gradient flex items-center gap-2 px-6 py-3"
+                className="btn-gradient"
                 title="フォームからお問い合わせ"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1524,7 +1571,7 @@ export default function HealthcareLP() {
               <button
                 type="button"
                 onClick={handleAppointmentBooking}
-                className="btn-secondary flex items-center gap-2 px-6 py-3"
+                className="btn-secondary"
                 title="面談予約で詳細相談"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1536,7 +1583,7 @@ export default function HealthcareLP() {
               <button
                 type="button"
                 onClick={handleAIChatConsultation}
-                className="btn-secondary flex items-center gap-2 border-white/20 px-6 py-3"
+                className="btn-secondary"
                 title="AIチャットで質問する"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1549,7 +1596,7 @@ export default function HealthcareLP() {
               {hasPhone() && (
                 <a
                   href={telHref()}
-                  className="bg-white/15 text-white ring-1 ring-white/40 px-6 py-3 rounded-lg font-semibold hover:bg-white/25 transition-colors duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="btn-secondary"
                   title={`電話で相談 (${siteInfo.tel})`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
