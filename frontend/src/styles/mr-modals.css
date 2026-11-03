@@ -1,0 +1,414 @@
+/**
+ * Dark modal theme — legacy class names (Auth / Contact / Chat / Appointment / Guide)
+ * and shared .mr-modal-* utilities.
+ */
+
+.mr-modal-overlay,
+.modal-overlay,
+.contact-modal-overlay,
+.chat-modal-overlay,
+.appointment-modal-overlay,
+.guide-overlay {
+  background: rgba(0, 0, 0, 0.78) !important;
+  backdrop-filter: blur(10px);
+}
+
+.mr-modal-panel,
+.modal-content,
+.contact-modal-content,
+.chat-modal-content,
+.appointment-modal-content,
+.guide-panel {
+  background: #12141c !important;
+  color: #eef0f6;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 32px 80px rgba(0, 0, 0, 0.65) !important;
+}
+
+.mr-modal-panel {
+  border-radius: 1.25rem;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mr-modal-panel--scroll {
+  overflow-y: auto;
+}
+
+.mr-modal-panel__header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(94, 234, 212, 0.08), transparent);
+}
+
+.mr-modal-panel__header--accent {
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.15), rgba(99, 102, 241, 0.12));
+}
+
+.mr-modal-panel__body {
+  padding: 1.5rem;
+  color: #c5cad6;
+}
+
+.mr-modal-panel__footer {
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.mr-modal-close,
+.modal-close,
+.contact-modal-close,
+.chat-modal-close,
+.appointment-modal-close,
+.guide-close {
+  color: #9aa3b5 !important;
+}
+
+.mr-modal-close:hover,
+.modal-close:hover,
+.contact-modal-close:hover,
+.guide-close:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #eef0f6 !important;
+}
+
+.modal-header h2,
+.contact-modal-header h2,
+.guide-title {
+  color: #eef0f6 !important;
+}
+
+.modal-header,
+.contact-modal-header p,
+.appointment-description,
+.guide-lead,
+.guide-card h2,
+.guide-card h3,
+.guide-list li {
+  color: #c5cad6 !important;
+}
+
+.contact-modal-header p,
+.appointment-description {
+  color: #9aa3b5 !important;
+}
+
+.form-group label,
+.modal-footer p {
+  color: #9aa3b5 !important;
+}
+
+.modal-footer {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea,
+.form-input,
+.contact-form .form-group input,
+.contact-form .form-group select,
+.contact-form .form-group textarea,
+.appointment-form .form-input,
+.chat-input {
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #eef0f6 !important;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+.form-input:focus,
+.chat-input:focus {
+  border-color: #5eead4 !important;
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.15) !important;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder,
+.chat-input::placeholder {
+  color: #5c6478 !important;
+}
+
+.btn-submit,
+.link-button {
+  background: linear-gradient(135deg, #2dd4bf 0%, #6366f1 100%) !important;
+  color: #041012 !important;
+}
+
+.link-button {
+  background: none !important;
+  color: #5eead4 !important;
+}
+
+.link-button:hover {
+  color: #99f6e4 !important;
+}
+
+.btn-cancel {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #eef0f6 !important;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.message.success,
+.submit-message.success {
+  background: rgba(45, 212, 191, 0.12) !important;
+  color: #99f6e4 !important;
+  border-color: rgba(45, 212, 191, 0.35) !important;
+}
+
+.message.error,
+.submit-message.error {
+  background: rgba(248, 113, 113, 0.12) !important;
+  color: #fecaca !important;
+  border-color: rgba(248, 113, 113, 0.35) !important;
+}
+
+.contact-info {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.contact-info h3,
+.contact-method div strong {
+  color: #eef0f6 !important;
+}
+
+.contact-method {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.contact-method div p {
+  color: #9aa3b5 !important;
+}
+
+/* Chat */
+.chat-modal-header,
+.appointment-modal-header {
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.2), rgba(99, 102, 241, 0.25)) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 15px 15px 0 0;
+}
+
+.chat-modal-content,
+.appointment-modal-content {
+  border-radius: 15px;
+}
+
+.chat-messages {
+  background: #0a0b10;
+}
+
+.bot-message .message-content {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #e2e6ef !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.user-message .message-content {
+  background: linear-gradient(135deg, #2dd4bf, #6366f1) !important;
+  color: #041012 !important;
+}
+
+.message-time {
+  color: #6b7280 !important;
+}
+
+.chat-input-container {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+  background: #12141c;
+}
+
+.chat-input:disabled {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.chat-messages::-webkit-scrollbar-track,
+.appointment-modal-content::-webkit-scrollbar-track {
+  background: #1a1d28;
+}
+
+.chat-messages::-webkit-scrollbar-thumb,
+.appointment-modal-content::-webkit-scrollbar-thumb {
+  background: #3d4455;
+}
+
+/* Usage guide */
+.guide-header {
+  background: #12141c !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.guide-body {
+  background: #0a0b10 !important;
+}
+
+.guide-card,
+.guide-step {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.guide-card--hero {
+  background: linear-gradient(180deg, rgba(94, 234, 212, 0.08), rgba(99, 102, 241, 0.06)) !important;
+  border-color: rgba(94, 234, 212, 0.2) !important;
+}
+
+.guide-eyebrow,
+.guide-scroll-hint {
+  color: #5eead4 !important;
+}
+
+.guide-subtitle,
+.guide-section-label {
+  color: #7a8499 !important;
+}
+
+.guide-menu-mark span {
+  background: #9aa3b5 !important;
+}
+
+.guide-title-block {
+  border-left-color: #5eead4 !important;
+}
+
+.guide-tag {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(94, 234, 212, 0.25) !important;
+  color: #99f6e4 !important;
+}
+
+.guide-badge {
+  background: linear-gradient(135deg, #2dd4bf, #6366f1) !important;
+  color: #041012 !important;
+}
+
+.guide-step-no {
+  background: linear-gradient(135deg, #2dd4bf, #6366f1) !important;
+  color: #041012 !important;
+}
+
+.guide-list li::before {
+  background: #5eead4 !important;
+}
+
+.guide-list li strong,
+.guide-step-body h4 {
+  color: #eef0f6 !important;
+}
+
+.guide-footer {
+  background: #12141c !important;
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.guide-footer-note {
+  color: #9aa3b5 !important;
+}
+
+.guide-link {
+  color: #5eead4 !important;
+}
+
+.form-note {
+  color: #fcd34d !important;
+}
+
+.form-note-inline {
+  color: #9aa3b5 !important;
+}
+
+/* Dynamic (innerHTML) modals */
+.mr-dynamic-modal .mr-modal-panel-inner {
+  background: #12141c;
+  color: #eef0f6;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65);
+}
+
+.mr-dynamic-modal .mr-notice-success {
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  color: #99f6e4;
+}
+
+.mr-dynamic-modal .mr-notice-warn {
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fde68a;
+}
+
+.mr-dynamic-modal .mr-notice-error {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #fecaca;
+}
+
+.mr-dynamic-modal .mr-section-border {
+  border-left: 3px solid #5eead4;
+  padding-left: 1rem;
+}
+
+.mr-dynamic-modal .mr-btn-primary {
+  background: linear-gradient(135deg, #2dd4bf, #6366f1);
+  color: #041012;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.mr-dynamic-modal .mr-btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #eef0f6;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.mr-dynamic-modal .mr-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mr-dynamic-modal .mr-spinner {
+  border-color: rgba(94, 234, 212, 0.25);
+  border-bottom-color: #5eead4;
+}
+
+.mr-dynamic-modal .text-gray-900 {
+  color: #eef0f6 !important;
+}
+
+.mr-dynamic-modal .text-gray-600,
+.mr-dynamic-modal .text-gray-700 {
+  color: #9aa3b5 !important;
+}
+
+.mr-dynamic-modal .text-gray-500 {
+  color: #7a8499 !important;
+}
+
+/* LP modals (Tailwind grays on dark panel) */
+.mr-modal-panel .text-gray-900 {
+  color: #eef0f6 !important;
+}
+
+.mr-modal-panel .text-gray-600,
+.mr-modal-panel .text-gray-700 {
+  color: #c5cad6 !important;
+}

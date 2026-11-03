@@ -170,7 +170,7 @@ const AdminAppointmentsPage = () => {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen bg-gradient-healthcare p-10 text-center text-gray-600">
+      <div className="mr-site mr-mesh min-h-screen p-10 text-center text-gray-600">
         読み込み中…
       </div>
     )
@@ -178,7 +178,7 @@ const AdminAppointmentsPage = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-healthcare">
+      <div className="mr-site mr-mesh min-h-screen">
         <main className="mx-auto max-w-xl px-4 py-24 text-center">
           <h1 className="text-2xl font-extrabold text-gray-900">面談予約の管理</h1>
           <p className="mt-4 text-sm leading-relaxed text-gray-600">
@@ -204,8 +204,8 @@ const AdminAppointmentsPage = () => {
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
-    <div className="min-h-screen bg-gradient-healthcare">
-      <header className="glass-card sticky top-0 z-50 border-b border-white/20 shadow-glass">
+    <div className="mr-site mr-mesh min-h-screen">
+      <header className="mr-header sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4">
           <Link to="/" className="text-sm font-bold gradient-text">
             {siteInfo.name}
@@ -372,12 +372,14 @@ const AdminAppointmentsPage = () => {
       {/* ------------------------------------------------------------ 詳細 */}
       {selected && (
         <div
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4"
+          className="mr-modal-overlay fixed inset-0 z-[1000] flex items-center justify-center p-4"
           onClick={() => setSelected(null)}
         >
           <div
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
+            className="mr-modal-panel mr-modal-panel--scroll max-h-[90vh] w-full max-w-2xl p-6"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
           >
             <div className="flex items-start justify-between gap-4">
               <div>

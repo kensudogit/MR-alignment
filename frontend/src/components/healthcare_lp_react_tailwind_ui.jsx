@@ -192,7 +192,7 @@ const featureData = {
 
 // --- Small UI helpers ---
 const Stat = ({ value, label }) => (
-  <div className="card-modern hover-lift flex flex-col items-center gap-2 p-6 text-center">
+  <div className="card-modern hover-lift flex flex-col items-center gap-2 rounded-2xl p-6 text-center">
     <div className="text-4xl font-bold gradient-text">{value}</div>
     <div className="text-sm text-gray-600">{label}</div>
   </div>
@@ -240,7 +240,8 @@ const FeatureCard = ({ icon, title, desc, onClick, imageUrl, imageBg }) => {
 
   return (
   <button
-    className="group cursor-pointer transition-all duration-500 hover:scale-105 focus:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-offset-2 w-full text-left overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 hover:border-blue-200"
+    type="button"
+    className="mr-feature-card group w-full cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060608]"
     onClick={onClick}
     onKeyDown={(e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -270,16 +271,15 @@ const FeatureCard = ({ icon, title, desc, onClick, imageUrl, imageBg }) => {
       </div>
     </div>
 
-    {/* Content Section */}
-    <div className="p-6">
-      <div className="flex items-center gap-4 mb-4">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600 shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
+    <div className="mr-feature-body">
+      <div className="mb-4 flex items-center gap-4">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-teal-300 shadow-inner transition-transform duration-300 group-hover:scale-105">
           {icon}
         </div>
-        <h3 className="font-bold text-gray-900 text-xl group-hover:text-blue-700 transition-colors duration-300">{title}</h3>
+        <h3 className="text-xl font-bold text-gray-900 transition-colors duration-300 group-hover:text-teal-300">{title}</h3>
       </div>
-      <p className="text-gray-600 leading-relaxed mb-4 text-base group-hover:text-gray-700 transition-colors duration-300">{desc}</p>
-      <div className="flex items-center text-blue-600 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+      <p className="mb-4 text-base leading-relaxed text-gray-600">{desc}</p>
+      <div className="flex translate-y-2 transform items-center text-sm font-semibold text-teal-400 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
         詳細を見る 
         <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -305,19 +305,17 @@ const BlogModal = ({ isOpen, onClose, blogCategory, onArticleClick }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+        className="mr-modal-overlay absolute inset-0 transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
       
-      {/* Modal */}
       <div 
         role="dialog"
         aria-modal="true"
         aria-labelledby="blog-modal-title"
-        className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100"
+        className="mr-modal-panel mr-modal-panel--scroll relative max-w-4xl w-full transform transition-all duration-300"
       >
         {/* Header */}
         <div className={`${blogCategory.image} p-6 rounded-t-2xl`}>
@@ -345,20 +343,20 @@ const BlogModal = ({ isOpen, onClose, blogCategory, onArticleClick }) => {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
+        <div className="mr-modal-panel__body">
           <div className="space-y-6">
             {blogCategory.articles.map((article, index) => (
-              <div key={`article-${article.title}-${index}`} className="border-b border-gray-200 pb-6 last:border-b-0">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+              <div key={`article-${article.title}-${index}`} className="border-b border-white/10 pb-6 last:border-b-0">
+                <h3 className="mb-3 text-xl font-semibold text-gray-900">
                   {article.title}
                 </h3>
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line mb-4">
+                <div className="mb-4 whitespace-pre-line leading-relaxed text-gray-600">
                   {article.content}
                 </div>
                 <button
+                  type="button"
                   onClick={() => onArticleClick(article, blogCategory)}
-                  className="text-blue-600 hover:text-blue-800 font-semibold text-sm transition-colors duration-200 flex items-center gap-2"
+                  className="flex items-center gap-2 text-sm font-semibold text-teal-400 transition-colors duration-200 hover:text-teal-300"
                 >
                   詳細を読む
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -370,12 +368,8 @@ const BlogModal = ({ isOpen, onClose, blogCategory, onArticleClick }) => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 rounded-b-2xl">
-          <button 
-            onClick={onClose}
-            className="btn-gradient w-full"
-          >
+        <div className="mr-modal-panel__footer">
+          <button type="button" onClick={onClose} className="btn-gradient w-full">
             閉じる
           </button>
         </div>
@@ -408,19 +402,17 @@ const ArticleModal = ({ isOpen, onClose, article, categoryInfo }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+        className="mr-modal-overlay absolute inset-0 transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
       
-      {/* Modal */}
       <div 
         role="dialog"
         aria-modal="true"
         aria-labelledby="article-modal-title"
-        className="relative bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100"
+        className="mr-modal-panel mr-modal-panel--scroll relative max-w-5xl w-full transform transition-all duration-300"
       >
         {/* Header */}
         <div className={`${categoryInfo?.image || 'bg-gradient-to-br from-blue-400 to-indigo-500'} p-6 rounded-t-2xl`}>
@@ -448,8 +440,7 @@ const ArticleModal = ({ isOpen, onClose, article, categoryInfo }) => {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-8">
+        <div className="mr-modal-panel__body">
           {/* Article Image */}
           {article.imageUrl && (
             <div className="mb-8">
@@ -466,16 +457,16 @@ const ArticleModal = ({ isOpen, onClose, article, categoryInfo }) => {
             </div>
           )}
           
-          <div className="prose prose-lg max-w-none">
-            <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+          <div className="prose prose-lg max-w-none prose-invert">
+            <div className="whitespace-pre-line leading-relaxed text-gray-600">
               {article.content}
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex gap-3">
+        <div className="mr-modal-panel__footer flex gap-3">
           <button 
+            type="button"
             onClick={onClose}
             className={articleUrl ? 'btn-secondary flex-1' : 'btn-gradient w-full'}
           >
@@ -510,50 +501,48 @@ const FeatureModal = ({ isOpen, onClose, feature, onContact }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+        className="mr-modal-overlay absolute inset-0 transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
       
-      {/* Modal */}
-      <dialog 
-        className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100"
-        open
+      <div 
+        role="dialog"
+        aria-modal="true"
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
+        className="mr-modal-panel mr-modal-panel--scroll relative max-w-2xl w-full transform transition-all duration-300"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="mr-modal-panel__header mr-modal-panel__header--accent flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-healthcare-100 to-healthcare-200 text-healthcare-600">
+            <div className="rounded-xl border border-teal-500/30 bg-teal-500/10 p-3 text-teal-300">
               {feature.icon}
             </div>
             <h2 id="modal-title" className="text-2xl font-bold text-gray-900">{feature.title}</h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+            className="mr-modal-close rounded-lg p-2 transition-colors"
             aria-label="閉じる"
           >
             <IconX className="h-6 w-6" />
           </button>
         </div>
 
-        {/* Content */}
-        <div id="modal-description" className="p-6 space-y-6">
+        <div id="modal-description" className="mr-modal-panel__body space-y-6">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">機能概要</h3>
-            <p className="text-gray-700 leading-relaxed">{feature.longDesc}</p>
+            <h3 className="mb-3 text-lg font-semibold text-gray-900">機能概要</h3>
+            <p className="leading-relaxed text-gray-600">{feature.longDesc}</p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">主なメリット</h3>
+            <h3 className="mb-3 text-lg font-semibold text-gray-900">主なメリット</h3>
             <ul className="space-y-2">
               {feature.benefits.map((benefit, index) => (
-                <li key={`benefit-${benefit}-${index}`} className="flex items-center gap-3 text-gray-700">
-                  <IconCheck className="h-5 w-5 text-healthcare-500 flex-shrink-0" />
+                <li key={`benefit-${benefit}-${index}`} className="flex items-center gap-3 text-gray-600">
+                  <IconCheck className="h-5 w-5 shrink-0 text-teal-400" />
                   <span>{benefit}</span>
                 </li>
               ))}
@@ -561,11 +550,11 @@ const FeatureModal = ({ isOpen, onClose, feature, onContact }) => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">活用シーン</h3>
+            <h3 className="mb-3 text-lg font-semibold text-gray-900">活用シーン</h3>
             <ul className="space-y-2">
               {feature.useCases.map((useCase, index) => (
-                <li key={`useCase-${useCase}-${index}`} className="flex items-center gap-3 text-gray-700">
-                  <div className="w-2 h-2 bg-healthcare-400 rounded-full flex-shrink-0" />
+                <li key={`useCase-${useCase}-${index}`} className="flex items-center gap-3 text-gray-600">
+                  <div className="h-2 w-2 shrink-0 rounded-full bg-violet-400" />
                   <span>{useCase}</span>
                 </li>
               ))}
@@ -573,18 +562,14 @@ const FeatureModal = ({ isOpen, onClose, feature, onContact }) => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className="btn-secondary"
-          >
+        <div className="mr-modal-panel__footer flex justify-end gap-3">
+          <button type="button" onClick={onClose} className="btn-secondary">
             閉じる
           </button>
           <button
+            type="button"
             onClick={() => {
               onClose();
-              // 旧実装は alert で「お問い合わせください」と出すだけの行き止まりだった
               onContact();
             }}
             className="btn-gradient"
@@ -592,7 +577,7 @@ const FeatureModal = ({ isOpen, onClose, feature, onContact }) => {
             このサービスを相談する
           </button>
         </div>
-      </dialog>
+      </div>
     </div>
   );
 };
@@ -656,10 +641,10 @@ Select.propTypes = {
 
 const Badge = ({ children, variant = "default" }) => {
   const variantClasses = {
-    default: "px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800",
-    success: "px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800",
-    warning: "px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800",
-    info: "px-3 py-1 rounded-full text-sm font-medium bg-cyan-100 text-cyan-800"
+    default: "rounded-full border border-white/15 bg-white/5 px-3 py-1 text-sm font-medium text-teal-200",
+    success: "rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-sm font-medium text-teal-200",
+    warning: "rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-200",
+    info: "rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-sm font-medium text-violet-200",
   };
   
   return (
@@ -893,10 +878,10 @@ export default function HealthcareLP() {
   // ローディングモーダル表示。閉じる関数を返す。
   const showLoadingModal = () => {
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.className = 'mr-dynamic-modal fixed inset-0 mr-modal-overlay flex items-center justify-center z-50';
     modal.innerHTML = `
-      <div class="bg-white rounded-lg p-8 text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+      <div class="mr-modal-panel-inner max-w-md p-8 text-center">
+        <div class="mr-spinner animate-spin rounded-full h-12 w-12 border-2 mx-auto mb-4"></div>
         <h3 class="text-lg font-semibold text-gray-900 mb-2">AI資料を生成中...</h3>
         <p class="text-gray-600">生成後、ご入力のメールアドレスへお送りします</p>
         <p class="text-sm text-gray-500 mt-2">30秒ほどかかる場合があります</p>
@@ -923,7 +908,7 @@ export default function HealthcareLP() {
   const buildNoticeBanner = ({ emailSent, notice, reference, email }) => {
     if (emailSent) {
       return `
-        <div class="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded mb-4">
+        <div class="mr-notice-success px-4 py-3 rounded-lg mb-4">
           <div class="font-semibold">${escapeHtml(email)} 宛に資料をお送りしました</div>
           <div class="text-sm mt-1">
             ${notice ? escapeHtml(notice) : ''}
@@ -933,7 +918,7 @@ export default function HealthcareLP() {
     }
 
     return `
-      <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded mb-4">
+      <div class="mr-notice-warn px-4 py-3 rounded-lg mb-4">
         <div class="font-semibold">メールの送信に失敗しました</div>
         <div class="text-sm mt-1">
           資料は作成できています。この画面の内容をご確認ください。
@@ -947,25 +932,23 @@ export default function HealthcareLP() {
    * 成功していないものを成功に見せないため、資料本文は一切出さない。
    */
   const showRequestReceived = ({ title, body, reference = '', tone = 'info' }) => {
-    const palette = tone === 'error'
-      ? 'bg-red-50 border-red-300 text-red-800'
-      : 'bg-blue-50 border-blue-300 text-blue-800';
+    const palette = tone === 'error' ? 'mr-notice-error' : 'mr-notice-warn';
 
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.className = 'mr-dynamic-modal fixed inset-0 mr-modal-overlay flex items-center justify-center z-50 p-4';
     modal.innerHTML = `
-      <div class="bg-white rounded-lg max-w-lg w-full">
+      <div class="mr-modal-panel-inner max-w-lg w-full">
         <div class="p-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold text-gray-900">${escapeHtml(title)}</h2>
-            <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            <button type="button" onclick="this.closest('.mr-dynamic-modal').remove()" class="mr-modal-close text-2xl">&times;</button>
           </div>
-          <div class="border ${palette} px-4 py-3 rounded">
+          <div class="${palette} px-4 py-3 rounded-lg">
             <div class="text-sm leading-relaxed">${escapeHtml(body)}</div>
             ${reference ? `<div class="text-sm mt-2">受付番号: ${escapeHtml(reference)}</div>` : ''}
           </div>
           <div class="mt-6 flex justify-end">
-            <button onclick="this.closest('.fixed').remove()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">閉じる</button>
+            <button type="button" onclick="this.closest('.mr-dynamic-modal').remove()" class="mr-btn-ghost">閉じる</button>
           </div>
         </div>
       </div>
@@ -999,26 +982,26 @@ export default function HealthcareLP() {
     }
 
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.className = 'mr-dynamic-modal fixed inset-0 mr-modal-overlay flex items-center justify-center z-50 p-4';
     modal.innerHTML = `
-      <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="mr-modal-panel-inner max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div class="p-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-bold text-gray-900">AI資料生成完了</h2>
-            <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            <button type="button" onclick="this.closest('.mr-dynamic-modal').remove()" class="mr-modal-close text-2xl">&times;</button>
           </div>
           ${buildNoticeBanner({ emailSent, notice, reference, email: userInfo.email })}
           <div class="space-y-6">
             ${Object.entries(parsedContent).map(([key, value]) => `
-              <div class="border-l-4 border-blue-500 pl-4">
+              <div class="mr-section-border">
                 <h3 class="font-semibold text-lg text-gray-900 mb-2">${escapeHtml(getSectionTitle(key))}</h3>
-                <div class="text-gray-700 whitespace-pre-line">${escapeHtml(typeof value === 'string' ? value : JSON.stringify(value, null, 2))}</div>
+                <div class="text-gray-600 whitespace-pre-line">${escapeHtml(typeof value === 'string' ? value : JSON.stringify(value, null, 2))}</div>
               </div>
             `).join('')}
           </div>
-          <div class="mt-6 flex justify-end space-x-4">
-            <button onclick="window.print()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">印刷</button>
-            <button onclick="this.closest('.fixed').remove()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">閉じる</button>
+          <div class="mt-6 flex justify-end gap-3">
+            <button type="button" onclick="window.print()" class="mr-btn-primary">印刷</button>
+            <button type="button" onclick="this.closest('.mr-dynamic-modal').remove()" class="mr-btn-ghost">閉じる</button>
           </div>
         </div>
       </div>
@@ -1063,7 +1046,7 @@ export default function HealthcareLP() {
 
   // 認証されていないユーザーでもサイトにアクセス可能
   return (
-    <div className="min-h-screen bg-gradient-healthcare text-gray-900 scrollbar-thin relative overflow-hidden">
+    <div className="mr-site mr-mesh min-h-screen scrollbar-thin relative overflow-hidden">
       {/* パーティクルエフェクト */}
             {particles.map((particle) => (
               <div
@@ -1079,14 +1062,16 @@ export default function HealthcareLP() {
             ))}
 
       {/* Header */}
-      <header className="glass-card sticky top-0 z-50 border-b border-white/20 shadow-glass">
+      <header className="mr-header sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          {/* ロゴは 96px あると横幅を圧迫してナビが折り返すため、下層ページと同じ 64px に揃えている */}
           <div className="flex shrink-0 items-center gap-3">
-            <div className="metallic-container flex h-16 w-16 items-center justify-center rounded-full text-white font-bold text-xl shadow-lg">
-              <img src="/PC.png" alt="須藤技術士事務所" className="h-12 w-12 object-contain logo-float relative z-10" />
+            <div className="mr-logo-ring metallic-container flex h-14 w-14 items-center justify-center rounded-2xl">
+              <img src="/PC.png" alt="須藤技術士事務所" className="logo-float relative z-10 h-10 w-10 object-contain" />
             </div>
-            <span className="whitespace-nowrap text-sm font-bold gradient-text">須藤技術士事務所</span>
+            <div className="leading-tight">
+              <span className="block whitespace-nowrap text-sm font-bold gradient-text">須藤技術士事務所</span>
+              <span className="hidden text-[10px] uppercase tracking-[0.2em] text-gray-500 sm:block">IT Consulting Studio</span>
+            </div>
           </div>
           {/*
             項目名は途中で折り返さない（whitespace-nowrap）。
@@ -1094,19 +1079,14 @@ export default function HealthcareLP() {
             スクロールでたどれるページ内アンカー（サービス / ブログ / お問い合わせ）を先に落とし、
             別ページへの導線だけを残す。
           */}
-          <nav className="hidden md:flex items-center gap-x-3 xl:gap-x-4 2xl:gap-x-5 text-[13px] text-gray-700">
-            <a href="#features" className="hidden whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift lg:inline">サービス</a>
-            <a href="#blog" className="hidden whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift lg:inline">ブログ・ニュース</a>
-            <a href="#contact" className="hidden whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift lg:inline">お問い合わせ</a>
-            <Link to="/process" className="whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発の進め方</Link>
-            <Link to="/coding-agents" className="whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift">AI開発講習</Link>
-            {/* 実装中に引く資料。開発者が常時たどれるようヘッダに出す */}
-            <Link to="/react-manual" className="whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift">開発マニュアル</Link>
-            <button
-              type="button"
-              onClick={() => setUsageGuideOpen(true)}
-              className="whitespace-nowrap hover:text-healthcare-600 transition-colors duration-200 hover-lift"
-            >
+          <nav className="hidden items-center gap-x-3 text-[13px] md:flex xl:gap-x-4 2xl:gap-x-5">
+            <a href="#features" className="mr-nav-link hidden whitespace-nowrap lg:inline">サービス</a>
+            <a href="#blog" className="mr-nav-link hidden whitespace-nowrap lg:inline">ブログ</a>
+            <a href="#contact" className="mr-nav-link hidden whitespace-nowrap lg:inline">相談</a>
+            <Link to="/process" className="mr-nav-link whitespace-nowrap">進め方</Link>
+            <Link to="/coding-agents" className="mr-nav-link whitespace-nowrap">AI講習</Link>
+            <Link to="/react-manual" className="mr-nav-link hidden whitespace-nowrap xl:inline">マニュアル</Link>
+            <button type="button" onClick={() => setUsageGuideOpen(true)} className="mr-nav-link whitespace-nowrap">
               利用手順
             </button>
           </nav>
@@ -1154,35 +1134,35 @@ export default function HealthcareLP() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20">
-        <div className="absolute -left-32 -top-32 h-80 w-80 rounded-full bg-healthcare-200 blur-3xl opacity-60 animate-float"/>
-        <div className="absolute -right-32 -bottom-32 h-80 w-80 rounded-full bg-accent-amber blur-3xl opacity-60 animate-float" style={{animationDelay: '2s'}}/>
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-4 md:grid-cols-2">
+      <section className="mr-hero relative overflow-hidden">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 md:grid-cols-2 md:gap-16">
           <div className="animate-fade-in-left">
+            <p className="mr-eyebrow mb-6">Sudo Engineering Office</p>
             <div className="mb-6 flex flex-wrap items-center gap-3">
               <Badge variant="success">技術士資格保有</Badge>
               <Badge variant="info">30年以上の実績</Badge>
-              {/* 「24時間サポート」は裏付けのない表示だったため削除した。
-                  掲げるなら site.ts の受付時間と一致させること。 */}
             </div>
-            <h1 className="section-title mobile-title text-4xl md:text-6xl font-extrabold leading-tight">
-              IT技術で、<span className="gradient-text">ビジネスを変革する。</span>
+            <h1 className="mr-hero-title mobile-title">
+              設計から実装まで、
+              <span className="gradient-text">動くもので語る。</span>
             </h1>
-            <p className="mobile-text mt-6 text-lg md:text-xl text-gray-700 leading-relaxed max-w-2xl">
-              須藤技術士事務所は、生成AIの業務導入、業務システムの開発、レガシーシステムの移行を手がける
-              ITコンサルティング事務所です。公開中の開発実績と講習資料で、実際の成果物をご確認いただけます。
+            <p className="mobile-text mt-6 max-w-2xl text-lg leading-relaxed text-gray-600 md:text-xl">
+              生成AI・業務システム・クラウド基盤。公開中の開発実績と講習資料で、
+              提案ではなく成果物の質をご確認いただけます。
             </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="#portfolio" className="btn-gradient btn-compact inline-flex">開発実績</a>
+              <Link to="/process" className="btn-secondary btn-compact inline-flex">開発の進め方</Link>
+            </div>
           </div>
 
-          {/* Right: Lead Form */}
           <div className="relative animate-fade-in-right">
-            <div className="bg-white rounded-3xl shadow-2xl ring-1 ring-gray-100/50 animate-slide-in-bottom p-8 border border-gray-100">
+            <div className="mr-lead-panel animate-slide-in-bottom">
               <div className="mb-8 flex items-center gap-4">
-                <div className="rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 p-4 text-blue-600 shadow-lg">
+                <div className="rounded-2xl border border-teal-500/30 bg-teal-500/10 p-4 text-teal-300">
                   <IconPhone className="h-8 w-8"/>
                 </div>
-                <div className="text-xl font-bold text-gray-900">ITサービス資料ダウンロード（無料）</div>
+                <div className="text-xl font-bold text-gray-900">ITサービス資料（AI生成・無料）</div>
               </div>
               <form onSubmit={onSubmit} className="space-y-6">
                 {/* 選択肢は data/industries.ts に集約している。
@@ -1209,10 +1189,7 @@ export default function HealthcareLP() {
                     rows="4"
                   />
                 </div>
-                <button 
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
-                >
+                <button type="submit" className="btn-gradient w-full py-4 text-lg">
                   AI資料を生成（無料）
                 </button>
                 <p className="text-sm text-gray-500 text-center">送信により、プライバシーポリシーに同意したものとみなされます。</p>
@@ -1223,14 +1200,14 @@ export default function HealthcareLP() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 scroll-mt-24">
+      <section id="features" className="mr-section scroll-mt-24">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 relative">
+          <div className="mb-16 text-center">
+            <p className="mr-eyebrow mb-4 justify-center">Services</p>
+            <h2 className="mr-section-head mr-section-head--center mx-auto max-w-2xl">
               提供サービス
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="mr-section-lead mx-auto">
               生成AIの業務導入から、既存システムの移行、開発チームの支援まで。
               いずれも公開中の開発実績・講習資料で内容をご確認いただけます。
             </p>
@@ -1296,14 +1273,12 @@ export default function HealthcareLP() {
       </section>
 
       {/* Portfolio - Development Achievements */}
-      <section id="portfolio" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section id="portfolio" className="mr-section">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 relative">
-              開発実績
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">多様な業界・規模のシステム開発実績をご紹介します。各プロジェクトの詳細な技術仕様と成果をお示しします。</p>
+          <div className="mb-16 text-center">
+            <p className="mr-eyebrow mb-4 justify-center">Portfolio</p>
+            <h2 className="mr-section-head mr-section-head--center mx-auto">開発実績</h2>
+            <p className="mr-section-lead mx-auto">公開中のアプリをクリックすると、Railway 上のデモが別タブで開きます。</p>
           </div>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {[
@@ -1398,7 +1373,8 @@ export default function HealthcareLP() {
               return (
                 <button 
                   key={`project-${project.title}-${index}`} 
-                  className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 hover:border-blue-200 transition-all duration-500 hover:scale-105 cursor-pointer overflow-hidden w-full text-left" 
+                  type="button"
+                  className="mr-portfolio-card group w-full cursor-pointer overflow-hidden text-left" 
                   onClick={() => window.open(project.url, '_blank')}
                   tabIndex={0}
                   onKeyDown={(e) => {
@@ -1490,21 +1466,22 @@ export default function HealthcareLP() {
       </section>
 
       {/* 相談導線（お問い合わせ / 面談予約 / チャット / 電話） */}
-      <section id="contact" className="py-20 bg-gradient-to-br from-blue-50 to-indigo-100 scroll-mt-24">
+      <section id="contact" className="mr-cta scroll-mt-24">
         <div className="mx-auto max-w-4xl px-4">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-center shadow-xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <div className="mr-cta-inner text-center">
+            <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
               ご相談は無料です
             </h2>
-            <p className="text-lg md:text-xl text-white/90 mb-8">
+            <p className="mb-8 text-lg text-gray-600 md:text-xl">
               技術士がお話をうかがい、進め方と概算をその場でお伝えします。
               {siteInfo.businessHours ? `受付時間: ${siteInfo.businessHours}` : ''}
             </p>
 
             <div className="flex flex-col md:flex-row flex-wrap gap-4 justify-center items-center">
               <button
+                type="button"
                 onClick={handleContact}
-                className="bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="btn-gradient flex items-center gap-2 px-6 py-3"
                 title="フォームからお問い合わせ"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1514,8 +1491,9 @@ export default function HealthcareLP() {
               </button>
 
               <button
+                type="button"
                 onClick={handleAppointmentBooking}
-                className="bg-indigo-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-600 transition-colors duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="btn-secondary flex items-center gap-2 px-6 py-3"
                 title="面談予約で詳細相談"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1525,8 +1503,9 @@ export default function HealthcareLP() {
               </button>
 
               <button
+                type="button"
                 onClick={handleAIChatConsultation}
-                className="bg-white/15 text-white ring-1 ring-white/40 px-6 py-3 rounded-lg font-semibold hover:bg-white/25 transition-colors duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="btn-secondary flex items-center gap-2 border-white/20 px-6 py-3"
                 title="AIチャットで質問する"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1550,7 +1529,7 @@ export default function HealthcareLP() {
               )}
             </div>
 
-            <p className="mt-6 text-sm text-white/80">
+            <p className="mt-6 text-sm text-gray-500">
               AIチャットの回答は生成AIによるものです。内容の確認が必要な場合はお問い合わせください。
             </p>
           </div>
@@ -1558,14 +1537,12 @@ export default function HealthcareLP() {
       </section>
 
       {/* Blog & News */}
-      <section id="blog" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section id="blog" className="mr-section">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 relative">
-              ブログ・ニュース
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">最新のITトレンドと技術情報をお届けします。</p>
+          <div className="mb-16 text-center">
+            <p className="mr-eyebrow mb-4 justify-center">Insights</p>
+            <h2 className="mr-section-head mr-section-head--center">ブログ・ニュース</h2>
+            <p className="mr-section-lead mx-auto">最新のITトレンドと技術情報をお届けします。</p>
           </div>
           
           {/* スライドコンテナ */}
@@ -1709,7 +1686,7 @@ export default function HealthcareLP() {
       />
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="mr-footer">
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
@@ -1810,7 +1787,7 @@ export default function HealthcareLP() {
         )}
         <button 
           onClick={() => setChatOpen((v) => !v)} 
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover-lift"
+          className="btn-gradient flex h-14 w-14 items-center justify-center rounded-full !p-0 shadow-lg transition-all duration-300 hover-lift"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />

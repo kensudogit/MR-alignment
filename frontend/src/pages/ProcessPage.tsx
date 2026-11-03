@@ -626,8 +626,8 @@ export default function ProcessPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-healthcare">
-      <header className="glass-card sticky top-0 z-50 border-b border-white/20 shadow-glass">
+    <div className="mr-site mr-mesh min-h-screen">
+      <header className="mr-header sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <Link to="/" className="flex items-center gap-3">
             <div className="metallic-container flex h-16 w-16 items-center justify-center rounded-full shadow-lg">

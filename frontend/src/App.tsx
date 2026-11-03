@@ -9,6 +9,8 @@ import ScrollToHash from './components/ScrollToHash'
 import { AuthProvider } from './contexts/AuthContext'
 import './App.css'
 import './healthcare-lp.css'
+import './styles/mr-studio.css'
+import './styles/mr-modals.css'
 
 /**
  * Cookie 同意バナーは削除した。
