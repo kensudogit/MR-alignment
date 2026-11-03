@@ -1336,34 +1336,6 @@ export default function HealthcareLP() {
                 team: "1名"
               },
               {
-                title: "領収書 自動データ化システム",
-                description: "OCRで領収書を読み取り、会計ソフトへ自動連携",
-                detailedDescription: "紙・PDFの領収書をOCRで構造化データに変換し、勘定科目を自動推定して会計ソフトへ連携。手入力を大幅に削減する経理向けシステム。",
-                url: "https://ocr-production-0e14.up.railway.app/",
-                image: "bg-gradient-to-br from-blue-600 via-sky-600 to-cyan-700",
-                imageUrl: "/portfolio/receipt-ocr.png",
-                icon: "\u{1F9FE}",
-                tech: ["Python", "OCR", "生成AI", "会計API連携", "PostgreSQL"],
-                features: ["OCR読み取り", "勘定科目の自動推定", "会計ソフト連携", "仕訳出力"],
-                industry: "会計・バックオフィス",
-                duration: "3ヶ月",
-                team: "1名"
-              },
-              {
-                title: "AI × WordPress 自動化ワークフロー",
-                description: "Codexが生成したHTMLをClaude Code経由でWordPressへ自動実装",
-                detailedDescription: "Codex(AI)によるHTML生成から、Claude Code を介した WordPress への実装・公開までを自動化するワークフロー。記事作成から公開までの工数を削減。",
-                url: "https://wpaipublisher-production.up.railway.app/guide",
-                image: "bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700",
-                imageUrl: "/portfolio/wp-ai-publisher.png",
-                icon: "\u{1F916}",
-                tech: ["Codex", "Claude Code", "WordPress REST API", "Python", "自動化"],
-                features: ["HTML自動生成", "AIによる実装", "WordPress自動投稿", "公開フロー自動化"],
-                industry: "メディア・DX",
-                duration: "2ヶ月",
-                team: "1名"
-              },
-              {
                 title: "株価予測・SNS運用AIエージェント",
                 description: "株価予測とSNS投稿を自律実行するAIエージェント",
                 detailedDescription: "市場データから株価を予測し、分析結果をもとにSNS投稿までを自律的に実行するAIエージェント。情報収集・分析・発信のサイクルを自動化。",
@@ -1403,20 +1375,6 @@ export default function HealthcareLP() {
                 features: ["Skills一覧", "検索・絞り込み", "詳細比較", "導入ガイド"],
                 industry: "社内DX・生成AI",
                 duration: "1ヶ月",
-                team: "1名"
-              },
-              {
-                title: "D2C Marketing Automation",
-                description: "D2C事業者向けの顧客獲得・育成を自動化する基盤",
-                detailedDescription: "D2C事業者向けのマーケティングオートメーション。顧客セグメント作成、シナリオ配信、効果測定までを一気通貫で実行できる基盤。",
-                url: "https://d2c-marketing-automation-production.up.railway.app/",
-                image: "bg-gradient-to-br from-pink-600 via-fuchsia-600 to-violet-700",
-                imageUrl: "/portfolio/d2c-marketing.png",
-                icon: "\u{1F4E3}",
-                tech: ["Python", "FastAPI", "PostgreSQL", "メール配信", "分析基盤"],
-                features: ["顧客セグメント", "シナリオ配信", "効果測定", "ダッシュボード"],
-                industry: "D2C・マーケティング",
-                duration: "3ヶ月",
                 team: "1名"
               },
               {

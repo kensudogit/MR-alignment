@@ -19,7 +19,7 @@
 | 機能 | 実装状況 | 実装場所 |
 |---|---|---|
 | サービス紹介 LP（1ページ完結・アンカー遷移） | 稼働 | `frontend/src/components/healthcare_lp_react_tailwind_ui.jsx` |
-| 開発実績（8件・Railway 公開アプリへのリンク） | 稼働 | 同上 `#portfolio` セクション |
+| 開発実績（6件・Railway 公開アプリへのリンク） | 稼働 | 同上 `#portfolio` セクション |
 | ブログ／記事閲覧（モーダル） | 稼働 | データは `frontend/src/data/blogData.js` に分離済み |
 | 会員登録・ログイン | **バックエンド認証（JWT）** | `backend/app/routers/auth.py` |
 | お問い合わせ | **PostgreSQL 永続化 + メール通知** | `backend/app/routers/contact.py` |
@@ -842,12 +842,13 @@ Terraform で作る。
 |---|---|---|---|
 | 1 | SaaS対応FXツール | `https://fx-production-f5d5.up.railway.app/` | `fx-saas.svg` |
 | 2 | エネルギーリソースアグリゲーション | `https://renewableenergy-production-8368.up.railway.app/` | `energy-aggregation.svg` |
-| 3 | 領収書 自動データ化システム | `https://ocr-production-0e14.up.railway.app/` | `receipt-ocr.svg` |
-| 4 | AI × WordPress 自動化ワークフロー | `https://wpaipublisher-production.up.railway.app/guide` | `wp-ai-publisher.svg` |
-| 5 | 株価予測・SNS運用AIエージェント | `https://stockpriceppredictiontool-production.up.railway.app/` | `ai-agent-stock.svg` |
-| 6 | 生成AIサービスのクラウド基盤 | `https://bedrockknowledgebase-production.up.railway.app` | `cloud-infra.svg` |
-| 7 | ChatGPT Skillsカタログアプリ | `https://chatgptskillscatalog-production.up.railway.app/` | `skills-catalog.svg` |
-| 8 | D2C Marketing Automation | `https://d2c-marketing-automation-production.up.railway.app/` | `d2c-marketing.svg` |
+| 3 | 株価予測・SNS運用AIエージェント | `https://stockpriceppredictiontool-production.up.railway.app/` | `ai-agent-stock.svg` |
+| 4 | 生成AIサービスのクラウド基盤 | `https://bedrockknowledgebase-production.up.railway.app` | `cloud-infra.svg` |
+| 5 | ChatGPT Skillsカタログアプリ | `https://chatgptskillscatalog-production.up.railway.app/` | `skills-catalog.svg` |
+| 6 | 技術継承プラットフォーム | `https://technologysuccession-production.up.railway.app/` | `technology-succession.svg` |
+
+> 公開 URL が 404 の実績（領収書 OCR / WP AI Publisher / D2C MA）はカードから除外済み。
+> 再デプロイ後に `#portfolio` 配列へ戻す。
 
 各項目は `title / description / detailedDescription / url / image / imageUrl /
 icon / tech / features / industry / duration / team` を持ちます。
