@@ -60,6 +60,8 @@ const IconX = (props) => (
 // 実際には使っていない技術名）を並べないこと。
 const featureData = {
   aiSolution: {
+    detailHref: "/process",
+    detailLabel: "開発の進め方を見る",
     title: "生成AI・AIエージェント開発",
     icon: <IconUsers className="h-8 w-8"/>,
     shortDesc: "RAG・LLM を業務に組み込み、人が確認できる形で自動化する。",
@@ -83,6 +85,8 @@ const featureData = {
     ],
   },
   systemDevelopment: {
+    detailHref: "/process",
+    detailLabel: "開発の進め方を見る",
     title: "業務システム・Webアプリ開発",
     icon: <IconPhone className="h-8 w-8"/>,
     shortDesc: "要件整理から公開まで、実際に動くところまで持っていく。",
@@ -105,6 +109,8 @@ const featureData = {
     ],
   },
   dataPlatform: {
+    detailHref: "/#portfolio",
+    detailLabel: "開発実績を見る",
     title: "データ活用・分析基盤",
     icon: <IconClock className="h-8 w-8"/>,
     shortDesc: "集める・貯める・使うまでを一続きで設計する。",
@@ -126,6 +132,8 @@ const featureData = {
     ],
   },
   cloudPlatform: {
+    detailHref: "/process",
+    detailLabel: "開発の進め方を見る",
     title: "クラウド基盤・運用",
     icon: <IconShield className="h-8 w-8"/>,
     shortDesc: "Docker と CI/CD で、壊れたらすぐ戻せる状態にする。",
@@ -147,6 +155,8 @@ const featureData = {
     ],
   },
   legacyMigration: {
+    detailHref: "/process#migration",
+    detailLabel: "移行の進め方を見る",
     title: "レガシー移行・モダナイゼーション",
     icon: <IconClock className="h-8 w-8"/>,
     shortDesc: "止められない既存システムを、段階的に置き換える。",
@@ -168,6 +178,8 @@ const featureData = {
     ],
   },
   teamEnablement: {
+    detailHref: "/coding-agents",
+    detailLabel: "AI開発講習を見る",
     title: "コーディングエージェント導入支援",
     icon: <IconUsers className="h-8 w-8"/>,
     shortDesc: "Codex / Claude Code を、現場が使える形で定着させる。",
@@ -304,7 +316,7 @@ const BlogModal = ({ isOpen, onClose, blogCategory, onArticleClick }) => {
   if (!isOpen || !blogCategory) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="mr-modal-root fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div 
         className="mr-modal-overlay absolute inset-0 transition-opacity duration-300"
         onClick={onClose}
@@ -315,7 +327,7 @@ const BlogModal = ({ isOpen, onClose, blogCategory, onArticleClick }) => {
         role="dialog"
         aria-modal="true"
         aria-labelledby="blog-modal-title"
-        className="mr-modal-panel mr-modal-panel--scroll relative max-w-4xl w-full transform transition-all duration-300"
+        className="mr-modal-panel mr-modal-panel--scroll relative z-10 max-w-4xl w-full transform transition-all duration-300"
       >
         {/* Header */}
         <div className={`${blogCategory.image} p-6 rounded-t-2xl`}>
@@ -401,7 +413,7 @@ const ArticleModal = ({ isOpen, onClose, article, categoryInfo }) => {
   const articleUrl = resolveArticleUrl(article);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="mr-modal-root fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div 
         className="mr-modal-overlay absolute inset-0 transition-opacity duration-300"
         onClick={onClose}
@@ -412,7 +424,7 @@ const ArticleModal = ({ isOpen, onClose, article, categoryInfo }) => {
         role="dialog"
         aria-modal="true"
         aria-labelledby="article-modal-title"
-        className="mr-modal-panel mr-modal-panel--scroll relative max-w-5xl w-full transform transition-all duration-300"
+        className="mr-modal-panel mr-modal-panel--scroll relative z-10 max-w-5xl w-full transform transition-all duration-300"
       >
         {/* Header */}
         <div className={`${categoryInfo?.image || 'bg-gradient-to-br from-blue-400 to-indigo-500'} p-6 rounded-t-2xl`}>
@@ -500,7 +512,7 @@ const FeatureModal = ({ isOpen, onClose, feature, onContact }) => {
   if (!isOpen || !feature) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="mr-modal-root fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div 
         className="mr-modal-overlay absolute inset-0 transition-opacity duration-300"
         onClick={onClose}
@@ -512,7 +524,7 @@ const FeatureModal = ({ isOpen, onClose, feature, onContact }) => {
         aria-modal="true"
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
-        className="mr-modal-panel mr-modal-panel--scroll relative max-w-2xl w-full transform transition-all duration-300"
+        className="mr-modal-panel mr-modal-panel--scroll relative z-10 max-w-2xl w-full transform transition-all duration-300"
       >
         <div className="mr-modal-panel__header mr-modal-panel__header--accent flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -562,10 +574,29 @@ const FeatureModal = ({ isOpen, onClose, feature, onContact }) => {
           </div>
         </div>
 
-        <div className="mr-modal-panel__footer flex justify-end gap-3">
+        <div className="mr-modal-panel__footer flex flex-wrap justify-end gap-3">
           <button type="button" onClick={onClose} className="btn-secondary">
             閉じる
           </button>
+          {feature.detailHref ? (
+            feature.detailHref.startsWith('/') && !feature.detailHref.startsWith('/#') ? (
+              <Link
+                to={feature.detailHref}
+                className="btn-secondary inline-flex items-center"
+                onClick={onClose}
+              >
+                {feature.detailLabel || '詳細ページへ'}
+              </Link>
+            ) : (
+              <a
+                href={feature.detailHref}
+                className="btn-secondary inline-flex items-center"
+                onClick={onClose}
+              >
+                {feature.detailLabel || '詳細ページへ'}
+              </a>
+            )
+          ) : null}
           <button
             type="button"
             onClick={() => {

@@ -37,14 +37,27 @@
     var(--mr-bg);
 }
 
-.mr-mesh > *:not(.particle) {
+/* fixed モーダル・FAB を relative に上書きしない（:not(.fixed) 必須） */
+.mr-mesh > *:not(.particle):not(.fixed):not(.mr-modal-root) {
   position: relative;
   z-index: 1;
+}
+
+.mr-mesh .modal-overlay,
+.mr-mesh .contact-modal-overlay,
+.mr-mesh .chat-modal-overlay,
+.mr-mesh .appointment-modal-overlay,
+.mr-mesh .guide-overlay,
+.mr-modal-root {
+  position: fixed !important;
+  z-index: 100 !important;
 }
 
 .mr-site .particle {
   background: rgba(94, 234, 212, 0.15);
   box-shadow: 0 0 12px var(--mr-glow);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Header */
