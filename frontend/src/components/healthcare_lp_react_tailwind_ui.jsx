@@ -48,17 +48,17 @@ const IconX = (props) => (
   </svg>
 );
 
-/** フッター基準のロゴ（円形 metallic + 事務所名1行）。ヘッダーは compact で同型。 */
+/** 提供ロゴ（円形エンブレム + 事務所名）の横組み画像。ヘッダー / フッター共通。 */
 const MrBrandLogo = ({ compact = false }) => (
   <div className={`mr-brand${compact ? ' mr-brand--compact shrink-0' : ''}`}>
-    <div className="mr-brand__icon metallic-container flex items-center justify-center rounded-full font-bold shadow-lg">
-      <img
-        src="/PC.png"
-        alt="須藤技術士事務所"
-        className="logo-float relative z-10 object-contain"
-      />
-    </div>
-    <span className="whitespace-nowrap text-sm font-bold gradient-text">須藤技術士事務所</span>
+    <img
+      src="/brand-logo.png"
+      alt="須藤技術士事務所"
+      className="mr-brand__image"
+      width={compact ? 260 : 320}
+      height={compact ? 52 : 64}
+      decoding="async"
+    />
   </div>
 );
 

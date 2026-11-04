@@ -85,44 +85,26 @@
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
-/* フッター基準のブランドロゴ（円形アイコン + 事務所名1行） */
+/* 提供ブランドロゴ（横組み PNG） */
 .mr-brand {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  line-height: 0;
 }
 
-.mr-brand__icon {
-  flex-shrink: 0;
-  aspect-ratio: 1 / 1;
-  border-radius: 50%;
-  overflow: hidden;
+.mr-brand__image {
+  display: block;
+  width: auto;
+  max-width: min(320px, 72vw);
+  height: auto;
+  max-height: 4rem;
+  object-fit: contain;
+  object-position: left center;
 }
 
-.mr-brand--compact .mr-brand__icon {
-  width: 4rem;
-  height: 4rem;
-}
-
-.mr-brand:not(.mr-brand--compact) .mr-brand__icon {
-  width: 6rem;
-  height: 6rem;
-}
-
-.mr-brand--compact .mr-brand__icon img {
-  width: 3rem;
-  height: 3rem;
-}
-
-.mr-brand:not(.mr-brand--compact) .mr-brand__icon img {
-  width: 4.5rem;
-  height: 4.5rem;
-}
-
-/* 円形枠内の metallic レイヤーも正円に揃える */
-.mr-site .mr-brand .metallic-container::before,
-.mr-site .mr-brand .metallic-container::after {
-  border-radius: 50%;
+.mr-brand--compact .mr-brand__image {
+  max-width: min(260px, 58vw);
+  max-height: 2.75rem;
 }
 
 /* Typography */
