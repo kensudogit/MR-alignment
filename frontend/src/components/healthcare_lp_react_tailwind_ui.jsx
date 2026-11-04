@@ -48,20 +48,17 @@ const IconX = (props) => (
   </svg>
 );
 
-/** ヘッダー・フッター共通のロゴ（角丸スクエア + 事務所名 + タグライン） */
+/** フッター基準のロゴ（円形 metallic + 事務所名1行）。ヘッダーは compact で同型。 */
 const MrBrandLogo = ({ compact = false }) => (
   <div className={`mr-brand${compact ? ' mr-brand--compact shrink-0' : ''}`}>
-    <div className="mr-brand__icon metallic-container mr-logo-ring shadow-lg">
+    <div className="mr-brand__icon metallic-container flex items-center justify-center rounded-full font-bold shadow-lg">
       <img
         src="/PC.png"
         alt="須藤技術士事務所"
         className="logo-float relative z-10 object-contain"
       />
     </div>
-    <div className="mr-brand__text leading-tight">
-      <span className="block whitespace-nowrap text-sm font-bold gradient-text">須藤技術士事務所</span>
-      <span className="mr-brand__tagline block whitespace-nowrap">IT Consulting Studio</span>
-    </div>
+    <span className="whitespace-nowrap text-sm font-bold gradient-text">須藤技術士事務所</span>
   </div>
 );
 
@@ -1995,6 +1992,7 @@ const styles = `
     left: 0;
     right: 0;
     bottom: 0;
+    border-radius: inherit;
     background: 
       radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),

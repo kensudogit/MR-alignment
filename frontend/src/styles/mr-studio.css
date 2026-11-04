@@ -85,7 +85,7 @@
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
-/* Header / footer 共通ロゴ（角丸スクエア + 2行テキスト） */
+/* フッター基準のブランドロゴ（円形アイコン + 事務所名1行） */
 .mr-brand {
   display: flex;
   align-items: center;
@@ -93,16 +93,15 @@
 }
 
 .mr-brand__icon {
-  display: flex;
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 1rem;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .mr-brand--compact .mr-brand__icon {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 4rem;
+  height: 4rem;
 }
 
 .mr-brand:not(.mr-brand--compact) .mr-brand__icon {
@@ -111,8 +110,8 @@
 }
 
 .mr-brand--compact .mr-brand__icon img {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 3rem;
+  height: 3rem;
 }
 
 .mr-brand:not(.mr-brand--compact) .mr-brand__icon img {
@@ -120,17 +119,10 @@
   height: 4.5rem;
 }
 
-.mr-brand__text {
-  min-width: 0;
-}
-
-.mr-brand__tagline {
-  margin-top: 0.125rem;
-  font-size: 0.625rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--mr-muted);
+/* 円形枠内の metallic レイヤーも正円に揃える */
+.mr-site .mr-brand .metallic-container::before,
+.mr-site .mr-brand .metallic-container::after {
+  border-radius: 50%;
 }
 
 /* Typography */
