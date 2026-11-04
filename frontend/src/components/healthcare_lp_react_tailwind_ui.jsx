@@ -48,6 +48,26 @@ const IconX = (props) => (
   </svg>
 );
 
+/** ヘッダー・フッター共通のロゴ（角丸スクエア + 事務所名 + タグライン） */
+const MrBrandLogo = ({ compact = false }) => (
+  <div className={`mr-brand${compact ? ' mr-brand--compact shrink-0' : ''}`}>
+    <div className="mr-brand__icon metallic-container mr-logo-ring shadow-lg">
+      <img
+        src="/PC.png"
+        alt="須藤技術士事務所"
+        className="logo-float relative z-10 object-contain"
+      />
+    </div>
+    <div className="mr-brand__text leading-tight">
+      <span className="block whitespace-nowrap text-sm font-bold gradient-text">須藤技術士事務所</span>
+      <span className="mr-brand__tagline block whitespace-nowrap">IT Consulting Studio</span>
+    </div>
+  </div>
+);
+
+MrBrandLogo.propTypes = {
+  compact: PropTypes.bool,
+};
 
 // --- Feature Data ---
 //
@@ -1142,15 +1162,7 @@ export default function HealthcareLP() {
       {/* Header */}
       <header className="mr-header sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          <div className="flex shrink-0 items-center gap-3">
-            <div className="mr-logo-ring metallic-container flex h-14 w-14 items-center justify-center rounded-2xl">
-              <img src="/PC.png" alt="須藤技術士事務所" className="logo-float relative z-10 h-10 w-10 object-contain" />
-            </div>
-            <div className="leading-tight">
-              <span className="block whitespace-nowrap text-sm font-bold gradient-text">須藤技術士事務所</span>
-              <span className="hidden text-[10px] uppercase tracking-[0.2em] text-gray-500 sm:block">IT Consulting Studio</span>
-            </div>
-          </div>
+          <MrBrandLogo compact />
           {/*
             項目名は途中で折り返さない（whitespace-nowrap）。
             7 項目すべてが並ぶのは lg 以上。md では入りきらないので、
@@ -1768,11 +1780,8 @@ export default function HealthcareLP() {
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="metallic-container flex h-24 w-24 items-center justify-center rounded-full text-white font-bold text-xl shadow-lg">
-                <img src="/PC.png" alt="須藤技術士事務所" className="w-30 h-30 object-contain logo-float relative z-10" />
-              </div>
-              <span className="text-sm font-bold gradient-text">須藤技術士事務所</span>
+            <div className="mb-4">
+              <MrBrandLogo />
             </div>
             <p className="text-gray-300 max-w-md">IT技術でビジネスを変革する。生成AIの業務導入、業務システム開発、レガシー移行、クラウド基盤の構築、開発チームの支援を行っています。</p>
             {/* 連絡先は config/site.ts が唯一の情報源。未設定の項目は表示しない。 */}
