@@ -1,0 +1,220 @@
+API skip 20ad564086699b: HTTP Error 403: Forbidden
+API skip f75cd00f4017de: HTTP Error 403: Forbidden
+[
+  {
+    "slug": "9248efd636350b",
+    "title": "Bedrock RAG を本番向けに：Cognito 認証・テナント ACL・Docker/Terraform まで",
+    "summary": "aws / terraform / cognito / bedrock / rag",
+    "publishedAt": "2026-10-25T14:47:03.823+09:00",
+    "topics": [
+      "aws",
+      "terraform",
+      "cognito",
+      "bedrock",
+      "rag"
+    ],
+    "emoji": "⛳",
+    "url": "https://zenn.dev/kensudo1203/articles/9248efd636350b"
+  },
+  {
+    "slug": "2968d602e166a0",
+    "title": "「明日の需要」と「最短ルート」を、そのまま信じない",
+    "summary": "nextjs / python / react / typescript / llm",
+    "publishedAt": "2026-10-23T19:25:52.658+09:00",
+    "topics": [
+      "nextjs",
+      "python",
+      "react",
+      "typescript",
+      "llm"
+    ],
+    "emoji": "📘",
+    "url": "https://zenn.dev/kensudo1203/articles/2968d602e166a0"
+  },
+  {
+    "slug": "bba6e30a5afd7c",
+    "title": "AI顧客の反応を変化させ、毎回異なる商談展開を生み出す",
+    "summary": "nextjs / postgresql / python / react / typescript",
+    "publishedAt": "2026-10-22T15:59:30.776+09:00",
+    "topics": [
+      "nextjs",
+      "postgresql",
+      "python",
+      "react",
+      "typescript"
+    ],
+    "emoji": "💡",
+    "url": "https://zenn.dev/kensudo1203/articles/bba6e30a5afd7c"
+  },
+  {
+    "slug": "871dfc236e1fa0",
+    "title": "保全日報を RAG に載せるとき、ベクトルだけでは設備名が落ちる",
+    "summary": "postgresql / python / langchain / llamaindex",
+    "publishedAt": "2026-10-21T13:54:01.915+09:00",
+    "topics": [
+      "postgresql",
+      "python",
+      "langchain",
+      "llamaindex"
+    ],
+    "emoji": "🐷",
+    "url": "https://zenn.dev/kensudo1203/articles/871dfc236e1fa0"
+  },
+  {
+    "slug": "d3d5e2e9c4e439",
+    "title": "船級承認はソフトが出さない — 船舶初期設計AIの関門",
+    "summary": "nextjs / postgresql / python / fastapi / sqlalchemy",
+    "publishedAt": "2026-10-20T11:34:20.398+09:00",
+    "topics": [
+      "nextjs",
+      "postgresql",
+      "python",
+      "fastapi",
+      "sqlalchemy"
+    ],
+    "emoji": "😺",
+    "url": "https://zenn.dev/kensudo1203/articles/d3d5e2e9c4e439"
+  },
+  {
+    "slug": "14b536888ff813",
+    "title": "AIコーディングツールが出力する資材を、WordPressサイトへ継続的に実装・反映するためのワークフローパッケージ",
+    "summary": "nextjs / python / react / typescript / wordpress",
+    "publishedAt": "2026-10-19T06:59:07.931+09:00",
+    "topics": [
+      "nextjs",
+      "python",
+      "react",
+      "typescript",
+      "wordpress"
+    ],
+    "emoji": "🌟",
+    "url": "https://zenn.dev/kensudo1203/articles/14b536888ff813"
+  },
+  {
+    "slug": "488ac74d576ff1",
+    "title": "RPGⅢをAIで読むときに、行番号を創作しない",
+    "summary": "python / migration / legacy / ibmi / ibmirpg",
+    "publishedAt": "2026-10-18T04:06:23.491+09:00",
+    "topics": [
+      "python",
+      "migration",
+      "legacy",
+      "ibmi",
+      "ibmirpg"
+    ],
+    "emoji": "📑",
+    "url": "https://zenn.dev/kensudo1203/articles/488ac74d576ff1"
+  },
+  {
+    "slug": "1988b9999d48b1",
+    "title": "設計標準書からレビュー用チェックリストを自動生成する",
+    "summary": "nextjs / python / fastapi",
+    "publishedAt": "2026-10-17T03:51:48.182+09:00",
+    "topics": [
+      "nextjs",
+      "python",
+      "fastapi"
+    ],
+    "emoji": "🎃",
+    "url": "https://zenn.dev/kensudo1203/articles/1988b9999d48b1"
+  },
+  {
+    "slug": "1a64bbe88e024d",
+    "title": "「真の企業価値」を市場から独立させる — 2段階DCFと候補集合の最適解",
+    "summary": "nextjs / python / fastapi / rag / langgraph",
+    "publishedAt": "2026-10-15T17:42:41.335+09:00",
+    "topics": [
+      "nextjs",
+      "python",
+      "fastapi",
+      "rag",
+      "langgraph"
+    ],
+    "emoji": "😺",
+    "url": "https://zenn.dev/kensudo1203/articles/1a64bbe88e024d"
+  },
+  {
+    "slug": "e2d01da13552d5",
+    "title": "FastAPI + Next.js で FX 分析基盤を作った話 — BFF・ペーパー取引・OpenAI を叩かないテスト\"",
+    "summary": "nextjs / python / typescript / fastapi",
+    "publishedAt": "2026-10-14T16:47:56.742+09:00",
+    "topics": [
+      "nextjs",
+      "python",
+      "typescript",
+      "fastapi"
+    ],
+    "emoji": "🦔",
+    "url": "https://zenn.dev/kensudo1203/articles/e2d01da13552d5"
+  },
+  {
+    "slug": "84466292c932a2",
+    "title": "株価予測ツールで in-sample の自信を発注に使わない — walk-forward と利益関門\"",
+    "summary": "nextjs / postgresql / typescript / pythoh",
+    "publishedAt": "2026-10-13T15:37:22.032+09:00",
+    "topics": [
+      "nextjs",
+      "postgresql",
+      "typescript",
+      "pythoh"
+    ],
+    "emoji": "🎉",
+    "url": "https://zenn.dev/kensudo1203/articles/84466292c932a2"
+  },
+  {
+    "slug": "2d925e7c978e32",
+    "title": "架電システム",
+    "summary": "postgresql / python / twilio / saas",
+    "publishedAt": "2026-10-12T13:34:31.832+09:00",
+    "topics": [
+      "postgresql",
+      "python",
+      "twilio",
+      "saas"
+    ],
+    "emoji": "💡",
+    "url": "https://zenn.dev/kensudo1203/articles/2d925e7c978e32"
+  },
+  {
+    "slug": "3710ac5d264bd1",
+    "title": "未初期化のプラグインは start しない — 倉庫WMSの状態機械と引当在庫",
+    "summary": "angular / docker / java / postgresql / マイクロサービス",
+    "publishedAt": "2026-10-10T09:26:25.455+09:00",
+    "topics": [
+      "angular",
+      "docker",
+      "java",
+      "postgresql",
+      "マイクロサービス"
+    ],
+    "emoji": "🐷",
+    "url": "https://zenn.dev/kensudo1203/articles/3710ac5d264bd1"
+  },
+  {
+    "slug": "9dbb8ee016e44c",
+    "title": "# Pythonで金融戦略のバックテストと最適化を統合する ― FastAPI・Next.jsによる戦略評価基盤の設計## はじめに",
+    "summary": "python / バックテスト",
+    "publishedAt": "2026-10-08T16:16:14.658+09:00",
+    "topics": [
+      "python",
+      "バックテスト"
+    ],
+    "emoji": "🙌",
+    "url": "https://zenn.dev/kensudo1203/articles/9dbb8ee016e44c"
+  },
+  {
+    "slug": "37c7ffd31f22ac",
+    "title": "AWS Bedrock × RAGで構築する企業向け生成AI基盤 ― 検索・安全性・評価・運用を一体化する設計",
+    "summary": "aws / python / fastapi / bedrock / rag",
+    "publishedAt": "2026-10-08T14:45:04.249+09:00",
+    "topics": [
+      "aws",
+      "python",
+      "fastapi",
+      "bedrock",
+      "rag"
+    ],
+    "emoji": "🗂",
+    "url": "https://zenn.dev/kensudo1203/articles/37c7ffd31f22ac"
+  }
+]

@@ -13,6 +13,7 @@ import { siteInfo, hasPhone, hasEmail, telHref } from '../config/site';
 import { blogData, BLOG_CATEGORY_ORDER, BLOG_IMAGE_MAP } from '../data/blogData';
 import { INDUSTRY_OPTIONS } from '../data/industries';
 import MrBrandLogo from './MrBrandLogo';
+import ZennArticleGrid from './ZennArticleGrid';
 
 // --- Inline Icon Components (no external deps) ---
 const IconPhone = (props) => (
@@ -1727,6 +1728,8 @@ export default function HealthcareLP() {
               ))}
             </div>
           </div>
+
+          <ZennArticleGrid />
         </div>
       </section>
 
