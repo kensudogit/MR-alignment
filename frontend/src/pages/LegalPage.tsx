@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect } from 'react'
+import MrBrandLogo from '../components/MrBrandLogo'
 import { siteInfo, missingLegalFields } from '../config/site'
 
 /** 未記入のとき、赤字の「要記入」の代わりに出す説明（請求時開示の運用） */
@@ -95,11 +96,8 @@ export default function LegalPage() {
     <div className="mr-site mr-mesh min-h-screen">
       <header className="mr-header sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="metallic-container flex h-16 w-16 items-center justify-center rounded-full shadow-lg">
-              <img src="/PC.png" alt={siteInfo.name} className="relative z-10 h-12 w-12 object-contain" />
-            </div>
-            <span className="text-sm font-bold gradient-text">{siteInfo.name}</span>
+          <Link to="/" className="inline-flex min-w-0 max-w-[min(100%,240px)]">
+            <MrBrandLogo compact />
           </Link>
           <Link to="/" className="btn-secondary">
             トップへ戻る

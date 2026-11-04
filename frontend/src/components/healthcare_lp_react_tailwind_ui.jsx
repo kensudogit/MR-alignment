@@ -12,6 +12,7 @@ import { contactAPI } from '../services/api';
 import { siteInfo, hasPhone, hasEmail, telHref } from '../config/site';
 import { blogData, BLOG_CATEGORY_ORDER, BLOG_IMAGE_MAP } from '../data/blogData';
 import { INDUSTRY_OPTIONS } from '../data/industries';
+import MrBrandLogo from './MrBrandLogo';
 
 // --- Inline Icon Components (no external deps) ---
 const IconPhone = (props) => (
@@ -47,24 +48,6 @@ const IconX = (props) => (
     <path d="M18 6L6 18M6 6l12 12"/>
   </svg>
 );
-
-/** 提供ロゴ（円形エンブレム + 事務所名）の横組み画像。ヘッダー / フッター共通。 */
-const MrBrandLogo = ({ compact = false }) => (
-  <div className={`mr-brand${compact ? ' mr-brand--compact shrink-0' : ''}`}>
-    <img
-      src="/brand-logo.png"
-      alt="須藤技術士事務所"
-      className="mr-brand__image"
-      width={compact ? 260 : 320}
-      height={compact ? 52 : 64}
-      decoding="async"
-    />
-  </div>
-);
-
-MrBrandLogo.propTypes = {
-  compact: PropTypes.bool,
-};
 
 // --- Feature Data ---
 //
@@ -1159,7 +1142,9 @@ export default function HealthcareLP() {
       {/* Header */}
       <header className="mr-header sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          <MrBrandLogo compact />
+          <Link to="/" className="inline-flex min-w-0 max-w-[min(100%,240px)]">
+            <MrBrandLogo compact />
+          </Link>
           {/*
             項目名は途中で折り返さない（whitespace-nowrap）。
             7 項目すべてが並ぶのは lg 以上。md では入りきらないので、

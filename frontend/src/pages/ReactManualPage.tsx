@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
+import MrBrandLogo from '../components/MrBrandLogo'
 import { CHAPTERS, MANUAL_VERSIONS, type Block, type Chapter, type Section } from '../data/reactManual'
 
 /**
@@ -290,11 +291,8 @@ export default function ReactManualPage() {
     <div className="mr-site mr-mesh min-h-screen">
       <header className="mr-header sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="metallic-container flex h-16 w-16 items-center justify-center rounded-full shadow-lg">
-              <img src="/PC.png" alt="須藤技術士事務所" className="relative z-10 h-12 w-12 object-contain" />
-            </div>
-            <span className="text-sm font-bold gradient-text">須藤技術士事務所</span>
+          <Link to="/" className="inline-flex min-w-0 max-w-[min(100%,240px)]">
+            <MrBrandLogo compact />
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/process" className="hidden text-[13px] text-gray-700 hover:text-healthcare-600 md:inline">
