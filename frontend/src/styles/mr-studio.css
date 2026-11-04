@@ -158,6 +158,128 @@
   white-space: nowrap;
 }
 
+/* 営業導線セクション */
+.mr-sales-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mr-sales-card {
+  border-radius: 1rem;
+  border: 1px solid var(--mr-border-strong);
+  background: var(--mr-bg-elevated);
+  padding: 1.35rem 1.25rem;
+  height: 100%;
+}
+
+.mr-sales-card--wide {
+  padding: 1.5rem 1.35rem;
+}
+
+.mr-sales-step {
+  display: flex;
+  flex-direction: column;
+  border-radius: 1rem;
+  border: 1px solid var(--mr-border-strong);
+  background:
+    linear-gradient(160deg, rgba(45, 212, 191, 0.06), transparent 55%),
+    var(--mr-bg-elevated);
+  padding: 1.35rem 1.25rem;
+  min-height: 100%;
+}
+
+.mr-sales-step__no {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--mr-accent);
+}
+
+.mr-sales-link-btn {
+  margin-top: auto;
+  align-self: flex-start;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #5eead4;
+  transition: color 0.2s ease;
+}
+
+.mr-sales-link-btn:hover {
+  color: #99f6e4;
+}
+
+.mr-sales-faq-item {
+  border-radius: 0.75rem;
+  border: 1px solid var(--mr-border-strong);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.mr-sales-faq-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--mr-text);
+}
+
+.mr-sales-faq-icon {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--mr-accent);
+}
+
+.mr-sales-faq-body {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 1.15rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--mr-muted);
+}
+
+.mr-sales-sticky {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
+  background: rgba(6, 6, 8, 0.92);
+  backdrop-filter: blur(16px) saturate(160%);
+  border-top: 1px solid var(--mr-border);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.mr-sales-sticky__inner {
+  display: flex;
+  max-width: 48rem;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.mr-sales-sticky__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--mr-muted);
+}
+
+.mr-sales-sticky__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
 /* Typography */
 .mr-site .gradient-text {
   background: linear-gradient(120deg, var(--mr-accent) 0%, #67e8f9 40%, var(--mr-accent-2) 100%);

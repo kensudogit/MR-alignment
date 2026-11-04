@@ -14,6 +14,8 @@ import { blogData, BLOG_CATEGORY_ORDER, BLOG_IMAGE_MAP } from '../data/blogData'
 import { INDUSTRY_OPTIONS } from '../data/industries';
 import MrBrandLogo from './MrBrandLogo';
 import ZennArticleGrid from './ZennArticleGrid';
+import SalesSections from './SalesSections';
+import SalesStickyBar from './SalesStickyBar';
 
 // --- Inline Icon Components (no external deps) ---
 const IconPhone = (props) => (
@@ -1123,6 +1125,10 @@ export default function HealthcareLP() {
     setAppointmentModalOpen(true);
   };
 
+  const scrollToLeadForm = () => {
+    document.getElementById('lead-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   // 認証されていないユーザーでもサイトにアクセス可能
   return (
     <div className="mr-site mr-mesh min-h-screen scrollbar-thin relative overflow-hidden">
@@ -1154,7 +1160,8 @@ export default function HealthcareLP() {
           */}
           <nav className="hidden items-center gap-x-3 text-[13px] md:flex xl:gap-x-4 2xl:gap-x-5">
             <a href="#features" className="mr-nav-link hidden whitespace-nowrap lg:inline">サービス</a>
-            <a href="#blog" className="mr-nav-link hidden whitespace-nowrap lg:inline">ブログ</a>
+            <a href="#why" className="mr-nav-link hidden whitespace-nowrap xl:inline">選ばれる理由</a>
+            <a href="#faq" className="mr-nav-link hidden whitespace-nowrap lg:inline">FAQ</a>
             <a href="#contact" className="mr-nav-link hidden whitespace-nowrap lg:inline">相談</a>
             <Link to="/process" className="mr-nav-link whitespace-nowrap">進め方</Link>
             <Link to="/coding-agents" className="mr-nav-link whitespace-nowrap">AI講習</Link>
@@ -1224,13 +1231,18 @@ export default function HealthcareLP() {
               提案ではなく成果物の質をご確認いただけます。
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#portfolio" className="btn-gradient btn-compact inline-flex">開発実績</a>
-              <Link to="/process" className="btn-secondary btn-compact inline-flex">開発の進め方</Link>
+              <button type="button" onClick={handleContact} className="btn-gradient btn-compact inline-flex">
+                無料相談
+              </button>
+              <button type="button" onClick={scrollToLeadForm} className="btn-secondary btn-compact inline-flex">
+                無料 AI 資料
+              </button>
+              <a href="#portfolio" className="btn-secondary btn-compact inline-flex">開発実績</a>
             </div>
           </div>
 
           <div className="relative animate-fade-in-right">
-            <div className="mr-lead-panel animate-slide-in-bottom">
+            <div id="lead-form" className="mr-lead-panel animate-slide-in-bottom scroll-mt-28">
               <div className="mb-8 flex items-center gap-4">
                 <div className="rounded-2xl border border-teal-500/30 bg-teal-500/10 p-4 text-teal-300">
                   <IconPhone className="h-8 w-8"/>
@@ -1345,8 +1357,14 @@ export default function HealthcareLP() {
         </div>
       </section>
 
+      <SalesSections
+        onContact={handleContact}
+        onAppointment={handleAppointmentBooking}
+        onScrollLeadForm={scrollToLeadForm}
+      />
+
       {/* Portfolio - Development Achievements */}
-      <section id="portfolio" className="mr-section">
+      <section id="portfolio" className="mr-section scroll-mt-24">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mb-16 text-center">
             <p className="mr-eyebrow mb-4 justify-center">Portfolio</p>
@@ -1811,6 +1829,9 @@ export default function HealthcareLP() {
             <div>
               <h3 className="font-semibold mb-4">サポート</h3>
               <ul className="space-y-2 text-gray-300">
+                <li><a href="#why" className="hover:text-white transition-colors">選ばれる理由</a></li>
+                <li><a href="#sales-flow" className="hover:text-white transition-colors">ご相談の流れ</a></li>
+                <li><a href="#faq" className="hover:text-white transition-colors">よくある質問</a></li>
                 <li><a href="#contact" className="hover:text-white transition-colors">お問い合わせ</a></li>
                 <li>
                   <button
@@ -1879,6 +1900,12 @@ export default function HealthcareLP() {
           </svg>
         </button>
       )}
+
+      <SalesStickyBar
+        onContact={handleContact}
+        onAppointment={handleAppointmentBooking}
+        onScrollLeadForm={scrollToLeadForm}
+      />
 
       {/* 認証モーダル */}
       <AuthModal 
